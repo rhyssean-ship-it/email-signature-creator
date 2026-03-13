@@ -130,8 +130,8 @@ input[type=range]{width:100%;accent-color:#00aeef}
     <div class="scan-zone" id="logoZone">
       <input type="file" id="logoFile" accept="image/*" onchange="handleLogo(this)">
       <div style="font-size:28px;margin-bottom:8px">🖼️</div>
-      <div style="font-size:14px;color:#444;margin-bottom:4px">Drop your logo here or click to browse</div>
-      <div style="font-size:12px;color:#888">PNG, SVG or JPG — processed locally in your browser</div>
+      <div style="font-size:14px;color:#c0d4e8;margin-bottom:4px">Drop your logo here or click to browse</div>
+      <div style="font-size:12px;color:#4a6a84">PNG, SVG or JPG — processed locally in your browser</div>
     </div>
     <div id="logoResult" style="display:none;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -150,8 +150,8 @@ input[type=range]{width:100%;accent-color:#00aeef}
     <div class="scan-zone" id="bannerZone">
       <input type="file" id="bannerFile" accept="image/*" onchange="handleBanner(this)">
       <div style="font-size:28px;margin-bottom:8px">🎌</div>
-      <div style="font-size:14px;color:#444;margin-bottom:4px">Drop your banner here or click to browse</div>
-      <div style="font-size:12px;color:#888">PNG or JPG — recommended 600×100px</div>
+      <div style="font-size:14px;color:#c0d4e8;margin-bottom:4px">Drop your banner here or click to browse</div>
+      <div style="font-size:12px;color:#4a6a84">PNG or JPG — recommended 600×100px</div>
     </div>
     <div id="bannerResult" style="display:none;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -165,15 +165,15 @@ input[type=range]{width:100%;accent-color:#00aeef}
       <span class="slider-val" id="bannerWVal">600px</span>
     </div>
 
-    <div class="warn" style="margin-top:14px">&#9888; Base64-embedded images may be blocked by some email clients. After copying your signature, replace each <code style="background:#f5e8c0;padding:1px 4px;border-radius:3px">src</code> with a publicly hosted image URL for best results.</div>
+    <div class="warn" style="margin-top:14px">&#9888; Base64-embedded images may be blocked by some email clients. After copying your signature, replace each <code style="background:#2a2000;padding:1px 4px;border-radius:3px">src</code> with a publicly hosted image URL for best results.</div>
 
     <hr class="hr">
     <div class="sec-lbl">Extract Colours from Image</div>
     <div class="scan-zone" id="scanZone">
       <input type="file" id="scanFile" accept="image/*" onchange="scanImage(this)">
       <div style="font-size:28px;margin-bottom:8px">🎨</div>
-      <div style="font-size:14px;color:#444;margin-bottom:4px">Drop a signature image here to extract brand colours</div>
-      <div style="font-size:12px;color:#888">JPG, PNG or WebP — no upload, all processing happens in your browser</div>
+      <div style="font-size:14px;color:#c0d4e8;margin-bottom:4px">Drop a signature image here to extract brand colours</div>
+      <div style="font-size:12px;color:#4a6a84">JPG, PNG or WebP — no upload, all processing happens in your browser</div>
     </div>
     <div id="scanResult" style="display:none">
       <div class="scan-preview">
@@ -884,7 +884,7 @@ function applyExtracted(){
 
 // ── WIREFRAME THUMBNAILS ─────────────────────────────────
 function drawThumbnails(){
-  const A='#4a90d9', N='#b3cef5', L='#dde8f7', D='#d0d0d0', T='#e0e0e0';
+  const A='#00aeef', N='#1a6a94', L='#1e3350', D='#254060', T='#1e3a58';
   function d(s){return `<div style="position:absolute;${s}"></div>`;}
   const thumbs={
     'classic-left':
