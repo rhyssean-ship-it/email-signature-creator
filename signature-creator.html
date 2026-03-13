@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email Signature Creator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f7;color:#1d1d1f;min-height:100vh}
+.wrap{max-width:1200px;margin:0 auto;padding:40px 24px}
+h1{font-size:26px;font-weight:700;margin-bottom:6px}
+.sub{color:#666;font-size:14px;margin-bottom:32px}
+.step{background:#fff;border-radius:14px;padding:28px 32px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.step-hd{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.step-n{background:#0066cc;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.step-t{font-size:17px;font-weight:600}
+.key-row{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.key-in{flex:1;min-width:280px;padding:9px 13px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:monospace}
+.key-in:focus{outline:none;border-color:#0066cc}
+.lock{display:flex;align-items:center;gap:5px;font-size:12px;color:#666;background:#f5f5f7;padding:6px 10px;border-radius:6px;white-space:nowrap}
+.upload-zone{border:2px dashed #ccc;border-radius:12px;padding:36px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+.upload-zone:hover,.upload-zone.over{border-color:#0066cc;background:#f0f6ff}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.up-icon{font-size:36px;margin-bottom:10px}
+.up-text{font-size:14px;color:#444;margin-bottom:4px}
+.up-hint{font-size:12px;color:#888}
+.img-prev{margin-top:14px}
+.img-prev img{max-width:100%;max-height:200px;border-radius:8px;border:1px solid #eee}
+.btn{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:.15s}
+.btn-p{background:#0066cc;color:#fff}.btn-p:hover{background:#0052a8}.btn-p:disabled{background:#bbb;cursor:not-allowed}
+.btn-s{background:#f0f0f0;color:#333}.btn-s:hover{background:#e0e0e0}
+.btn-sm{padding:5px 12px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;transition:.15s}
+.btn-sm:hover{background:#f0f6ff;border-color:#0066cc;color:#0066cc}
+.btn-sm.ok{background:#e6f9ee;border-color:#2da85c;color:#2da85c}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg.w{grid-column:1/-1}
+.fgrp{display:flex;flex-direction:column;gap:5px}
+.fgrp.span2{grid-column:1/-1}
+label{font-size:12px;font-weight:500;color:#555}
+input[type=text],input[type=email],input[type=url],select{padding:8px 11px;border:1px solid #ddd;border-radius:7px;font-size:13px;width:100%;transition:.15s}
+input[type=text]:focus,input[type=email]:focus,input[type=url]:focus,select:focus{outline:none;border-color:#0066cc}
+input[type=color]{padding:3px;border:1px solid #ddd;border-radius:7px;height:36px;width:54px;cursor:pointer}
+input[type=range]{width:100%}
+.hr{border:none;border-top:1px solid #eee;margin:18px 0}
+.sec-lbl{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.phone-list,.social-list{display:flex;flex-direction:column;gap:7px}
+.phone-row,.social-row{display:flex;align-items:center;gap:7px}
+.phone-row input,.social-row input[type=url]{flex:1}
+.social-row select{width:130px;flex-shrink:0}
+.rm-btn{width:30px;height:30px;border-radius:6px;border:1px solid #eee;background:#fff;cursor:pointer;font-size:15px;color:#999;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.rm-btn:hover{background:#fff0f0;border-color:#fbb;color:#c00}
+.show-chk{display:flex;align-items:center;gap:5px;font-size:12px;color:#555;white-space:nowrap}
+.show-chk input{width:14px;height:14px;cursor:pointer}
+.color-row{display:flex;align-items:center;gap:7px}
+.hex-in{width:82px !important}
+.slider-val{font-size:12px;color:#666;min-width:38px}
+.warn{background:#fffbf0;border:1px solid #f0d070;border-radius:8px;padding:10px 14px;font-size:12px;color:#8a6000;margin-top:10px}
+.status{padding:11px 15px;border-radius:8px;font-size:13px;margin-top:14px}
+.status.loading{background:#f0f6ff;color:#0066cc}
+.status.error{background:#fff0f0;color:#c00}
+.status.ok{background:#f0fff4;color:#1a7a40}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;margin-right:7px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.prev-grid{display:grid;grid-template-columns:1fr 400px;gap:20px;margin-top:6px}
+.prev-box{background:#e8e8e8;border-radius:8px;padding:20px;border:1px solid #ddd}
+.prev-lbl{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.prev-inner{background:#fff;padding:18px;border-radius:4px;overflow-x:auto;min-height:80px}
+.code-sec{margin-top:20px}
+.cb{margin-bottom:14px}
+.cb-hd{font-size:13px;font-weight:600;color:#444;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between}
+.code-ta{width:100%;height:110px;font-family:monospace;font-size:11px;padding:10px;border:1px solid #ddd;border-radius:8px;resize:vertical;background:#f9f9f9;color:#333}
+.code-ta.tall{height:150px}
+.skip-link{font-size:12px;color:#0066cc;cursor:pointer;text-decoration:underline;display:inline-block;margin-top:10px}
+.skip-link:hover{color:#0052a8}
+@media(max-width:760px){
+  .fg{grid-template-columns:1fr}
+  .prev-grid{grid-template-columns:1fr}
+  .key-row{flex-direction:column;align-items:stretch}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Email Signature Creator</h1>
+  <p class="sub">Upload a signature image, extract the details with AI, and export clean Outlook-compatible HTML.</p>
+
+  <!-- STEP 1 -->
+  <div class="step" id="s1">
+    <div class="step-hd"><div class="step-n">1</div><div class="step-t">Upload &amp; Analyse</div></div>
+    <div class="key-row">
+      <input type="password" class="key-in" id="apiKey" placeholder="Anthropic API key (sk-ant-…)" autocomplete="off">
+      <div class="lock">&#128274; Session only — never stored</div>
+    </div>
+    <div class="upload-zone" id="upZone">
+      <input type="file" id="imgFile" accept="image/jpeg,image/png,image/webp">
+      <div class="up-icon">&#128247;</div>
+      <div class="up-text">Drop your signature image here or click to browse</div>
+      <div class="up-hint">JPG, PNG or WebP</div>
+    </div>
+    <div class="img-prev" id="imgPrev" style="display:none"><img id="imgThumb" src="" alt=""></div>
+    <div style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <button class="btn btn-p" id="analyseBtn" disabled onclick="doAnalyse()">Analyse Signature</button>
+      <span class="skip-link" onclick="showForms()">Skip analysis — fill in manually</span>
+    </div>
+    <div id="statusEl" style="display:none"></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step" id="s2" style="display:none">
+    <div class="step-hd"><div class="step-n">2</div><div class="step-t">Review &amp; Edit</div></div>
+    <div class="fg">
+      <div class="fgrp"><label>Full Name</label><input type="text" id="f_name" placeholder="Jane Smith" oninput="debouncePrev()"></div>
+      <div class="fgrp"><label>Job Title</label><input type="text" id="f_title" placeholder="Senior Designer" oninput="debouncePrev()"></div>
+      <div class="fgrp"><label>Company Name</label><input type="text" id="f_company" placeholder="Acme Corp" oninput="debouncePrev()"></div>
+      <div class="fgrp"><label>Email Address</label><input type="email" id="f_email" placeholder="jane@acme.com" oninput="debouncePrev()"></div>
+      <div class="fgrp span2"><label>Website URL</label><input type="url" id="f_website" placeholder="https://acme.com" oninput="debouncePrev()"></div>
+    </div>
+
+    <hr class="hr">
+    <div class="sec-lbl">Phone Numbers</div>
+    <div class="phone-list" id="phoneList"></div>
+    <button class="btn btn-s" style="margin-top:8px;font-size:12px;padding:6px 13px" onclick="addPhone()">+ Add Phone</button>
+
+    <hr class="hr">
+    <div class="sec-lbl">Social Media (up to 4)</div>
+    <div class="social-list" id="socialList"></div>
+    <button class="btn btn-s" id="addSocBtn" style="margin-top:8px;font-size:12px;padding:6px 13px" onclick="addSocial()">+ Add Social Link</button>
+
+    <hr class="hr">
+    <div class="sec-lbl">Company Logo</div>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <input type="file" id="logoFile" accept="image/*" onchange="handleLogo(this)" style="font-size:13px">
+      <div id="logoThumbWrap" style="display:none"><img id="logoThumb" src="" style="max-height:56px;border-radius:4px;border:1px solid #eee"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+      <label style="min-width:80px">Logo width</label>
+      <input type="range" id="logoW" min="50" max="300" value="150" oninput="document.getElementById('logoWVal').textContent=this.value+'px';debouncePrev()">
+      <span class="slider-val" id="logoWVal">150px</span>
+    </div>
+    <div class="warn">&#9888; Base64 logos may be blocked by some email clients. After copying, consider replacing the <code>src</code> with a hosted URL.</div>
+
+    <hr class="hr">
+    <div class="sec-lbl">Styling</div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px">
+      <div class="fgrp" style="width:180px"><label>Font Family</label>
+        <select id="f_font" onchange="debouncePrev()">
+          <option>Arial</option><option>Helvetica</option><option>Verdana</option><option>Tahoma</option><option>Georgia</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap">
+      <div class="fgrp">
+        <label>Primary <span style="font-weight:400;color:#888">(name/accents)</span></label>
+        <div class="color-row">
+          <input type="color" id="c_pri" value="#1a237e" oninput="syncHex('c_pri','h_pri');debouncePrev()">
+          <input type="text" class="hex-in" id="h_pri" value="#1a237e" oninput="syncPicker('h_pri','c_pri')">
+        </div>
+      </div>
+      <div class="fgrp">
+        <label>Secondary <span style="font-weight:400;color:#888">(job title)</span></label>
+        <div class="color-row">
+          <input type="color" id="c_sec" value="#1565c0" oninput="syncHex('c_sec','h_sec');debouncePrev()">
+          <input type="text" class="hex-in" id="h_sec" value="#1565c0" oninput="syncPicker('h_sec','c_sec')">
+        </div>
+      </div>
+      <div class="fgrp">
+        <label>Text <span style="font-weight:400;color:#888">(body)</span></label>
+        <div class="color-row">
+          <input type="color" id="c_txt" value="#333333" oninput="syncHex('c_txt','h_txt');debouncePrev()">
+          <input type="text" class="hex-in" id="h_txt" value="#333333" oninput="syncPicker('h_txt','c_txt')">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step" id="s3" style="display:none">
+    <div class="step-hd"><div class="step-n">3</div><div class="step-t">Preview &amp; Export</div></div>
+    <div class="prev-grid">
+      <div>
+        <div class="prev-lbl">Desktop Preview</div>
+        <div class="prev-box"><div class="prev-inner" id="deskPrev"></div></div>
+      </div>
+      <div>
+        <div class="prev-lbl">Mobile Preview (375px)</div>
+        <div class="prev-box" style="max-width:415px"><div class="prev-inner" id="mobPrev"></div></div>
+      </div>
+    </div>
+    <div class="code-sec">
+      <div class="cb">
+        <div class="cb-hd"><span>Desktop HTML</span><button class="btn-sm" onclick="copyCode('deskCode',this)">Copy</button></div>
+        <textarea class="code-ta" id="deskCode" readonly></textarea>
+      </div>
+      <div class="cb">
+        <div class="cb-hd"><span>Mobile HTML</span><button class="btn-sm" onclick="copyCode('mobCode',this)">Copy</button></div>
+        <textarea class="code-ta" id="mobCode" readonly></textarea>
+      </div>
+      <div class="cb">
+        <div class="cb-hd"><span>&#11088; Universal HTML — Recommended (responsive)</span><button class="btn-sm" onclick="copyCode('uniCode',this)">Copy</button></div>
+        <textarea class="code-ta tall" id="uniCode" readonly></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+let imgB64 = null, imgMime = null;
+let logoDataUrl = null, logoNatW = null, logoNatH = null;
+let prevTimer = null;
+const iconCache = {};
+
+// ─── API KEY ─────────────────────────────────────────────
+const keyEl = document.getElementById('apiKey');
+keyEl.value = sessionStorage.getItem('ak') || '';
+keyEl.addEventListener('input', () => sessionStorage.setItem('ak', keyEl.value.trim()));
+
+// ─── IMAGE UPLOAD ─────────────────────────────────────────
+const upZone = document.getElementById('upZone');
+const imgFile = document.getElementById('imgFile');
+
+upZone.addEventListener('dragover', e => { e.preventDefault(); upZone.classList.add('over'); });
+upZone.addEventListener('dragleave', () => upZone.classList.remove('over'));
+upZone.addEventListener('drop', e => {
+  e.preventDefault(); upZone.classList.remove('over');
+  const f = e.dataTransfer.files[0]; if (f) loadImg(f);
+});
+imgFile.addEventListener('change', function() { if (this.files[0]) loadImg(this.files[0]); });
+
+function loadImg(file) {
+  if (!file.type.match(/image\/(jpeg|png|webp)/)) { showStatus('Please upload a JPG, PNG or WebP image.', 'error'); return; }
+  const r = new FileReader();
+  r.onload = e => {
+    imgB64 = e.target.result.split(',')[1];
+    imgMime = file.type;
+    document.getElementById('imgThumb').src = e.target.result;
+    document.getElementById('imgPrev').style.display = 'block';
+    document.getElementById('analyseBtn').disabled = false;
+  };
+  r.readAsDataURL(file);
+}
+
+// ─── ANALYSE ──────────────────────────────────────────────
+async function doAnalyse() {
+  const key = sessionStorage.getItem('ak') || keyEl.value.trim();
+  if (!key) { showStatus('Please enter your Anthropic API key.', 'error'); return; }
+  if (!imgB64) { showStatus('Please upload a signature image.', 'error'); return; }
+  document.getElementById('analyseBtn').disabled = true;
+  showStatus('<span class="spin"></span>Analysing your signature with AI…', 'loading');
+
+  const prompt = `Analyse this email signature image and extract ALL visible information.
+Return ONLY a valid JSON object (no markdown, no explanation) with these exact fields:
+{
+  "name": "full name or empty string",
+  "title": "job title or empty string",
+  "company": "company name or empty string",
+  "email": "email address or empty string",
+  "website": "website URL with https:// prefix or empty string",
+  "phones": ["phone1", "phone2"],
+  "social": [{"platform": "LinkedIn|Twitter/X|Facebook|Instagram|YouTube|TikTok", "url": "full URL"}],
+  "hasLogo": true or false,
+  "logoDescription": "brief description of logo"
+}
+Extract exactly what is visible. Include full URLs for social media. For website, prepend https:// if not already present.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: imgMime, data: imgB64 } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error?.message || `API error ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    const txt = data.content[0].text.trim();
+    const m = txt.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error('Could not parse response from the API.');
+    const extracted = JSON.parse(m[0]);
+
+    fillForm(extracted);
+    showForms(true);
+    showStatus('&#10003; Signature analysed — review and edit below.', 'ok');
+  } catch (err) {
+    showStatus('Error: ' + err.message, 'error');
+    document.getElementById('analyseBtn').disabled = false;
+  }
+}
+
+// ─── SHOW FORMS ───────────────────────────────────────────
+function showForms(fromAnalysis = false) {
+  document.getElementById('s2').style.display = 'block';
+  document.getElementById('s3').style.display = 'block';
+  if (!fromAnalysis) {
+    // Ensure at least one phone row
+    if (document.getElementById('phoneList').children.length === 0) addPhone();
+  }
+  document.getElementById('s2').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  updatePreview();
+}
+
+// ─── FILL FORM ────────────────────────────────────────────
+function fillForm(d) {
+  document.getElementById('f_name').value = d.name || '';
+  document.getElementById('f_title').value = d.title || '';
+  document.getElementById('f_company').value = d.company || '';
+  document.getElementById('f_email').value = d.email || '';
+  document.getElementById('f_website').value = d.website || '';
+
+  const pl = document.getElementById('phoneList');
+  pl.innerHTML = '';
+  (d.phones || []).length ? (d.phones || []).forEach(p => addPhone(p)) : addPhone();
+
+  const sl = document.getElementById('socialList');
+  sl.innerHTML = '';
+  (d.social || []).forEach(s => addSocial(s.platform, s.url));
+  updateAddSocBtn();
+}
+
+// ─── PHONE ROWS ───────────────────────────────────────────
+function addPhone(val = '') {
+  const row = document.createElement('div');
+  row.className = 'phone-row';
+  row.innerHTML = `<input type="text" placeholder="+44 20 1234 5678" value="${esc(val)}" oninput="debouncePrev()"><button class="rm-btn" onclick="this.parentElement.remove();debouncePrev()" title="Remove">&#215;</button>`;
+  document.getElementById('phoneList').appendChild(row);
+}
+
+// ─── SOCIAL ROWS ──────────────────────────────────────────
+const SOC_PLATFORMS = ['LinkedIn','Twitter/X','Facebook','Instagram','YouTube','TikTok'];
+const SOC_COLORS = {LinkedIn:'#0077B5','Twitter/X':'#000000',Facebook:'#1877F2',Instagram:'#E4405F',YouTube:'#FF0000',TikTok:'#010101'};
+
+function addSocial(platform = 'LinkedIn', url = '') {
+  const sl = document.getElementById('socialList');
+  if (sl.children.length >= 4) return;
+  const row = document.createElement('div');
+  row.className = 'social-row';
+  const opts = SOC_PLATFORMS.map(p => `<option value="${p}"${p===platform?' selected':''}>${p}</option>`).join('');
+  row.innerHTML = `
+    <select onchange="debouncePrev()">${opts}</select>
+    <input type="url" placeholder="https://linkedin.com/in/…" value="${esc(url)}" oninput="debouncePrev()">
+    <label class="show-chk" title="Include icon in signature"><input type="checkbox" checked onchange="debouncePrev()"> Show</label>
+    <button class="rm-btn" onclick="this.parentElement.remove();updateAddSocBtn();debouncePrev()" title="Remove">&#215;</button>`;
+  sl.appendChild(row);
+  updateAddSocBtn();
+}
+
+function updateAddSocBtn() {
+  const btn = document.getElementById('addSocBtn');
+  btn.style.display = document.getElementById('socialList').children.length >= 4 ? 'none' : '';
+}
+
+// ─── LOGO ─────────────────────────────────────────────────
+function handleLogo(input) {
+  const f = input.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    logoDataUrl = e.target.result;
+    document.getElementById('logoThumb').src = logoDataUrl;
+    document.getElementById('logoThumbWrap').style.display = 'block';
+    const img = new Image();
+    img.onload = () => { logoNatW = img.naturalWidth; logoNatH = img.naturalHeight; debouncePrev(); };
+    img.src = logoDataUrl;
+  };
+  r.readAsDataURL(f);
+}
+
+function logoH(targetW) {
+  if (!logoNatW || !logoNatH) return Math.round(targetW * 0.4);
+  return Math.round(targetW * logoNatH / logoNatW);
+}
+
+// ─── COLOR SYNC ───────────────────────────────────────────
+function syncHex(pickId, hexId) {
+  document.getElementById(hexId).value = document.getElementById(pickId).value;
+}
+function syncPicker(hexId, pickId) {
+  const v = document.getElementById(hexId).value;
+  if (/^#[0-9A-Fa-f]{6}$/.test(v)) { document.getElementById(pickId).value = v; debouncePrev(); }
+}
+
+// ─── SOCIAL ICON GENERATOR ────────────────────────────────
+function getSocialIcon(platform, size = 20) {
+  const k = platform + size;
+  if (iconCache[k]) return iconCache[k];
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  const ctx = c.getContext('2d');
+  const col = SOC_COLORS[platform] || '#555';
+
+  // Rounded rect background
+  const r = Math.round(size * 0.18);
+  ctx.beginPath();
+  ctx.moveTo(r, 0); ctx.lineTo(size-r, 0); ctx.quadraticCurveTo(size, 0, size, r);
+  ctx.lineTo(size, size-r); ctx.quadraticCurveTo(size, size, size-r, size);
+  ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size-r);
+  ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+
+  if (platform === 'Instagram') {
+    const g = ctx.createLinearGradient(0, size, size, 0);
+    g.addColorStop(0, '#FFDC80'); g.addColorStop(0.3, '#FCAF45'); g.addColorStop(0.5, '#F77737');
+    g.addColorStop(0.7, '#F56040'); g.addColorStop(0.85, '#FD1D1D'); g.addColorStop(1, '#833AB4');
+    ctx.fillStyle = g;
+  } else {
+    ctx.fillStyle = col;
+  }
+  ctx.fill();
+
+  ctx.fillStyle = '#fff';
+  ctx.strokeStyle = '#fff';
+
+  if (platform === 'Instagram') {
+    // Camera outline
+    const p = size * 0.18, q = size * 0.64, lw = size * 0.08;
+    ctx.lineWidth = lw;
+    ctx.strokeStyle = '#fff';
+    ctx.beginPath();
+    ctx.roundRect(p, p, q, q, size * 0.1);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(size/2, size/2, size * 0.16, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(size * 0.74, size * 0.26, size * 0.065, 0, Math.PI*2);
+    ctx.fill();
+  } else if (platform === 'LinkedIn') {
+    const fs = Math.round(size * 0.5);
+    ctx.font = `bold ${fs}px Arial`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('in', size/2, size/2 + 1);
+  } else if (platform === 'Facebook') {
+    const fs = Math.round(size * 0.58);
+    ctx.font = `bold ${fs}px Georgia`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('f', size/2 + size*0.04, size/2 + 1);
+  } else if (platform === 'Twitter/X') {
+    // X shape
+    const m = size * 0.22, lw = size * 0.12;
+    ctx.lineWidth = lw; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(m, m); ctx.lineTo(size-m, size-m); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(size-m, m); ctx.lineTo(m, size-m); ctx.stroke();
+  } else if (platform === 'YouTube') {
+    // Play button triangle
+    ctx.beginPath();
+    ctx.moveTo(size*0.35, size*0.28);
+    ctx.lineTo(size*0.35, size*0.72);
+    ctx.lineTo(size*0.75, size*0.5);
+    ctx.closePath(); ctx.fill();
+  } else {
+    const letter = platform[0].toUpperCase();
+    const fs = Math.round(size * 0.52);
+    ctx.font = `bold ${fs}px Arial`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(letter, size/2, size/2 + 1);
+  }
+
+  const url = c.toDataURL('image/png');
+  iconCache[k] = url;
+  return url;
+}
+
+// Pre-generate icons
+SOC_PLATFORMS.forEach(p => getSocialIcon(p, 20));
+
+// ─── GET FORM DATA ────────────────────────────────────────
+function getData() {
+  const phones = [...document.querySelectorAll('#phoneList .phone-row input')].map(i=>i.value.trim()).filter(Boolean);
+  const socials = [...document.querySelectorAll('#socialList .social-row')].map(row => ({
+    platform: row.querySelector('select').value,
+    url: row.querySelector('input[type=url]').value.trim(),
+    show: row.querySelector('input[type=checkbox]').checked
+  })).filter(s => s.url && s.show);
+  return {
+    name: document.getElementById('f_name').value.trim(),
+    title: document.getElementById('f_title').value.trim(),
+    company: document.getElementById('f_company').value.trim(),
+    email: document.getElementById('f_email').value.trim(),
+    website: document.getElementById('f_website').value.trim(),
+    phones, socials,
+    logo: logoDataUrl,
+    logoW: parseInt(document.getElementById('logoW').value) || 150,
+    font: document.getElementById('f_font').value,
+    pri: document.getElementById('c_pri').value,
+    sec: document.getElementById('c_sec').value,
+    txt: document.getElementById('c_txt').value,
+  };
+}
+
+// ─── PREVIEW ──────────────────────────────────────────────
+function debouncePrev() { clearTimeout(prevTimer); prevTimer = setTimeout(updatePreview, 220); }
+
+function updatePreview() {
+  const d = getData();
+  const dh = genDesktop(d);
+  const mh = genMobile(d);
+  const uh = genUniversal(d, dh, mh);
+  document.getElementById('deskPrev').innerHTML = dh;
+  document.getElementById('mobPrev').innerHTML = mh;
+  document.getElementById('deskCode').value = dh;
+  document.getElementById('mobCode').value = mh;
+  document.getElementById('uniCode').value = uh;
+}
+
+// ─── HTML GENERATION ──────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function a(s) { return esc(s); }
+
+function buildSocIcons(socials, size=20) {
+  if (!socials.length) return '';
+  return socials.map(s => {
+    const icon = getSocialIcon(s.platform, size);
+    const href = s.url.startsWith('http') ? s.url : 'https://' + s.url;
+    return `<a href="${a(href)}" target="_blank" style="display:inline-block;margin-right:5px;text-decoration:none;"><img src="${icon}" width="${size}" height="${size}" border="0" alt="${a(s.platform)}" style="display:inline-block;width:${size}px;height:${size}px;"></a>`;
+  }).join('');
+}
+
+function buildContactCells(d, fontSize=12) {
+  const cells = [];
+  const style = `font-family:${d.font},Arial,sans-serif;font-size:${fontSize}px;color:${d.txt};white-space:nowrap;`;
+  const linkStyle = `${style}text-decoration:none;`;
+
+  d.phones.forEach(p => {
+    const tel = p.replace(/\s/g,'');
+    cells.push(`<td style="padding-right:10px;${style}"><a href="tel:${a(tel)}" style="${linkStyle}">${esc(p)}</a></td>`);
+    cells.push(`<td style="padding-right:10px;color:#ccc;font-size:${fontSize}px;">|</td>`);
+  });
+  if (d.email) {
+    cells.push(`<td style="padding-right:10px;"><a href="mailto:${a(d.email)}" style="${linkStyle}">${esc(d.email)}</a></td>`);
+    cells.push(`<td style="padding-right:10px;color:#ccc;font-size:${fontSize}px;">|</td>`);
+  }
+  if (d.website) {
+    const display = d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');
+    const href = d.website.startsWith('http') ? d.website : 'https://' + d.website;
+    cells.push(`<td style="padding-right:10px;"><a href="${a(href)}" style="${linkStyle}">${esc(display)}</a></td>`);
+    cells.push(`<td style="color:#ccc;font-size:${fontSize}px;">|</td>`);
+  }
+  // Remove trailing separator
+  if (cells.length && cells[cells.length-1].includes('color:#ccc')) cells.pop();
+  return cells.join('\n            ');
+}
+
+function genDesktop(d) {
+  const lw = d.logoW;
+  const lh = logoH(lw);
+  const socHtml = buildSocIcons(d.socials, 20);
+  const contactCells = buildContactCells(d);
+  const hasContact = d.phones.length || d.email || d.website;
+  const hasInfo = d.name || d.title || d.company;
+
+  const logoCol = d.logo ? `
+      <td style="padding-right:18px;vertical-align:top;">
+        <img src="${d.logo}" width="${lw}" height="${lh}" border="0" alt="${a(d.company)} logo" style="display:block;width:${lw}px;height:${lh}px;">
+      </td>
+      <td style="padding:0 16px;vertical-align:top;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="height:100%;"><tr><td style="border-left:2px solid ${d.pri};line-height:${lh}px;">&nbsp;</td></tr></table>
+      </td>` : '';
+
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+  <tr>${logoCol}
+    <td style="vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${d.name ? `<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:3px;line-height:1.2;">${esc(d.name)}</td></tr>` : ''}
+        ${d.title ? `<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;line-height:1.3;">${esc(d.title)}</td></tr>` : ''}
+        ${d.company ? `<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:500;color:${d.txt};padding-bottom:8px;line-height:1.3;">${esc(d.company)}</td></tr>` : ''}
+        ${(hasInfo && (hasContact || socHtml)) ? `<tr><td style="border-top:1px solid #e0e0e0;padding-top:8px;padding-bottom:0;font-size:0;">&nbsp;</td></tr>` : ''}
+        ${hasContact ? `<tr><td style="padding-top:0;padding-bottom:6px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+            ${contactCells}
+          </tr></table>
+        </td></tr>` : ''}
+        ${socHtml ? `<tr><td style="padding-top:4px;">${socHtml}</td></tr>` : ''}
+      </table>
+    </td>
+  </tr>
+</table>`;
+}
+
+function genMobile(d) {
+  const targetW = Math.min(d.logoW, 140);
+  const lh = d.logo ? logoH(targetW) : null;
+  const socHtml = buildSocIcons(d.socials, 20);
+  const style = `font-family:${d.font},Arial,sans-serif;text-align:center;`;
+  const linkStyle = `text-decoration:none;`;
+  const hasContact = d.phones.length || d.email || d.website;
+
+  const rows = [];
+  if (d.logo) rows.push(`<tr><td style="padding-bottom:12px;text-align:center;"><img src="${d.logo}" width="${targetW}" height="${lh}" border="0" alt="${a(d.company)} logo" style="display:inline-block;width:${targetW}px;height:${lh}px;"></td></tr>`);
+  if (d.name) rows.push(`<tr><td style="${style}font-size:16px;font-weight:bold;color:${d.pri};padding-bottom:3px;line-height:1.2;">${esc(d.name)}</td></tr>`);
+  if (d.title) rows.push(`<tr><td style="${style}font-size:13px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`);
+  if (d.company) rows.push(`<tr><td style="${style}font-size:13px;font-weight:500;color:${d.txt};padding-bottom:8px;">${esc(d.company)}</td></tr>`);
+  if ((d.name || d.title || d.company) && hasContact) rows.push(`<tr><td style="border-top:1px solid #e0e0e0;padding-top:8px;font-size:0;">&nbsp;</td></tr>`);
+  d.phones.forEach(p => {
+    const tel = p.replace(/\s/g,'');
+    rows.push(`<tr><td style="${style}font-size:12px;color:${d.txt};padding-bottom:4px;"><a href="tel:${a(tel)}" style="color:${d.txt};${linkStyle}">${esc(p)}</a></td></tr>`);
+  });
+  if (d.email) rows.push(`<tr><td style="${style}font-size:12px;padding-bottom:4px;"><a href="mailto:${a(d.email)}" style="color:${d.txt};${linkStyle}">${esc(d.email)}</a></td></tr>`);
+  if (d.website) {
+    const display = d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');
+    const href = d.website.startsWith('http') ? d.website : 'https://'+d.website;
+    rows.push(`<tr><td style="${style}font-size:12px;padding-bottom:4px;"><a href="${a(href)}" style="color:${d.txt};${linkStyle}">${esc(display)}</a></td></tr>`);
+  }
+  if (socHtml) rows.push(`<tr><td style="padding-top:8px;text-align:center;">${socHtml}</td></tr>`);
+
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;max-width:375px;">
+  ${rows.join('\n  ')}
+</table>`;
+}
+
+function genUniversal(d, desktopHtml, mobileHtml) {
+  return `<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600"><tr><td><![endif]-->
+<div style="max-width:600px;">
+  <style type="text/css">
+    @media screen and (max-width:480px){
+      .sig-desk{display:none !important;}
+      .sig-mob{display:block !important;}
+    }
+  </style>
+  <div class="sig-desk">
+${desktopHtml}
+  </div>
+  <div class="sig-mob" style="display:none;">
+${mobileHtml}
+  </div>
+</div>
+<!--[if mso]></td></tr></table><![endif]-->`;
+}
+
+// ─── COPY ─────────────────────────────────────────────────
+function copyCode(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).value).then(() => {
+    btn.textContent = 'Copied!'; btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+  });
+}
+
+// ─── STATUS ───────────────────────────────────────────────
+function showStatus(html, type) {
+  const el = document.getElementById('statusEl');
+  el.className = 'status ' + type;
+  el.innerHTML = html;
+  el.style.display = 'block';
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+addPhone();
+</script>
+</body>
+</html>
