@@ -146,10 +146,31 @@ input[type=range]{width:100%;accent-color:#0066cc}
     <hr class="hr">
     <div class="sec-lbl">Typography &amp; Colour</div>
     <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end">
-      <div class="fgrp" style="width:160px">
+      <div class="fgrp" style="width:210px">
         <label>Font Family</label>
         <select id="f_font" onchange="dp()">
-          <option>Arial</option><option>Helvetica</option><option>Verdana</option><option>Tahoma</option><option>Georgia</option>
+          <optgroup label="Sans-serif">
+            <option>Arial</option>
+            <option>Helvetica</option>
+            <option>Verdana</option>
+            <option>Tahoma</option>
+            <option>Trebuchet MS</option>
+            <option>Century Gothic</option>
+            <option>Calibri</option>
+            <option>Gill Sans</option>
+          </optgroup>
+          <optgroup label="Serif">
+            <option>Georgia</option>
+            <option>Times New Roman</option>
+            <option>Palatino Linotype</option>
+            <option>Cambria</option>
+            <option>Garamond</option>
+            <option>Book Antiqua</option>
+          </optgroup>
+          <optgroup label="Monospace">
+            <option>Courier New</option>
+            <option>Lucida Console</option>
+          </optgroup>
         </select>
       </div>
       <div class="fgrp">
