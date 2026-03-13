@@ -39,6 +39,9 @@ input[type=range]{width:100%;accent-color:#0066cc}
 .btn-sm{padding:5px 12px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;transition:.15s}
 .btn-sm:hover{background:#f0f6ff;border-color:#0066cc;color:#0066cc}
 .btn-sm.ok{background:#e6f9ee;border-color:#2da85c;color:#2da85c}
+.btn-dl{padding:5px 12px;border-radius:6px;border:1px solid #0066cc;background:#0066cc;color:#fff;cursor:pointer;font-size:12px;font-weight:500;transition:.15s}
+.btn-dl:hover{background:#0052a8;border-color:#0052a8}
+.cb-btns{display:flex;gap:7px;align-items:center}
 .color-row{display:flex;align-items:center;gap:7px}
 .hex-in{width:82px !important}
 .slider-row{display:flex;align-items:center;gap:12px;margin-top:10px}
@@ -188,17 +191,17 @@ input[type=range]{width:100%;accent-color:#0066cc}
     </div>
     <div class="code-sec">
       <div>
-        <div class="cb-hd"><span>Desktop HTML</span><button class="btn-sm" onclick="cp('deskCode',this)">Copy</button></div>
+        <div class="cb-hd"><span>Desktop HTML</span><div class="cb-btns"><button class="btn-sm" onclick="cp('deskCode',this)">Copy</button><button class="btn-dl" onclick="dl('deskCode','signature-desktop.html')">&#8681; Download</button></div></div>
         <textarea class="code-ta" id="deskCode" readonly></textarea>
       </div>
       <div>
-        <div class="cb-hd"><span>Mobile HTML</span><button class="btn-sm" onclick="cp('mobCode',this)">Copy</button></div>
+        <div class="cb-hd"><span>Mobile HTML</span><div class="cb-btns"><button class="btn-sm" onclick="cp('mobCode',this)">Copy</button><button class="btn-dl" onclick="dl('mobCode','signature-mobile.html')">&#8681; Download</button></div></div>
         <textarea class="code-ta" id="mobCode" readonly></textarea>
       </div>
       <div>
         <div class="cb-hd">
           <span>Universal HTML <span class="cb-tag">Recommended</span></span>
-          <button class="btn-sm" onclick="cp('uniCode',this)">Copy</button>
+          <div class="cb-btns"><button class="btn-sm" onclick="cp('uniCode',this)">Copy</button><button class="btn-dl" onclick="dl('uniCode','signature-universal.html')">&#8681; Download</button></div>
         </div>
         <textarea class="code-ta tall" id="uniCode" readonly></textarea>
       </div>
@@ -439,6 +442,17 @@ function cp(id,btn){
     btn.textContent='Copied!';btn.classList.add('ok');
     setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);
   });
+}
+
+// ── DOWNLOAD ─────────────────────────────────────────────
+function dl(id,filename){
+  const html=document.getElementById(id).value;
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 // ── COLOUR EXTRACTION ────────────────────────────────────
