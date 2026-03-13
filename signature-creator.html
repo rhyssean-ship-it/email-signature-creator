@@ -46,6 +46,21 @@ input[type=range]{width:100%;accent-color:#0066cc}
 .logo-wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:4px}
 .logo-thumb{max-height:56px;border-radius:4px;border:1px solid #eee}
 .warn{background:#fffbf0;border:1px solid #f0d070;border-radius:8px;padding:10px 14px;font-size:12px;color:#7a5800;margin-top:12px;line-height:1.5}
+.scan-zone{border:2px dashed #ccc;border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:.2s;position:relative;margin-bottom:14px}
+.scan-zone:hover,.scan-zone.over{border-color:#0066cc;background:#f0f6ff}
+.scan-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.scan-preview{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-top:4px}
+.scan-img-wrap{position:relative;flex-shrink:0}
+.scan-img-wrap img{max-width:260px;max-height:160px;border-radius:8px;border:1px solid #ddd;display:block}
+.swatches{display:flex;flex-direction:column;gap:10px;justify-content:center}
+.swatch-row{display:flex;align-items:center;gap:10px}
+.swatch{width:36px;height:36px;border-radius:8px;border:1px solid rgba(0,0,0,.1);flex-shrink:0;cursor:pointer;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.swatch:hover{transform:scale(1.1);box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.swatch-info{font-size:12px;color:#555;line-height:1.4}
+.swatch-hex{font-family:monospace;font-size:11px;color:#888}
+.apply-btn{margin-top:12px;padding:8px 16px;border-radius:7px;border:none;background:#0066cc;color:#fff;font-size:13px;font-weight:500;cursor:pointer;transition:.15s}
+.apply-btn:hover{background:#0052a8}
+.scan-hint{font-size:12px;color:#888;margin-top:6px}
 .prev-grid{display:grid;grid-template-columns:1fr 395px;gap:20px;margin-top:4px}
 .prev-box{background:#e4e4e4;border-radius:10px;padding:20px;border:1px solid #ccc}
 .prev-lbl{font-size:11px;font-weight:600;color:#777;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
@@ -105,6 +120,25 @@ input[type=range]{width:100%;accent-color:#0066cc}
       <span class="slider-val" id="logoWVal">150px</span>
     </div>
     <div class="warn">&#9888; Base64-embedded logos may be blocked by some email clients. After copying your signature, replace the <code style="background:#f5e8c0;padding:1px 4px;border-radius:3px">src</code> with a publicly hosted image URL for best results.</div>
+
+    <hr class="hr">
+    <div class="sec-lbl">Extract Colours from Image</div>
+    <div class="scan-zone" id="scanZone">
+      <input type="file" id="scanFile" accept="image/*" onchange="scanImage(this)">
+      <div style="font-size:28px;margin-bottom:8px">🎨</div>
+      <div style="font-size:14px;color:#444;margin-bottom:4px">Drop a signature image here to extract brand colours</div>
+      <div style="font-size:12px;color:#888">JPG, PNG or WebP — no upload, all processing happens in your browser</div>
+    </div>
+    <div id="scanResult" style="display:none">
+      <div class="scan-preview">
+        <div class="scan-img-wrap"><img id="scanThumb" src="" alt="Reference image"></div>
+        <div>
+          <div class="swatches" id="swatchList"></div>
+          <button class="apply-btn" onclick="applyExtracted()">Apply colours to signature</button>
+          <div class="scan-hint" id="scanHint"></div>
+        </div>
+      </div>
+    </div>
 
     <hr class="hr">
     <div class="sec-lbl">Typography &amp; Colour</div>
@@ -405,6 +439,149 @@ function cp(id,btn){
     btn.textContent='Copied!';btn.classList.add('ok');
     setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);
   });
+}
+
+// ── COLOUR EXTRACTION ────────────────────────────────────
+let extractedColors = [];
+
+const scanZone = document.getElementById('scanZone');
+scanZone.addEventListener('dragover', e=>{e.preventDefault();scanZone.classList.add('over');});
+scanZone.addEventListener('dragleave', ()=>scanZone.classList.remove('over'));
+scanZone.addEventListener('drop', e=>{
+  e.preventDefault();scanZone.classList.remove('over');
+  const f=e.dataTransfer.files[0]; if(f) loadScanFile(f);
+});
+
+function scanImage(input){ const f=input.files[0]; if(f) loadScanFile(f); }
+
+function loadScanFile(file){
+  if(!file.type.match(/image\//)) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      document.getElementById('scanThumb').src=e.target.result;
+      extractedColors=getColors(img);
+      renderSwatches();
+      document.getElementById('scanResult').style.display='block';
+      scanZone.style.display='none';
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function rgbToHex(r,g,b){
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+function colorDistance(a,b){
+  return Math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2);
+}
+
+function getHSL(r,g,b){
+  r/=255;g/=255;b/=255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b);
+  let h,s,l=(max+min)/2;
+  if(max===min){h=s=0;}else{
+    const d=max-min;
+    s=l>.5?d/(2-max-min):d/(max+min);
+    switch(max){
+      case r:h=((g-b)/d+(g<b?6:0))/6;break;
+      case g:h=((b-r)/d+2)/6;break;
+      default:h=((r-g)/d+4)/6;
+    }
+  }
+  return{h:h*360,s,l};
+}
+
+function getColors(img){
+  const MAX=150;
+  const scale=Math.min(MAX/img.naturalWidth,MAX/img.naturalHeight,1);
+  const w=Math.round(img.naturalWidth*scale), h=Math.round(img.naturalHeight*scale);
+  const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+  const ctx=cv.getContext('2d');ctx.drawImage(img,0,0,w,h);
+  const data=ctx.getImageData(0,0,w,h).data;
+
+  // Bucket pixels into 24-unit colour cubes
+  const buckets={};
+  for(let i=0;i<data.length;i+=4){
+    const r=data[i],g=data[i+1],b=data[i+2],a=data[i+3];
+    if(a<128) continue;
+    // Skip near-white (background)
+    if(r>235&&g>235&&b>235) continue;
+    // Skip near-black
+    if(r<25&&g<25&&b<25) continue;
+    // Skip very light colours
+    const {l}=getHSL(r,g,b);
+    if(l>0.92||l<0.08) continue;
+    const key=`${Math.round(r/24)*24},${Math.round(g/24)*24},${Math.round(b/24)*24}`;
+    buckets[key]=(buckets[key]||0)+1;
+  }
+
+  // Sort by frequency
+  const sorted=Object.entries(buckets).sort((a,b)=>b[1]-a[1]);
+
+  // Pick distinct colours (at least 60 units apart)
+  const picked=[];
+  for(const [key] of sorted){
+    const [r,g,b]=key.split(',').map(Number);
+    const candidate=[r,g,b];
+    if(picked.every(p=>colorDistance(p,candidate)>60)){
+      picked.push(candidate);
+      if(picked.length>=6) break;
+    }
+  }
+
+  // Sort: most saturated first (good for brand colours), then by lightness desc
+  picked.sort((a,b)=>{
+    const ha=getHSL(...a),hb=getHSL(...b);
+    if(Math.abs(ha.s-hb.s)>0.15) return hb.s-ha.s;
+    return ha.l-hb.l;
+  });
+
+  return picked.map(([r,g,b])=>({
+    hex:rgbToHex(r,g,b),
+    hsl:getHSL(r,g,b),
+    r,g,b
+  }));
+}
+
+const SWATCH_ROLES=['Primary (name & accents)','Secondary (job title)','Text colour','Accent 4','Accent 5','Accent 6'];
+
+function renderSwatches(){
+  const list=document.getElementById('swatchList');
+  list.innerHTML='';
+  if(!extractedColors.length){
+    document.getElementById('scanHint').textContent='No distinct colours found — try a different image.';
+    return;
+  }
+  extractedColors.slice(0,6).forEach((c,i)=>{
+    const row=document.createElement('div');
+    row.className='swatch-row';
+    row.innerHTML=`
+      <div class="swatch" style="background:${c.hex}" title="Click to copy" onclick="navigator.clipboard.writeText('${c.hex}')"></div>
+      <div>
+        <div class="swatch-info">${SWATCH_ROLES[i]||'Colour '+(i+1)}</div>
+        <div class="swatch-hex">${c.hex}</div>
+      </div>`;
+    list.appendChild(row);
+  });
+  document.getElementById('scanHint').textContent=`${extractedColors.length} colour${extractedColors.length!==1?'s':''} extracted — click "Apply" to use them, or click any swatch to copy its hex.`;
+}
+
+function applyExtracted(){
+  const set=(pickId,hexId,hex)=>{
+    document.getElementById(pickId).value=hex;
+    document.getElementById(hexId).value=hex;
+  };
+  if(extractedColors[0]) set('c_pri','h_pri',extractedColors[0].hex);
+  if(extractedColors[1]) set('c_sec','h_sec',extractedColors[1].hex);
+  // For text: prefer a dark colour from the remaining ones, fallback to #444
+  const dark=extractedColors.slice(2).find(c=>c.hsl.l<0.45);
+  set('c_txt','h_txt',dark?dark.hex:'#444444');
+  dp();
+  document.getElementById('scanHint').textContent='✓ Colours applied to your signature.';
 }
 
 // ── INIT ─────────────────────────────────────────────────
