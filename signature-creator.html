@@ -253,6 +253,46 @@ input[type=range]{width:100%;accent-color:#00aeef}
         <div class="tw" id="tw-bold-block"></div>
         <div class="tmpl-name">Bold Block</div>
       </label>
+      <label class="tmpl-card" onclick="selTmpl('minimal')">
+        <input type="radio" name="tmpl" value="minimal">
+        <div class="tw" id="tw-minimal"></div>
+        <div class="tmpl-name">Minimal</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('logo-top')">
+        <input type="radio" name="tmpl" value="logo-top">
+        <div class="tw" id="tw-logo-top"></div>
+        <div class="tmpl-name">Logo Top</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('two-column')">
+        <input type="radio" name="tmpl" value="two-column">
+        <div class="tw" id="tw-two-column"></div>
+        <div class="tmpl-name">Two Column</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('accent-bar')">
+        <input type="radio" name="tmpl" value="accent-bar">
+        <div class="tw" id="tw-accent-bar"></div>
+        <div class="tmpl-name">Accent Bar</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('compact')">
+        <input type="radio" name="tmpl" value="compact">
+        <div class="tw" id="tw-compact"></div>
+        <div class="tmpl-name">Compact</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('logo-below')">
+        <input type="radio" name="tmpl" value="logo-below">
+        <div class="tw" id="tw-logo-below"></div>
+        <div class="tmpl-name">Logo Below</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('split-panel')">
+        <input type="radio" name="tmpl" value="split-panel">
+        <div class="tw" id="tw-split-panel"></div>
+        <div class="tmpl-name">Split Panel</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('layered')">
+        <input type="radio" name="tmpl" value="layered">
+        <div class="tw" id="tw-layered"></div>
+        <div class="tmpl-name">Layered</div>
+      </label>
     </div>
     <div class="tmpl-section-lbl">Banner Templates</div>
     <div class="tmpl-grid">
@@ -275,6 +315,26 @@ input[type=range]{width:100%;accent-color:#00aeef}
         <input type="radio" name="tmpl" value="banner-bold">
         <div class="tw" id="tw-banner-bold"></div>
         <div class="tmpl-name">Banner Bold</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('banner-right-logo')">
+        <input type="radio" name="tmpl" value="banner-right-logo">
+        <div class="tw" id="tw-banner-right-logo"></div>
+        <div class="tmpl-name">Banner Right Logo</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('banner-split')">
+        <input type="radio" name="tmpl" value="banner-split">
+        <div class="tw" id="tw-banner-split"></div>
+        <div class="tmpl-name">Banner Split</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('banner-minimal')">
+        <input type="radio" name="tmpl" value="banner-minimal">
+        <div class="tw" id="tw-banner-minimal"></div>
+        <div class="tmpl-name">Banner Minimal</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('banner-accent-block')">
+        <input type="radio" name="tmpl" value="banner-accent-block">
+        <div class="tw" id="tw-banner-accent-block"></div>
+        <div class="tmpl-name">Banner Accent Block</div>
       </label>
     </div>
     <div id="tmplWarn"></div>
@@ -730,17 +790,327 @@ function tmplBannerBold(d){
 </table>`;
 }
 
+// ── TEMPLATE 9: Minimal ───────────────────────────────────
+function tmplMinimal(d){
+  const lw=Math.min(d.logoW,120), lhv=d.logo?lh(lw):0;
+  const soc=socIcons(d.socials,18);
+  const hasC=d.phones.length||d.email||d.website;
+  const cc=contactCells(d,11);
+  const rows=[];
+  if(d.logo) rows.push(`<tr><td style="padding-bottom:8px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>`);
+  if(d.name) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:20px;font-weight:700;color:${d.pri};line-height:1.2;padding-bottom:5px;">${esc(d.name)}</td></tr>`);
+  rows.push(`<tr><td style="border-top:2px solid ${d.pri};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>`);
+  const meta=[];
+  if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
+  if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
+  if(meta.length) rows.push(`<tr><td style="padding-top:6px;padding-bottom:8px;">${meta.join(`<span style="color:#ccc;padding:0 6px;">·</span>`)}</td></tr>`);
+  if(hasC) rows.push(`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`);
+  if(soc) rows.push(`<tr><td style="padding-top:4px;">${soc}</td></tr>`);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;
+}
+
+// ── TEMPLATE 10: Logo Top ─────────────────────────────────
+function tmplLogoTop(d){
+  const lw=Math.min(d.logoW,160), lhv=d.logo?lh(lw):0;
+  const soc=socIcons(d.socials,20);
+  const hasC=d.phones.length||d.email||d.website;
+  const rows=[];
+  if(d.logo) rows.push(`<tr><td style="padding-bottom:10px;text-align:center;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:inline-block;width:${lw}px;height:${lhv}px;"></td></tr>`);
+  if(d.name) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:2px;text-align:center;line-height:1.2;">${esc(d.name)}</td></tr>`);
+  if(d.title) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;text-align:center;">${esc(d.title)}</td></tr>`);
+  if(d.company) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:2px;text-align:center;">${esc(d.company)}</td></tr>`);
+  if((d.name||d.title||d.company)&&hasC) rows.push(`<tr><td style="border-top:1px solid #e0e0e0;padding-bottom:10px;font-size:0;line-height:0;">&nbsp;</td></tr>`);
+  d.phones.forEach(p=>rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:3px;text-align:center;"><a href="tel:${ea(p.replace(/\s/g,''))}" style="color:${d.txt};text-decoration:none;">${esc(p)}</a></td></tr>`));
+  if(d.email) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;"><a href="mailto:${ea(d.email)}" style="color:${d.txt};text-decoration:none;">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;"><a href="${ea(href)}" style="color:${d.txt};text-decoration:none;">${esc(disp)}</a></td></tr>`);}
+  if(soc) rows.push(`<tr><td style="padding-top:8px;text-align:center;">${soc}</td></tr>`);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;
+}
+
+// ── TEMPLATE 11: Two Column ───────────────────────────────
+function tmplTwoColumn(d){
+  const lw=d.logoW, lhv=lh(lw);
+  const soc=socIcons(d.socials,18);
+  const ls=`font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};text-decoration:none;`;
+  const contactRows=[];
+  d.phones.forEach(p=>contactRows.push(`<tr><td style="${ls}"><a href="tel:${ea(p.replace(/\s/g,''))}" style="${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr><td style="padding-bottom:2px;"><a href="mailto:${ea(d.email)}" style="${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr><td><a href="${ea(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  ${d.logo?`<tr><td colspan="3" style="padding-bottom:10px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>`:''}
+  <tr>
+    <td style="vertical-align:top;padding-right:18px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:3px;line-height:1.2;white-space:nowrap;">${esc(d.name)}</td></tr>`:''}
+        ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
+        ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};">${esc(d.company)}</td></tr>`:''}
+      </table>
+    </td>
+    <td style="padding:0 16px;vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:1px solid #e0e0e0;line-height:52px;font-size:52px;">&nbsp;</td></tr></table>
+    </td>
+    <td style="vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${contactRows.join('\n        ')}
+        ${soc?`<tr><td style="padding-top:8px;">${soc}</td></tr>`:''}
+      </table>
+    </td>
+  </tr>
+</table>`;
+}
+
+// ── TEMPLATE 12: Accent Bar ───────────────────────────────
+function tmplAccentBar(d){
+  const lw=d.logoW, lhv=lh(lw);
+  const soc=socIcons(d.socials,18);
+  const cc=contactCells(d,12);
+  const hasC=d.phones.length||d.email||d.website;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  <tr>
+    <td style="background:${d.pri};width:4px;padding:0;">&nbsp;</td>
+    <td style="padding:0 16px 0 14px;vertical-align:middle;">
+      ${d.logo?`<img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;margin-bottom:10px;">`:''}
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:2px;line-height:1.2;">${esc(d.name)}</td></tr>`:''}
+        ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
+        ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:8px;">${esc(d.company)}</td></tr>`:''}
+        ${hasC?`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
+        ${soc?`<tr><td>${soc}</td></tr>`:''}
+      </table>
+    </td>
+  </tr>
+</table>`;
+}
+
+// ── TEMPLATE 13: Compact ──────────────────────────────────
+function tmplCompact(d){
+  const lw=Math.min(d.logoW,80), lhv=lh(lw);
+  const soc=socIcons(d.socials,18);
+  const cc=contactCells(d,11);
+  const hasC=d.phones.length||d.email||d.website;
+  const meta=[];
+  if(d.name) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:bold;color:${d.pri};">${esc(d.name)}</span>`);
+  if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
+  if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
+  const logoCol=d.logo?`<td style="padding-right:12px;vertical-align:middle;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td>`:'';
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  <tr>
+    ${logoCol}
+    <td style="vertical-align:middle;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${meta.length?`<tr><td style="padding-bottom:5px;white-space:nowrap;">${meta.join(`<span style="color:#ccc;padding:0 5px;">·</span>`)}</td></tr>`:''}
+        ${hasC?`<tr><td style="padding-bottom:4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
+        ${soc?`<tr><td>${soc}</td></tr>`:''}
+      </table>
+    </td>
+  </tr>
+</table>`;
+}
+
+// ── TEMPLATE 14: Logo Below ───────────────────────────────
+function tmplLogoBelow(d){
+  const lw=d.logoW, lhv=lh(lw);
+  const soc=socIcons(d.socials,18);
+  const ls=`font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};text-decoration:none;`;
+  const contactRows=[];
+  d.phones.forEach(p=>contactRows.push(`<tr><td style="padding-bottom:2px;"><a href="tel:${ea(p.replace(/\s/g,''))}" style="${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr><td style="padding-bottom:2px;"><a href="mailto:${ea(d.email)}" style="${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr><td><a href="${ea(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:3px;line-height:1.2;">${esc(d.name)}</td></tr>`:''}
+  ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
+  ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:2px;">${esc(d.company)}</td></tr>`:''}
+  <tr><td style="border-top:1px solid #e0e0e0;padding-bottom:10px;font-size:0;line-height:0;">&nbsp;</td></tr>
+  <tr>
+    <td style="vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          ${d.logo?`<td style="padding-right:16px;vertical-align:top;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td>`:''}
+          <td style="vertical-align:top;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              ${contactRows.join('\n              ')}
+              ${soc?`<tr><td style="padding-top:6px;">${soc}</td></tr>`:''}
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>`;
+}
+
+// ── TEMPLATE 15: Split Panel ──────────────────────────────
+function tmplSplitPanel(d){
+  const lw=Math.min(d.logoW,120), lhv=d.logo?lh(lw):0;
+  const soc=socIcons(d.socials,18);
+  const ls=`font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};text-decoration:none;`;
+  const contactRows=[];
+  d.phones.forEach(p=>contactRows.push(`<tr><td style="padding-bottom:3px;"><a href="tel:${ea(p.replace(/\s/g,''))}" style="${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr><td style="padding-bottom:3px;"><a href="mailto:${ea(d.email)}" style="${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr><td><a href="${ea(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  <tr>
+    <td style="background:${d.pri};padding:14px 20px;vertical-align:middle;border-radius:4px 0 0 4px;">
+      ${d.name?`<div style="font-family:${d.font},Arial,sans-serif;font-size:17px;font-weight:bold;color:#ffffff;line-height:1.2;margin-bottom:3px;">${esc(d.name)}</div>`:''}
+      ${d.title?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:rgba(255,255,255,0.8);margin-bottom:2px;">${esc(d.title)}</div>`:''}
+      ${d.company?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:rgba(255,255,255,0.65);">${esc(d.company)}</div>`:''}
+    </td>
+    <td style="padding:14px 20px;vertical-align:top;border:1px solid #e0e0e0;border-left:none;border-radius:0 4px 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${d.logo?`<tr><td style="padding-bottom:10px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>`:''}
+        ${contactRows.join('\n        ')}
+        ${soc?`<tr><td style="padding-top:6px;">${soc}</td></tr>`:''}
+      </table>
+    </td>
+  </tr>
+</table>`;
+}
+
+// ── TEMPLATE 16: Layered ──────────────────────────────────
+function tmplLayered(d){
+  const lw=d.logoW, lhv=lh(lw);
+  const soc=socIcons(d.socials,20);
+  const cc=contactCells(d);
+  const hasC=d.phones.length||d.email||d.website;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  <tr>
+    <td style="vertical-align:bottom;padding-bottom:4px;">
+      ${d.name?`<div style="font-family:${d.font},Arial,sans-serif;font-size:22px;font-weight:700;color:${d.pri};line-height:1.1;">${esc(d.name)}</div>`:''}
+      ${d.title?`<div style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};margin-top:2px;">${esc(d.title)}</div>`:''}
+      ${d.company?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};margin-top:1px;">${esc(d.company)}</div>`:''}
+    </td>
+    ${d.logo?`<td style="padding-left:24px;vertical-align:middle;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td>`:''}
+  </tr>
+  <tr><td colspan="2" style="border-top:2px solid ${d.pri};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>
+  <tr><td colspan="2" style="padding-top:8px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+      ${hasC?`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
+      ${soc?`<tr><td>${soc}</td></tr>`:''}
+    </table>
+  </td></tr>
+</table>`;
+}
+
+// ── TEMPLATE 17: Banner Right Logo ────────────────────────
+function tmplBannerRightLogo(d){
+  const lw=d.logoW, lhv=lh(lw);
+  const soc=socIcons(d.socials,20);
+  const cc=contactCells(d);
+  const hasC=d.phones.length||d.email||d.website;
+  const hasI=d.name||d.title||d.company;
+  const logoCol=d.logo?`<td style="padding-left:20px;vertical-align:middle;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td>`:'';
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  ${bannerRow(d)}
+  <tr>
+    <td style="vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:3px;line-height:1.2;">${esc(d.name)}</td></tr>`:''}
+        ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
+        ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:9px;">${esc(d.company)}</td></tr>`:''}
+        ${hasI&&(hasC||soc)?`<tr><td style="border-top:1px solid #e0e0e0;padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr><tr><td style="padding-top:8px;font-size:0;"></td></tr>`:''}
+        ${hasC?`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
+        ${soc?`<tr><td>${soc}</td></tr>`:''}
+      </table>
+    </td>
+    ${logoCol}
+  </tr>
+</table>`;
+}
+
+// ── TEMPLATE 18: Banner Split ─────────────────────────────
+function tmplBannerSplit(d){
+  const soc=socIcons(d.socials,18);
+  const ls=`font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};text-decoration:none;`;
+  const contactRows=[];
+  d.phones.forEach(p=>contactRows.push(`<tr><td style="padding-bottom:3px;"><a href="tel:${ea(p.replace(/\s/g,''))}" style="${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr><td style="padding-bottom:3px;"><a href="mailto:${ea(d.email)}" style="${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr><td><a href="${ea(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  ${bannerRow(d)}
+  <tr>
+    <td style="vertical-align:top;padding-right:20px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:3px;line-height:1.2;">${esc(d.name)}</td></tr>`:''}
+        ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
+        ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};">${esc(d.company)}</td></tr>`:''}
+      </table>
+    </td>
+    <td style="padding:0 16px;vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:1px solid #e0e0e0;line-height:50px;font-size:50px;">&nbsp;</td></tr></table>
+    </td>
+    <td style="vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${contactRows.join('\n        ')}
+        ${soc?`<tr><td style="padding-top:6px;">${soc}</td></tr>`:''}
+      </table>
+    </td>
+  </tr>
+</table>`;
+}
+
+// ── TEMPLATE 19: Banner Minimal ───────────────────────────
+function tmplBannerMinimal(d){
+  const soc=socIcons(d.socials,18);
+  const hasC=d.phones.length||d.email||d.website;
+  const cc=contactCells(d,11);
+  const rows=[];
+  const bw=d.bannerW, bhv=bh(bw);
+  if(d.banner){
+    rows.push(`<tr><td style="padding-bottom:14px;"><img src="${d.banner}" width="${bw}" height="${bhv}" border="0" alt="Banner" style="display:block;width:${bw}px;height:${bhv}px;"></td></tr>`);
+  }else{
+    rows.push(`<tr><td style="padding-bottom:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr></table></td></tr>`);
+  }
+  if(d.name) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:20px;font-weight:700;color:${d.pri};padding-bottom:5px;line-height:1.2;">${esc(d.name)}</td></tr>`);
+  rows.push(`<tr><td style="border-top:2px solid ${d.pri};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>`);
+  const meta=[];
+  if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
+  if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
+  if(meta.length) rows.push(`<tr><td style="padding-top:6px;padding-bottom:8px;">${meta.join(`<span style="color:#ccc;padding:0 6px;">·</span>`)}</td></tr>`);
+  if(hasC) rows.push(`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`);
+  if(soc) rows.push(`<tr><td style="padding-top:6px;">${soc}</td></tr>`);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;
+}
+
+// ── TEMPLATE 20: Banner Accent Block ─────────────────────
+function tmplBannerAccentBlock(d){
+  const soc=socIcons(d.socials,20);
+  const cc=contactCells(d);
+  const hasC=d.phones.length||d.email||d.website;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  ${bannerRow(d)}
+  ${(d.name||d.title||d.company)?`<tr><td style="background:${d.pri};padding:12px 18px;border-radius:4px;margin-bottom:10px;">
+    ${d.name?`<div style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:#ffffff;line-height:1.2;margin-bottom:2px;">${esc(d.name)}</div>`:''}
+    ${d.title?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:rgba(255,255,255,0.85);">${esc(d.title)}</div>`:''}
+    ${d.company?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:rgba(255,255,255,0.65);margin-top:1px;">${esc(d.company)}</div>`:''}
+  </td></tr><tr><td style="padding-bottom:10px;font-size:0;line-height:0;">&nbsp;</td></tr>`:''}
+  ${hasC?`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
+  ${soc?`<tr><td>${soc}</td></tr>`:''}
+</table>`;
+}
+
 // ── DISPATCH ─────────────────────────────────────────────
 function genDesk(d){
   switch(currentTemplate){
-    case 'stacked-centre':   return tmplStackedCentre(d);
-    case 'right-logo':       return tmplRightLogo(d);
-    case 'bold-block':       return tmplBoldBlock(d);
-    case 'banner-classic':   return tmplBannerClassic(d);
-    case 'banner-centred':   return tmplBannerCentred(d);
-    case 'banner-plus-logo': return tmplBannerPlusLogo(d);
-    case 'banner-bold':      return tmplBannerBold(d);
-    default:                 return tmplClassicLeft(d);
+    case 'stacked-centre':       return tmplStackedCentre(d);
+    case 'right-logo':           return tmplRightLogo(d);
+    case 'bold-block':           return tmplBoldBlock(d);
+    case 'minimal':              return tmplMinimal(d);
+    case 'logo-top':             return tmplLogoTop(d);
+    case 'two-column':           return tmplTwoColumn(d);
+    case 'accent-bar':           return tmplAccentBar(d);
+    case 'compact':              return tmplCompact(d);
+    case 'logo-below':           return tmplLogoBelow(d);
+    case 'split-panel':          return tmplSplitPanel(d);
+    case 'layered':              return tmplLayered(d);
+    case 'banner-classic':       return tmplBannerClassic(d);
+    case 'banner-centred':       return tmplBannerCentred(d);
+    case 'banner-plus-logo':     return tmplBannerPlusLogo(d);
+    case 'banner-bold':          return tmplBannerBold(d);
+    case 'banner-right-logo':    return tmplBannerRightLogo(d);
+    case 'banner-split':         return tmplBannerSplit(d);
+    case 'banner-minimal':       return tmplBannerMinimal(d);
+    case 'banner-accent-block':  return tmplBannerAccentBlock(d);
+    default:                     return tmplClassicLeft(d);
   }
 }
 
@@ -961,6 +1331,129 @@ function drawThumbnails(){
       d(`left:5px;top:60px;width:6px;height:6px;background:${A};border-radius:1px`)+
       d(`left:14px;top:60px;width:6px;height:6px;background:${A};border-radius:1px`)+
       d(`left:23px;top:60px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'minimal':
+      d(`left:6px;top:8px;width:68px;height:7px;background:${N};border-radius:1px`)+
+      d(`left:6px;top:19px;right:6px;height:2px;background:${A}`)+
+      d(`left:6px;top:26px;width:36px;height:4px;background:${L};border-radius:1px`)+
+      d(`left:46px;top:26px;width:2px;height:4px;background:${D}`)+
+      d(`left:52px;top:26px;width:28px;height:4px;background:${L};border-radius:1px`)+
+      d(`left:6px;top:35px;width:52px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:62px;top:35px;width:2px;height:4px;background:${D}`)+
+      d(`left:68px;top:35px;width:28px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:6px;top:45px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:15px;top:45px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:24px;top:45px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'logo-top':
+      d(`left:50%;top:5px;transform:translateX(-50%);width:22px;height:14px;background:${A};border-radius:2px`)+
+      d(`left:50%;top:24px;transform:translateX(-50%);width:52px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:50%;top:35px;transform:translateX(-50%);width:38px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:20%;top:44px;right:20%;height:1px;background:${D}`)+
+      d(`left:50%;top:50px;transform:translateX(-50%);width:60px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:50%;top:59px;transform:translateX(calc(-50% - 10px));width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:50%;top:59px;transform:translateX(-50%);width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:50%;top:59px;transform:translateX(calc(-50% + 10px));width:6px;height:6px;background:${A};border-radius:1px`),
+    'two-column':
+      d(`left:6px;top:5px;width:24px;height:14px;background:${A};border-radius:2px`)+
+      d(`left:6px;top:24px;width:44px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:6px;top:34px;width:34px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:6px;top:43px;width:26px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:56px;top:20px;width:1px;height:38px;background:${D}`)+
+      d(`left:63px;top:22px;width:36px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:63px;top:31px;width:28px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:63px;top:40px;width:32px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:63px;top:52px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:72px;top:52px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'accent-bar':
+      d(`left:5px;top:5px;width:4px;height:62px;background:${A};border-radius:2px`)+
+      d(`left:14px;top:5px;width:18px;height:14px;background:${A};border-radius:2px`)+
+      d(`left:14px;top:24px;width:55px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:14px;top:34px;width:40px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:14px;top:43px;width:30px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:14px;top:52px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:23px;top:52px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:32px;top:52px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'compact':
+      d(`left:5px;top:50%;transform:translateY(-50%);width:18px;height:18px;background:${A};border-radius:2px`)+
+      d(`left:30px;top:18px;width:36px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:70px;top:18px;width:2px;height:6px;background:${D}`)+
+      d(`left:76px;top:18px;width:24px;height:6px;background:${L};border-radius:1px`)+
+      d(`left:30px;top:32px;width:50px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:84px;top:32px;width:2px;height:4px;background:${D}`)+
+      d(`left:90px;top:32px;width:26px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:30px;top:45px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:39px;top:45px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:48px;top:45px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'logo-below':
+      d(`left:6px;top:5px;width:55px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:6px;top:15px;width:42px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:6px;top:24px;right:6px;height:1px;background:${D}`)+
+      d(`left:6px;top:30px;width:22px;height:22px;background:${A};border-radius:2px`)+
+      d(`left:34px;top:31px;width:38px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:34px;top:39px;width:30px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:34px;top:47px;width:34px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:34px;top:58px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:43px;top:58px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'split-panel':
+      d(`left:5px;top:5px;width:44px;height:62px;background:${A};border-radius:3px 0 0 3px;opacity:.9`)+
+      d(`left:11px;top:18px;width:30px;height:6px;background:rgba(255,255,255,.9);border-radius:1px`)+
+      d(`left:11px;top:28px;width:22px;height:4px;background:rgba(255,255,255,.65);border-radius:1px`)+
+      d(`left:11px;top:36px;width:18px;height:4px;background:rgba(255,255,255,.5);border-radius:1px`)+
+      d(`left:53px;top:5px;right:5px;height:62px;border:1px solid ${D};border-radius:0 3px 3px 0`)+
+      d(`left:58px;top:10px;width:20px;height:14px;background:${A};border-radius:2px`)+
+      d(`left:58px;top:29px;width:38px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:58px;top:37px;width:30px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:58px;top:48px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:67px;top:48px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'layered':
+      d(`left:6px;top:7px;width:62px;height:8px;background:${N};border-radius:1px`)+
+      d(`left:6px;top:19px;width:44px;height:5px;background:${L};border-radius:1px`)+
+      d(`right:6px;top:5px;width:20px;height:18px;background:${A};border-radius:2px`)+
+      d(`left:6px;top:28px;right:6px;height:2px;background:${A}`)+
+      d(`left:6px;top:35px;width:48px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:58px;top:35px;width:2px;height:4px;background:${D}`)+
+      d(`left:64px;top:35px;width:30px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:6px;top:44px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:15px;top:44px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:24px;top:44px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'banner-right-logo':
+      d(`left:5px;right:5px;top:5px;height:14px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:5px;top:25px;width:55px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:5px;top:36px;width:40px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:5px;top:46px;width:76px;height:1px;background:${D}`)+
+      d(`left:5px;top:52px;width:44px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;top:61px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:14px;top:61px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`right:5px;top:25px;width:18px;height:18px;background:${A};border-radius:2px`),
+    'banner-split':
+      d(`left:5px;right:5px;top:5px;height:13px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:5px;top:23px;width:46px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:5px;top:33px;width:34px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:5px;top:42px;width:24px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:57px;top:20px;width:1px;height:38px;background:${D}`)+
+      d(`left:63px;top:23px;width:34px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:63px;top:32px;width:26px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:63px;top:41px;width:30px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:63px;top:52px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:72px;top:52px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'banner-minimal':
+      d(`left:5px;right:5px;top:5px;height:13px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:5px;top:23px;width:65px;height:7px;background:${N};border-radius:1px`)+
+      d(`left:5px;top:34px;right:5px;height:2px;background:${A}`)+
+      d(`left:5px;top:41px;width:34px;height:4px;background:${L};border-radius:1px`)+
+      d(`left:43px;top:41px;width:2px;height:4px;background:${D}`)+
+      d(`left:49px;top:41px;width:26px;height:4px;background:${L};border-radius:1px`)+
+      d(`left:5px;top:52px;width:52px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;top:62px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:14px;top:62px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'banner-accent-block':
+      d(`left:5px;right:5px;top:5px;height:13px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:5px;top:22px;right:5px;height:20px;background:${A};border-radius:3px;opacity:.85`)+
+      d(`left:11px;top:27px;width:46px;height:5px;background:rgba(255,255,255,.9);border-radius:1px`)+
+      d(`left:11px;top:35px;width:32px;height:4px;background:rgba(255,255,255,.65);border-radius:1px`)+
+      d(`left:5px;top:48px;width:52px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;top:57px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:14px;top:57px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:23px;top:57px;width:6px;height:6px;background:${A};border-radius:1px`),
   };
   Object.entries(thumbs).forEach(([id,html])=>{
     const el=document.getElementById('tw-'+id);
