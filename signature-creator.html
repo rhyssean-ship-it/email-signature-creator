@@ -14,10 +14,6 @@ h1{font-size:26px;font-weight:700;margin-bottom:6px}
 .step-hd{display:flex;align-items:center;gap:12px;margin-bottom:22px}
 .step-n{background:#0066cc;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
 .step-t{font-size:17px;font-weight:600}
-.key-row{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
-.key-in{flex:1;min-width:280px;padding:9px 13px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:monospace}
-.key-in:focus{outline:none;border-color:#0066cc}
-.lock{display:flex;align-items:center;gap:5px;font-size:12px;color:#666;background:#f5f5f7;padding:6px 10px;border-radius:6px;white-space:nowrap}
 .upload-zone{border:2px dashed #ccc;border-radius:12px;padding:36px;text-align:center;cursor:pointer;transition:.2s;position:relative}
 .upload-zone:hover,.upload-zone.over{border-color:#0066cc;background:#f0f6ff}
 .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
@@ -87,10 +83,6 @@ input[type=range]{width:100%}
   <!-- STEP 1 -->
   <div class="step" id="s1">
     <div class="step-hd"><div class="step-n">1</div><div class="step-t">Upload &amp; Analyse</div></div>
-    <div class="key-row">
-      <input type="password" class="key-in" id="apiKey" placeholder="Anthropic API key (sk-ant-…)" autocomplete="off">
-      <div class="lock">&#128274; Session only — never stored</div>
-    </div>
     <div class="upload-zone" id="upZone">
       <input type="file" id="imgFile" accept="image/jpeg,image/png,image/webp">
       <div class="up-icon">&#128247;</div>
@@ -210,11 +202,6 @@ let logoDataUrl = null, logoNatW = null, logoNatH = null;
 let prevTimer = null;
 const iconCache = {};
 
-// ─── API KEY ─────────────────────────────────────────────
-const keyEl = document.getElementById('apiKey');
-keyEl.value = sessionStorage.getItem('ak') || '';
-keyEl.addEventListener('input', () => sessionStorage.setItem('ak', keyEl.value.trim()));
-
 // ─── IMAGE UPLOAD ─────────────────────────────────────────
 const upZone = document.getElementById('upZone');
 const imgFile = document.getElementById('imgFile');
@@ -242,61 +229,21 @@ function loadImg(file) {
 
 // ─── ANALYSE ──────────────────────────────────────────────
 async function doAnalyse() {
-  const key = sessionStorage.getItem('ak') || keyEl.value.trim();
-  if (!key) { showStatus('Please enter your Anthropic API key.', 'error'); return; }
   if (!imgB64) { showStatus('Please upload a signature image.', 'error'); return; }
   document.getElementById('analyseBtn').disabled = true;
   showStatus('<span class="spin"></span>Analysing your signature with AI…', 'loading');
 
-  const prompt = `Analyse this email signature image and extract ALL visible information.
-Return ONLY a valid JSON object (no markdown, no explanation) with these exact fields:
-{
-  "name": "full name or empty string",
-  "title": "job title or empty string",
-  "company": "company name or empty string",
-  "email": "email address or empty string",
-  "website": "website URL with https:// prefix or empty string",
-  "phones": ["phone1", "phone2"],
-  "social": [{"platform": "LinkedIn|Twitter/X|Facebook|Instagram|YouTube|TikTok", "url": "full URL"}],
-  "hasLogo": true or false,
-  "logoDescription": "brief description of logo"
-}
-Extract exactly what is visible. Include full URLs for social media. For website, prepend https:// if not already present.`;
-
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('/api/analyse', {
       method: 'POST',
-      headers: {
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: imgMime, data: imgB64 } },
-            { type: 'text', text: prompt }
-          ]
-        }]
-      })
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ imageBase64: imgB64, imageMime })
     });
 
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({}));
-      throw new Error(err.error?.message || `API error ${resp.status}`);
-    }
-
     const data = await resp.json();
-    const txt = data.content[0].text.trim();
-    const m = txt.match(/\{[\s\S]*\}/);
-    if (!m) throw new Error('Could not parse response from the API.');
-    const extracted = JSON.parse(m[0]);
+    if (!resp.ok) throw new Error(data.error || `Server error ${resp.status}`);
 
-    fillForm(extracted);
+    fillForm(data);
     showForms(true);
     showStatus('&#10003; Signature analysed — review and edit below.', 'ok');
   } catch (err) {
