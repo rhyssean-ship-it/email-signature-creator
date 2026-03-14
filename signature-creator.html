@@ -558,10 +558,10 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <button class="tab-btn active" id="ptab-desk" onclick="switchPrevTab('desk')">Desktop</button>
         <button class="tab-btn" id="ptab-mob" onclick="switchPrevTab('mob')">Mobile</button>
       </div>
-      <div id="ppanel-desk">
+      <div id="ppanel-desk" class="tab-panel active">
         <div class="prev-box"><div class="prev-inner" id="deskPrev"><span style="color:#a0b0c0;font-size:12px;font-family:'Montserrat','Segoe UI',sans-serif;">Your signature will appear here as you type…</span></div></div>
       </div>
-      <div id="ppanel-mob" style="display:none;">
+      <div id="ppanel-mob" class="tab-panel">
         <div class="prev-box"><div class="prev-inner" id="mobPrev"><span style="color:#a0b0c0;font-size:12px;font-family:'Montserrat','Segoe UI',sans-serif;">Mobile version…</span></div></div>
       </div>
     </div>
@@ -2130,66 +2130,53 @@ function drawThumbnails(){
   });
 }
 
-// ── TOGGLE CODE VISIBILITY ───────────────────────────────
-function toggleCode(id,btn){
-  const ta=document.getElementById(id);
-  const visible=ta.style.display!=='none';
-  ta.style.display=visible?'none':'block';
-  btn.textContent=visible?'Show code':'Hide code';
+// ── CACHED STATIC ELEMENTS ───────────────────────────────
+const elCache={};
+function el(id){return elCache[id]||(elCache[id]=document.getElementById(id));}
+
+// ── GENERIC TOGGLE (display + button label) ───────────────
+function toggleVisible(elId,btn,showLbl,hideLbl){
+  const target=el(elId);
+  const visible=target.style.display!=='none';
+  target.style.display=visible?'none':'block';
+  btn.textContent=visible?showLbl:hideLbl;
 }
+function toggleCode(id,btn){toggleVisible(id,btn,'Show code','Hide code');}
+function togglePreview(btn){toggleVisible('prevBody',btn,'Expand','Minimise');}
 
 // ── COLLAPSIBLE SECTIONS ─────────────────────────────────
-function toggleColl(id){
-  document.getElementById('coll-sec-'+id).classList.toggle('open');
-}
+function toggleColl(id){el('coll-sec-'+id).classList.toggle('open');}
 
-// ── PREVIEW TABS ─────────────────────────────────────────
-function switchPrevTab(tab){
-  document.getElementById('ppanel-desk').style.display=tab==='desk'?'block':'none';
-  document.getElementById('ppanel-mob').style.display=tab==='mob'?'block':'none';
-  document.getElementById('ptab-desk').classList.toggle('active',tab==='desk');
-  document.getElementById('ptab-mob').classList.toggle('active',tab==='mob');
+// ── GENERIC TAB SWITCHER ─────────────────────────────────
+function switchTabGroup(panels,tabs,active){
+  [...panels,...tabs].forEach(id=>el(id).classList.toggle('active',id.endsWith(active)));
 }
-
-// ── PREVIEW MINIMISE ─────────────────────────────────────
-function togglePreview(btn){
-  const body=document.getElementById('prevBody');
-  const collapsed=body.style.display==='none';
-  body.style.display=collapsed?'block':'none';
-  btn.textContent=collapsed?'Minimise':'Expand';
-}
-
-// ── TEMPLATE TABS ────────────────────────────────────────
-function switchTab(tab){
-  document.getElementById('panel-logo').classList.toggle('active',tab==='logo');
-  document.getElementById('panel-banner').classList.toggle('active',tab==='banner');
-  document.getElementById('tab-logo').classList.toggle('active',tab==='logo');
-  document.getElementById('tab-banner').classList.toggle('active',tab==='banner');
-}
+function switchTab(tab){switchTabGroup(['panel-logo','panel-banner'],['tab-logo','tab-banner'],tab);}
+function switchPrevTab(tab){switchTabGroup(['ppanel-desk','ppanel-mob'],['ptab-desk','ptab-mob'],tab);}
 
 // ── COLOUR MODE ──────────────────────────────────────────
 function setColourMode(mode){
-  const panel=document.getElementById('colourPanel');
-  if(mode==='advanced'){panel.classList.add('adv-mode');document.getElementById('swSimple').classList.remove('on');document.getElementById('swAdv').classList.add('on');}
-  else{panel.classList.remove('adv-mode');document.getElementById('swSimple').classList.add('on');document.getElementById('swAdv').classList.remove('on');}
+  const adv=mode==='advanced';
+  el('colourPanel').classList.toggle('adv-mode',adv);
+  el('swSimple').classList.toggle('on',!adv);
+  el('swAdv').classList.toggle('on',adv);
 }
 
 // ── RESET ALL ────────────────────────────────────────────
 function resetAll(){
   if(!confirm('Reset all fields and start over?')) return;
   ['f_name','f_title','f_company','f_email','f_website','f_disclaimer'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
+    const e=el(id); if(e) e.value='';
   });
-  document.getElementById('phoneList').innerHTML='';
-  document.getElementById('socialList').innerHTML='';
+  el('phoneList').innerHTML='';
+  el('socialList').innerHTML='';
   updSocBtn();
   resetLogo(); resetBanner();
-  document.getElementById('logoW').value=150; document.getElementById('logoWVal').textContent='150px';
-  document.getElementById('bannerW').value=600; document.getElementById('bannerWVal').textContent='600px';
+  const logoW=el('logoW'); logoW.value=150; logoW.dispatchEvent(new Event('input'));
+  const bannerW=el('bannerW'); bannerW.value=600; bannerW.dispatchEvent(new Event('input'));
   const defs={c_pri:'#1a237e',h_pri:'#1a237e',c_acc:'#1a237e',h_acc:'#1a237e',c_sec:'#1565c0',h_sec:'#1565c0',c_txt:'#444444',h_txt:'#444444',c_line:'#e0e0e0',h_line:'#e0e0e0',c_sep:'#cccccc',h_sep:'#cccccc',c_disc:'#999999',h_disc:'#999999'};
-  Object.entries(defs).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v;});
+  Object.entries(defs).forEach(([id,v])=>{const e=el(id);if(e)e.value=v;});
   selTmpl('classic-left');
-  dp();
 }
 
 // ── INIT ─────────────────────────────────────────────────
