@@ -638,7 +638,24 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <div class="step-n batch-step-n">6</div>
       <div class="step-t">Batch Export <span class="batch-optional" style="font-size:11px;font-weight:400;color:#8a9baa;margin-left:4px;">— optional</span></div>
     </div>
-    <div style="font-size:12px;color:#6b8090;margin-bottom:16px;line-height:1.6;">Upload a CSV or XLSX file with one person per row. The first person will appear in the live preview. Click <strong>Download All</strong> to export a ZIP containing one Universal HTML signature per person, using the style, logo, and template settings below.</div>
+    <div style="font-size:12px;color:#6b8090;margin-bottom:12px;line-height:1.6;">Upload a CSV or XLSX file with one person per row. The first person will appear in the live preview. Click <strong>Download All</strong> to export a ZIP containing one Universal HTML signature per person, using the style, logo, and template settings below.</div>
+    <div style="background:#f0f4f8;border:1px solid #dde4ec;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#3a5268;line-height:2;">
+      <span style="font-weight:600;color:#1179A3;">Expected columns:</span>
+      <span style="display:inline-flex;flex-wrap:wrap;gap:6px;margin-left:4px;">
+        <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Name</span>
+        <span style="color:#b0bec8;">·</span>
+        <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Job Title</span>
+        <span style="color:#b0bec8;">·</span>
+        <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Company</span>
+        <span style="color:#b0bec8;">·</span>
+        <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Email</span>
+        <span style="color:#b0bec8;">·</span>
+        <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Website</span>
+        <span style="color:#b0bec8;">·</span>
+        <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Phone</span>
+      </span>
+      <span style="color:#8a9baa;margin-left:6px;">— column names are flexible, extras are ignored</span>
+    </div>
     <div class="scan-zone" id="batchZone" style="margin-bottom:0;">
       <input type="file" id="batchFile" accept=".csv,.xlsx,.xls" onchange="handleBatchFile(this)">
       <div style="font-size:13px;font-weight:600;color:#3a5268;margin-bottom:4px;">Drop a CSV or XLSX file here</div>
