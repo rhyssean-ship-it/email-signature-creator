@@ -96,6 +96,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
   .prev-grid{grid-template-columns:1fr}
   .tmpl-grid{grid-template-columns:repeat(2,1fr)}
   .img-upload-grid{grid-template-columns:1fr !important}
+  .color-grid{grid-template-columns:1fr !important}
   .step-sticky{padding:14px 16px}
   .step-sticky .prev-grid{gap:10px;margin-top:2px}
   .step-sticky .prev-box{padding:10px}
@@ -185,7 +186,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
     <div class="warn" style="margin-top:14px">&#9888; Base64-embedded images may be blocked by some email clients. After copying your signature, replace each <code style="background:#f5e8c0;padding:1px 4px;border-radius:3px">src</code> with a publicly hosted image URL for best results.</div>
 
     <hr class="hr">
-    <div class="img-upload-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+    <div class="img-upload-grid" style="display:grid;grid-template-columns:3fr 7fr;gap:20px;align-items:start">
       <div>
         <div class="sec-lbl">Extract Colours from Image</div>
         <div class="scan-zone" id="scanZone">
@@ -225,46 +226,48 @@ textarea.field-ta::placeholder{color:#7a92a8}
               </optgroup>
             </select>
           </div>
-          <div class="fgrp">
-            <label>Primary <span style="font-weight:400;color:#6b8090">(name / accents)</span></label>
-            <div class="color-row">
-              <input type="color" id="c_pri" value="#1a237e" oninput="syncH('c_pri','h_pri');dp()">
-              <input type="text" class="hex-in" id="h_pri" value="#1a237e" oninput="syncP('h_pri','c_pri')">
+          <div class="color-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px">
+            <div class="fgrp">
+              <label>Primary <span style="font-weight:400;color:#6b8090">(name / accents)</span></label>
+              <div class="color-row">
+                <input type="color" id="c_pri" value="#1a237e" oninput="syncH('c_pri','h_pri');dp()">
+                <input type="text" class="hex-in" id="h_pri" value="#1a237e" oninput="syncP('h_pri','c_pri')">
+              </div>
             </div>
-          </div>
-          <div class="fgrp">
-            <label>Secondary <span style="font-weight:400;color:#6b8090">(job title)</span></label>
-            <div class="color-row">
-              <input type="color" id="c_sec" value="#1565c0" oninput="syncH('c_sec','h_sec');dp()">
-              <input type="text" class="hex-in" id="h_sec" value="#1565c0" oninput="syncP('h_sec','c_sec')">
+            <div class="fgrp">
+              <label>Secondary <span style="font-weight:400;color:#6b8090">(job title)</span></label>
+              <div class="color-row">
+                <input type="color" id="c_sec" value="#1565c0" oninput="syncH('c_sec','h_sec');dp()">
+                <input type="text" class="hex-in" id="h_sec" value="#1565c0" oninput="syncP('h_sec','c_sec')">
+              </div>
             </div>
-          </div>
-          <div class="fgrp">
-            <label>Text <span style="font-weight:400;color:#6b8090">(body / contact)</span></label>
-            <div class="color-row">
-              <input type="color" id="c_txt" value="#444444" oninput="syncH('c_txt','h_txt');dp()">
-              <input type="text" class="hex-in" id="h_txt" value="#444444" oninput="syncP('h_txt','c_txt')">
+            <div class="fgrp">
+              <label>Text <span style="font-weight:400;color:#6b8090">(body / contact)</span></label>
+              <div class="color-row">
+                <input type="color" id="c_txt" value="#444444" oninput="syncH('c_txt','h_txt');dp()">
+                <input type="text" class="hex-in" id="h_txt" value="#444444" oninput="syncP('h_txt','c_txt')">
+              </div>
             </div>
-          </div>
-          <div class="fgrp">
-            <label>Line / Divider <span style="font-weight:400;color:#6b8090">(horizontal rules, borders)</span></label>
-            <div class="color-row">
-              <input type="color" id="c_line" value="#e0e0e0" oninput="syncH('c_line','h_line');dp()">
-              <input type="text" class="hex-in" id="h_line" value="#e0e0e0" oninput="syncP('h_line','c_line')">
+            <div class="fgrp">
+              <label>Line / Divider <span style="font-weight:400;color:#6b8090">(rules &amp; borders)</span></label>
+              <div class="color-row">
+                <input type="color" id="c_line" value="#e0e0e0" oninput="syncH('c_line','h_line');dp()">
+                <input type="text" class="hex-in" id="h_line" value="#e0e0e0" oninput="syncP('h_line','c_line')">
+              </div>
             </div>
-          </div>
-          <div class="fgrp">
-            <label>Separator <span style="font-weight:400;color:#6b8090">(pipes &amp; dots between contacts)</span></label>
-            <div class="color-row">
-              <input type="color" id="c_sep" value="#cccccc" oninput="syncH('c_sep','h_sep');dp()">
-              <input type="text" class="hex-in" id="h_sep" value="#cccccc" oninput="syncP('h_sep','c_sep')">
+            <div class="fgrp">
+              <label>Separator <span style="font-weight:400;color:#6b8090">(pipes &amp; dots)</span></label>
+              <div class="color-row">
+                <input type="color" id="c_sep" value="#cccccc" oninput="syncH('c_sep','h_sep');dp()">
+                <input type="text" class="hex-in" id="h_sep" value="#cccccc" oninput="syncP('h_sep','c_sep')">
+              </div>
             </div>
-          </div>
-          <div class="fgrp">
-            <label>Disclaimer text <span style="font-weight:400;color:#6b8090">(small text below signature)</span></label>
-            <div class="color-row">
-              <input type="color" id="c_disc" value="#999999" oninput="syncH('c_disc','h_disc');dp()">
-              <input type="text" class="hex-in" id="h_disc" value="#999999" oninput="syncP('h_disc','c_disc')">
+            <div class="fgrp">
+              <label>Disclaimer text <span style="font-weight:400;color:#6b8090">(footer text)</span></label>
+              <div class="color-row">
+                <input type="color" id="c_disc" value="#999999" oninput="syncH('c_disc','h_disc');dp()">
+                <input type="text" class="hex-in" id="h_disc" value="#999999" oninput="syncP('h_disc','c_disc')">
+              </div>
             </div>
           </div>
         </div>
