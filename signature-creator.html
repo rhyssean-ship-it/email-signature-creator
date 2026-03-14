@@ -95,6 +95,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
   .fg{grid-template-columns:1fr}
   .prev-grid{grid-template-columns:1fr}
   .tmpl-grid{grid-template-columns:repeat(2,1fr)}
+  .img-upload-grid{grid-template-columns:1fr !important}
   .step-sticky{padding:14px 16px}
   .step-sticky .prev-grid{gap:10px;margin-top:2px}
   .step-sticky .prev-box{padding:10px}
@@ -138,43 +139,47 @@ textarea.field-ta::placeholder{color:#7a92a8}
   <div class="step">
     <div class="step-hd"><div class="step-n">2</div><div class="step-t">Logo, Banner &amp; Style</div></div>
 
-    <div class="sec-lbl">Company Logo</div>
-    <div class="scan-zone" id="logoZone">
-      <input type="file" id="logoFile" accept="image/*" onchange="handleLogo(this)">
-      <div style="font-size:28px;margin-bottom:8px">🖼️</div>
-      <div style="font-size:14px;color:#3a5268;margin-bottom:4px">Drop your logo here or click to browse</div>
-      <div style="font-size:12px;color:#6b8090">PNG, SVG or JPG — processed locally in your browser</div>
-    </div>
-    <div id="logoResult" style="display:none;margin-bottom:10px">
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <img id="logoThumb" class="logo-thumb" src="" alt="">
-        <button class="btn btn-s" style="font-size:12px;padding:6px 13px" onclick="resetLogo()">Change logo</button>
+    <div class="img-upload-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div class="sec-lbl">Company Logo</div>
+        <div class="scan-zone" id="logoZone">
+          <input type="file" id="logoFile" accept="image/*" onchange="handleLogo(this)">
+          <div style="font-size:24px;margin-bottom:6px">🖼️</div>
+          <div style="font-size:13px;color:#3a5268;margin-bottom:3px">Drop your logo here or click to browse</div>
+          <div style="font-size:11px;color:#6b8090">PNG, SVG or JPG — processed locally in your browser</div>
+        </div>
+        <div id="logoResult" style="display:none;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+            <img id="logoThumb" class="logo-thumb" src="" alt="">
+            <button class="btn btn-s" style="font-size:12px;padding:6px 13px" onclick="resetLogo()">Change logo</button>
+          </div>
+        </div>
+        <div class="slider-row">
+          <label style="min-width:72px">Logo width</label>
+          <input type="range" id="logoW" min="50" max="300" value="150" oninput="document.getElementById('logoWVal').textContent=this.value+'px';dp()">
+          <span class="slider-val" id="logoWVal">150px</span>
+        </div>
       </div>
-    </div>
-    <div class="slider-row">
-      <label style="min-width:72px">Logo width</label>
-      <input type="range" id="logoW" min="50" max="300" value="150" oninput="document.getElementById('logoWVal').textContent=this.value+'px';dp()">
-      <span class="slider-val" id="logoWVal">150px</span>
-    </div>
-
-    <hr class="hr">
-    <div class="sec-lbl">Banner Image <span style="font-weight:400;color:#6b8090;font-size:10px;text-transform:none;letter-spacing:0">Used by banner templates. Recommended size: 600×100px.</span></div>
-    <div class="scan-zone" id="bannerZone">
-      <input type="file" id="bannerFile" accept="image/*" onchange="handleBanner(this)">
-      <div style="font-size:28px;margin-bottom:8px">🎌</div>
-      <div style="font-size:14px;color:#3a5268;margin-bottom:4px">Drop your banner here or click to browse</div>
-      <div style="font-size:12px;color:#6b8090">PNG or JPG — recommended 600×100px</div>
-    </div>
-    <div id="bannerResult" style="display:none;margin-bottom:10px">
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <img id="bannerThumb" style="max-height:48px;max-width:260px;border-radius:4px;border:1px solid #eee" src="" alt="">
-        <button class="btn btn-s" style="font-size:12px;padding:6px 13px" onclick="resetBanner()">Change banner</button>
+      <div>
+        <div class="sec-lbl">Banner Image <span style="font-weight:400;color:#6b8090;font-size:10px;text-transform:none;letter-spacing:0">Used by banner templates. Recommended size: 600×100px.</span></div>
+        <div class="scan-zone" id="bannerZone">
+          <input type="file" id="bannerFile" accept="image/*" onchange="handleBanner(this)">
+          <div style="font-size:24px;margin-bottom:6px">🎌</div>
+          <div style="font-size:13px;color:#3a5268;margin-bottom:3px">Drop your banner here or click to browse</div>
+          <div style="font-size:11px;color:#6b8090">PNG or JPG — recommended 600×100px</div>
+        </div>
+        <div id="bannerResult" style="display:none;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+            <img id="bannerThumb" style="max-height:48px;max-width:260px;border-radius:4px;border:1px solid #eee" src="" alt="">
+            <button class="btn btn-s" style="font-size:12px;padding:6px 13px" onclick="resetBanner()">Change banner</button>
+          </div>
+        </div>
+        <div class="slider-row">
+          <label style="min-width:72px">Banner width</label>
+          <input type="range" id="bannerW" min="400" max="700" value="600" oninput="document.getElementById('bannerWVal').textContent=this.value+'px';dp()">
+          <span class="slider-val" id="bannerWVal">600px</span>
+        </div>
       </div>
-    </div>
-    <div class="slider-row">
-      <label style="min-width:72px">Banner width</label>
-      <input type="range" id="bannerW" min="400" max="700" value="600" oninput="document.getElementById('bannerWVal').textContent=this.value+'px';dp()">
-      <span class="slider-val" id="bannerWVal">600px</span>
     </div>
 
     <div class="warn" style="margin-top:14px">&#9888; Base64-embedded images may be blocked by some email clients. After copying your signature, replace each <code style="background:#f5e8c0;padding:1px 4px;border-radius:3px">src</code> with a publicly hosted image URL for best results.</div>
