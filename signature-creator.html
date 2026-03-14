@@ -11,7 +11,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Montserrat','Segoe UI',sans-serif;background:#f0f4f8;color:#1a2a3a;min-height:100vh}
 .wrap{max-width:1100px;margin:0 auto;padding:40px 24px}
-.hero{margin-bottom:36px;display:flex;flex-direction:column;align-items:flex-start;}
+.hero{margin-bottom:16px;}
 h1{font-size:26px;font-weight:700;margin-bottom:6px;color:#204456}
 .sub{color:#6b7f94;font-size:14px}
 .step{background:#ffffff;border-radius:14px;padding:28px 32px;margin-bottom:20px;box-shadow:0 1px 6px rgba(0,0,0,.07);border:1px solid #dde4ec}
@@ -177,10 +177,11 @@ textarea.field-ta::placeholder{color:#7a92a8}
   <div class="hero">
     <h1>Email Signature Creator</h1>
     <div class="sub">Fill in your details, pick a template, and copy the HTML straight to your email client.</div>
-    <div class="mode-switcher">
-      <button class="mode-btn active" id="modeBtn-single" onclick="setMode('single')">Single</button>
-      <button class="mode-btn" id="modeBtn-multi" onclick="setMode('multi')">Multiple</button>
-    </div>
+  </div>
+
+  <div class="mode-switcher" style="margin-bottom:16px;">
+    <button class="mode-btn active" id="modeBtn-single" onclick="setMode('single')">Single</button>
+    <button class="mode-btn" id="modeBtn-multi" onclick="setMode('multi')">Multiple</button>
   </div>
 
   <!-- STEP 1 -->
