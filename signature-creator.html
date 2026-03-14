@@ -649,44 +649,13 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <div class="step-n batch-step-n">6</div>
       <div class="step-t">Batch Export <span class="batch-optional" style="font-size:11px;font-weight:400;color:#8a9baa;margin-left:4px;">— optional</span></div>
     </div>
-    <div style="font-size:12px;color:#6b8090;margin-bottom:12px;line-height:1.6;">Upload a CSV or XLSX file with one person per row. The first person will appear in the live preview. Click <strong>Download All</strong> to export a ZIP containing one Universal HTML signature per person, using the style, logo, and template settings below.</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
-      <div style="background:#f8fafc;border:1px solid #dde4ec;border-radius:10px;padding:14px 16px;">
-        <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="#1179A3" stroke-width="1.5"/><path d="M2 13c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round"/></svg>
-          <span style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;">Contact</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;color:#3a5268;">
-          <span>Name</span><span>Job Title</span><span>Company</span><span>Email</span><span>Website</span><span>Phone</span>
-        </div>
-      </div>
-      <div style="background:#f8fafc;border:1px solid #dde4ec;border-radius:10px;padding:14px 16px;">
-        <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="12" cy="4" r="2" stroke="#1179A3" stroke-width="1.4"/><circle cx="4" cy="8" r="2" stroke="#1179A3" stroke-width="1.4"/><circle cx="12" cy="12" r="2" stroke="#1179A3" stroke-width="1.4"/><path d="M6 7l4-2M6 9l4 2" stroke="#1179A3" stroke-width="1.4" stroke-linecap="round"/></svg>
-          <span style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;">Socials</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;color:#3a5268;">
-          <span>LinkedIn</span><span>Twitter</span><span>Facebook</span><span>Instagram</span><span>YouTube</span><span>TikTok</span>
-        </div>
-      </div>
-      <div style="background:#f8fafc;border:1px solid #dde4ec;border-radius:10px;padding:14px 16px;">
-        <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="2" stroke="#1179A3" stroke-width="1.4"/><path d="M5 5h6M5 8h6M5 11h4" stroke="#1179A3" stroke-width="1.4" stroke-linecap="round"/></svg>
-          <span style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;">Other</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;color:#3a5268;">
-          <span>Disclaimer</span>
-        </div>
-        <div style="margin-top:10px;padding-top:10px;border-top:1px solid #edf1f5;font-size:10px;color:#8a9baa;line-height:1.5;">All columns optional. Names are flexible — extras are ignored.</div>
-      </div>
-    </div>
     <div class="scan-zone" id="batchZone" style="margin-bottom:0;">
       <input type="file" id="batchFile" accept=".csv,.xlsx,.xls" onchange="handleBatchFile(this)">
       <div class="drag-text" style="font-size:13px;font-weight:600;color:#3a5268;margin-bottom:4px;">Drop a CSV or XLSX file here</div>
       <div style="font-size:11px;color:#8a9baa;">Supports .csv, .xlsx, .xls</div>
-    </div>
-    <div style="text-align:center;margin-top:10px;">
-      <button onclick="downloadBatchTemplate()" style="background:none;border:none;cursor:pointer;font-size:11px;color:#1179A3;font-family:'Montserrat','Segoe UI',sans-serif;font-weight:600;text-decoration:underline;text-underline-offset:2px;padding:0;">&#8681; Download XLSX template</button>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #dde4ec;">
+        <button onclick="downloadBatchTemplate();event.stopPropagation();" style="background:none;border:none;cursor:pointer;font-size:11px;color:#1179A3;font-family:'Montserrat','Segoe UI',sans-serif;font-weight:600;text-decoration:underline;text-underline-offset:2px;padding:0;">&#8681; Download XLSX template</button>
+      </div>
     </div>
     <div id="batchResult" style="display:none;margin-top:16px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
