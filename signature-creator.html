@@ -135,12 +135,9 @@ textarea.field-ta::placeholder{color:#7a92a8}
 </head>
 <body>
 <div class="wrap">
-  <div class="hero" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-    <div>
-      <h1>Email Signature Creator</h1>
-      <div class="sub">Fill in your details, pick a template, and copy the HTML straight to your email client.</div>
-    </div>
-    <button class="btn btn-s" onclick="resetAll()" style="font-size:12px;padding:7px 14px;margin-top:4px;flex-shrink:0;">Reset all</button>
+  <div class="hero">
+    <h1>Email Signature Creator</h1>
+    <div class="sub">Fill in your details, pick a template, and copy the HTML straight to your email client.</div>
   </div>
 
   <!-- STEP 1 -->
@@ -557,6 +554,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <div class="cb-btns" style="flex-shrink:0;">
         <button class="btn-sm" id="cpPrev" onclick="cp('uniCode',this)">Copy HTML</button>
         <button class="btn-dl" id="dlPrev" onclick="dl('uniCode','signature-universal.html')">&#8681; Download</button>
+        <button class="btn-sm" onclick="resetAll()" style="color:#b0bec8;">Reset all</button>
       </div>
     </div>
     <div class="prev-grid">
