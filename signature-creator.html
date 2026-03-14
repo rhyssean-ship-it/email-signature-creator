@@ -2431,9 +2431,9 @@ async function downloadBatchAll(){
   btn.disabled=true; prog.style.display='block'; bar.style.width='0%';
   const zip=new JSZip();
   const base=gd();
-  const disc=disclaimerHtml(base);
   for(let i=0;i<batchRows.length;i++){
     const d=batchMerge(base,batchRows[i]);
+    const disc=disclaimerHtml(d);
     const dh=genDesk(d)+disc, mh=genMob(d)+disc, uh=genUni(dh,mh);
     const slug=batchSlug(batchRows[i]);
     zip.file(`${slug}-${i+1}.html`,uh);
