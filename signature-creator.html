@@ -578,19 +578,19 @@ textarea.field-ta::placeholder{color:#7a92a8}
     <div class="code-sec">
       <div class="warn" style="margin-bottom:6px">&#9888; Base64-embedded images may be blocked by some email clients. After copying your signature, replace each <code style="background:#f5e8c0;padding:1px 4px;border-radius:3px">src</code> with a publicly hosted image URL for best results.</div>
       <div>
-        <div class="cb-hd"><span>Desktop HTML</span><div class="cb-btns"><button class="btn-sm" id="cpDesk" onclick="cp('deskCode',this)">Copy</button><button class="btn-dl" id="dlDesk" onclick="dl('deskCode','signature-desktop.html')">&#8681; Download</button></div></div>
-        <textarea class="code-ta" id="deskCode" readonly></textarea>
+        <div class="cb-hd"><span>Desktop HTML</span><div class="cb-btns"><button class="btn-sm" id="cpDesk" onclick="cp('deskCode',this)">Copy</button><button class="btn-dl" id="dlDesk" onclick="dl('deskCode','signature-desktop.html')">&#8681; Download</button><button class="btn-sm" onclick="toggleCode('deskCode',this)" style="color:#6b7f94;">Show code</button></div></div>
+        <textarea class="code-ta" id="deskCode" readonly style="display:none"></textarea>
       </div>
       <div>
-        <div class="cb-hd"><span>Mobile HTML</span><div class="cb-btns"><button class="btn-sm" id="cpMob" onclick="cp('mobCode',this)">Copy</button><button class="btn-dl" id="dlMob" onclick="dl('mobCode','signature-mobile.html')">&#8681; Download</button></div></div>
-        <textarea class="code-ta" id="mobCode" readonly></textarea>
+        <div class="cb-hd"><span>Mobile HTML</span><div class="cb-btns"><button class="btn-sm" id="cpMob" onclick="cp('mobCode',this)">Copy</button><button class="btn-dl" id="dlMob" onclick="dl('mobCode','signature-mobile.html')">&#8681; Download</button><button class="btn-sm" onclick="toggleCode('mobCode',this)" style="color:#6b7f94;">Show code</button></div></div>
+        <textarea class="code-ta" id="mobCode" readonly style="display:none"></textarea>
       </div>
       <div>
         <div class="cb-hd">
           <span>Universal HTML <span class="cb-tag">Recommended</span></span>
-          <div class="cb-btns"><button class="btn-sm" id="cpUni" onclick="cp('uniCode',this)">Copy</button><button class="btn-dl" id="dlUni" onclick="dl('uniCode','signature-universal.html')">&#8681; Download</button></div>
+          <div class="cb-btns"><button class="btn-sm" id="cpUni" onclick="cp('uniCode',this)">Copy</button><button class="btn-dl" id="dlUni" onclick="dl('uniCode','signature-universal.html')">&#8681; Download</button><button class="btn-sm" onclick="toggleCode('uniCode',this)" style="color:#6b7f94;">Show code</button></div>
         </div>
-        <textarea class="code-ta tall" id="uniCode" readonly></textarea>
+        <textarea class="code-ta tall" id="uniCode" readonly style="display:none"></textarea>
       </div>
     </div>
   </div>
@@ -2133,6 +2133,14 @@ function drawThumbnails(){
     const el=document.getElementById('tw-'+id);
     if(el) el.innerHTML=html;
   });
+}
+
+// ── TOGGLE CODE VISIBILITY ───────────────────────────────
+function toggleCode(id,btn){
+  const ta=document.getElementById(id);
+  const visible=ta.style.display!=='none';
+  ta.style.display=visible?'none':'block';
+  btn.textContent=visible?'Show code':'Hide code';
 }
 
 // ── COLLAPSIBLE SECTIONS ─────────────────────────────────
