@@ -185,63 +185,67 @@ textarea.field-ta::placeholder{color:#7a92a8}
     <div class="warn" style="margin-top:14px">&#9888; Base64-embedded images may be blocked by some email clients. After copying your signature, replace each <code style="background:#f5e8c0;padding:1px 4px;border-radius:3px">src</code> with a publicly hosted image URL for best results.</div>
 
     <hr class="hr">
-    <div class="sec-lbl">Extract Colours from Image</div>
-    <div class="scan-zone" id="scanZone">
-      <input type="file" id="scanFile" accept="image/*" onchange="scanImage(this)">
-      <div style="font-size:28px;margin-bottom:8px">🎨</div>
-      <div style="font-size:14px;color:#3a5268;margin-bottom:4px">Drop a signature image here to extract brand colours</div>
-      <div style="font-size:12px;color:#6b8090">JPG, PNG or WebP — no upload, all processing happens in your browser</div>
-    </div>
-    <div id="scanResult" style="display:none">
-      <div class="scan-preview">
-        <div class="scan-img-wrap"><img id="scanThumb" src="" alt="Reference image"></div>
-        <div>
-          <div class="swatches" id="swatchList"></div>
-          <button class="apply-btn" onclick="applyExtracted()">Apply colours to signature</button>
-          <div class="scan-hint" id="scanHint"></div>
+    <div class="img-upload-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+      <div>
+        <div class="sec-lbl">Extract Colours from Image</div>
+        <div class="scan-zone" id="scanZone">
+          <input type="file" id="scanFile" accept="image/*" onchange="scanImage(this)">
+          <div style="font-size:24px;margin-bottom:6px">🎨</div>
+          <div style="font-size:13px;color:#3a5268;margin-bottom:3px">Drop a signature image here to extract brand colours</div>
+          <div style="font-size:11px;color:#6b8090">JPG, PNG or WebP — no upload, all processing happens in your browser</div>
+        </div>
+        <div id="scanResult" style="display:none">
+          <div class="scan-preview">
+            <div class="scan-img-wrap"><img id="scanThumb" src="" alt="Reference image"></div>
+            <div>
+              <div class="swatches" id="swatchList"></div>
+              <button class="apply-btn" onclick="applyExtracted()">Apply colours to signature</button>
+              <div class="scan-hint" id="scanHint"></div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-
-    <hr class="hr">
-    <div class="sec-lbl">Typography &amp; Colour</div>
-    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end">
-      <div class="fgrp" style="width:210px">
-        <label>Font Family</label>
-        <select id="f_font" onchange="dp()">
-          <optgroup label="Sans-serif">
-            <option>Arial</option><option>Helvetica</option><option>Verdana</option>
-            <option>Tahoma</option><option>Trebuchet MS</option><option>Century Gothic</option>
-            <option>Calibri</option><option>Gill Sans</option>
-          </optgroup>
-          <optgroup label="Serif">
-            <option>Georgia</option><option>Times New Roman</option><option>Palatino Linotype</option>
-            <option>Cambria</option><option>Garamond</option><option>Book Antiqua</option>
-          </optgroup>
-          <optgroup label="Monospace">
-            <option>Courier New</option><option>Lucida Console</option>
-          </optgroup>
-        </select>
-      </div>
-      <div class="fgrp">
-        <label>Primary <span style="font-weight:400;color:#6b8090">(name / accents)</span></label>
-        <div class="color-row">
-          <input type="color" id="c_pri" value="#1a237e" oninput="syncH('c_pri','h_pri');dp()">
-          <input type="text" class="hex-in" id="h_pri" value="#1a237e" oninput="syncP('h_pri','c_pri')">
-        </div>
-      </div>
-      <div class="fgrp">
-        <label>Secondary <span style="font-weight:400;color:#6b8090">(job title)</span></label>
-        <div class="color-row">
-          <input type="color" id="c_sec" value="#1565c0" oninput="syncH('c_sec','h_sec');dp()">
-          <input type="text" class="hex-in" id="h_sec" value="#1565c0" oninput="syncP('h_sec','c_sec')">
-        </div>
-      </div>
-      <div class="fgrp">
-        <label>Text <span style="font-weight:400;color:#6b8090">(body / contact)</span></label>
-        <div class="color-row">
-          <input type="color" id="c_txt" value="#444444" oninput="syncH('c_txt','h_txt');dp()">
-          <input type="text" class="hex-in" id="h_txt" value="#444444" oninput="syncP('h_txt','c_txt')">
+      <div>
+        <div class="sec-lbl">Typography &amp; Colour</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="fgrp">
+            <label>Font Family</label>
+            <select id="f_font" onchange="dp()">
+              <optgroup label="Sans-serif">
+                <option>Arial</option><option>Helvetica</option><option>Verdana</option>
+                <option>Tahoma</option><option>Trebuchet MS</option><option>Century Gothic</option>
+                <option>Calibri</option><option>Gill Sans</option>
+              </optgroup>
+              <optgroup label="Serif">
+                <option>Georgia</option><option>Times New Roman</option><option>Palatino Linotype</option>
+                <option>Cambria</option><option>Garamond</option><option>Book Antiqua</option>
+              </optgroup>
+              <optgroup label="Monospace">
+                <option>Courier New</option><option>Lucida Console</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="fgrp">
+            <label>Primary <span style="font-weight:400;color:#6b8090">(name / accents)</span></label>
+            <div class="color-row">
+              <input type="color" id="c_pri" value="#1a237e" oninput="syncH('c_pri','h_pri');dp()">
+              <input type="text" class="hex-in" id="h_pri" value="#1a237e" oninput="syncP('h_pri','c_pri')">
+            </div>
+          </div>
+          <div class="fgrp">
+            <label>Secondary <span style="font-weight:400;color:#6b8090">(job title)</span></label>
+            <div class="color-row">
+              <input type="color" id="c_sec" value="#1565c0" oninput="syncH('c_sec','h_sec');dp()">
+              <input type="text" class="hex-in" id="h_sec" value="#1565c0" oninput="syncP('h_sec','c_sec')">
+            </div>
+          </div>
+          <div class="fgrp">
+            <label>Text <span style="font-weight:400;color:#6b8090">(body / contact)</span></label>
+            <div class="color-row">
+              <input type="color" id="c_txt" value="#444444" oninput="syncH('c_txt','h_txt');dp()">
+              <input type="text" class="hex-in" id="h_txt" value="#444444" oninput="syncP('h_txt','c_txt')">
+            </div>
+          </div>
         </div>
       </div>
     </div>
