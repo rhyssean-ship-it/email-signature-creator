@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Email Signature Creator</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Montserrat','Segoe UI',sans-serif;background:#f0f4f8;color:#1a2a3a;min-height:100vh}
@@ -121,6 +123,18 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .coll-body{display:none;padding:14px;}
 .coll-sec.open .coll-body{display:block;}
 .s1-sec-lbl{font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+/* Batch export */
+.batch-map-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 16px;margin-bottom:16px;}
+.batch-table-wrap{overflow-x:auto;border:1px solid #dde4ec;border-radius:8px;margin-bottom:16px;}
+.batch-table{width:100%;border-collapse:collapse;font-size:11px;}
+.batch-table th{background:#f0f4f8;padding:6px 10px;text-align:left;font-weight:600;color:#3a5268;border-bottom:1px solid #dde4ec;white-space:nowrap;}
+.batch-table td{padding:5px 10px;border-bottom:1px solid #f0f4f8;color:#1a2a3a;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;}
+.batch-table tr:last-child td{border-bottom:none;}
+.batch-dl-btn{width:100%;padding:10px 18px;border-radius:8px;border:none;background:#00aeef;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;font-family:'Montserrat','Segoe UI',sans-serif;}
+.batch-dl-btn:hover{background:#008ec0;}
+.batch-dl-btn:disabled{background:#b0cfe0;cursor:not-allowed;}
+.batch-prog{margin-top:10px;background:#edf1f5;border-radius:6px;height:6px;overflow:hidden;display:none;}
+.batch-prog-bar{height:100%;background:#00aeef;width:0%;transition:width .2s;}
 @media(max-width:740px){
   .fg{grid-template-columns:1fr}
   .prev-grid{grid-template-columns:1fr}
@@ -135,6 +149,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
   .s1-grid{grid-template-columns:1fr;}
   .s1-divider{display:none;}
   .s1-right{margin-top:20px;}
+  .batch-map-grid{grid-template-columns:1fr 1fr;}
 }
 </style>
 </head>
@@ -594,6 +609,33 @@ textarea.field-ta::placeholder{color:#7a92a8}
       </div>
     </div>
   </div>
+
+  <!-- STEP 6: Batch Export -->
+  <div class="step">
+    <div class="step-hd">
+      <div class="step-n">6</div>
+      <div class="step-t">Batch Export <span style="font-size:11px;font-weight:400;color:#8a9baa;margin-left:4px;">— optional</span></div>
+    </div>
+    <div style="font-size:12px;color:#6b8090;margin-bottom:16px;line-height:1.6;">Upload a CSV or XLSX file with one person per row. The first person will replace the live preview. Click <strong>Download All</strong> to export a ZIP containing one Universal HTML signature per person, using the style settings from Steps 1–3.</div>
+    <div class="scan-zone" id="batchZone" style="margin-bottom:0;">
+      <input type="file" id="batchFile" accept=".csv,.xlsx,.xls" onchange="handleBatchFile(this)">
+      <div style="font-size:13px;font-weight:600;color:#3a5268;margin-bottom:4px;">Drop a CSV or XLSX file here</div>
+      <div style="font-size:11px;color:#8a9baa;">Supports .csv, .xlsx, .xls</div>
+    </div>
+    <div id="batchResult" style="display:none;margin-top:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <div id="batchInfo" style="font-size:12px;color:#6b8090;"></div>
+        <button class="btn-sm" onclick="clearBatch()">Clear file</button>
+      </div>
+      <div style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Map columns to fields</div>
+      <div class="batch-map-grid" id="batchMapGrid"></div>
+      <div style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Preview <span id="batchRowCount" style="font-weight:400;color:#8a9baa;text-transform:none;letter-spacing:0;"></span></div>
+      <div class="batch-table-wrap"><table class="batch-table" id="batchTable"></table></div>
+      <button class="batch-dl-btn" onclick="downloadBatchAll()">&#8681; Download All Signatures</button>
+      <div class="batch-prog" id="batchProg"><div class="batch-prog-bar" id="batchProgBar"></div></div>
+      <div id="batchStatus" style="font-size:11px;color:#6b8090;text-align:center;margin-top:6px;"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -603,6 +645,9 @@ let bannerDataUrl=null, bannerNatW=null, bannerNatH=null;
 let prevTimer=null;
 let currentTemplate='classic-left';
 const iconCache={};
+// Batch export state
+let batchRows=[], batchHeaders=[];
+let batchColMap={name:'',title:'',company:'',email:'',website:'',phone:''};
 
 // ── PHONE ROWS ───────────────────────────────────────────
 function addPhone(val=''){
@@ -774,7 +819,8 @@ function gd(){
 function dp(){clearTimeout(prevTimer);prevTimer=setTimeout(render,200);}
 
 function render(){
-  const d=gd();
+  let d=gd();
+  if(batchRows.length>0) d=batchMerge(d,batchRows[0]);
   const isBanner=currentTemplate.startsWith('banner-');
   const needsBoth=currentTemplate==='banner-plus-logo';
   const warnEl=document.getElementById('tmplWarn');
@@ -2165,6 +2211,166 @@ function setColourMode(mode){
   el('colourPanel').classList.toggle('adv-mode',adv);
   el('swSimple').classList.toggle('on',!adv);
   el('swAdv').classList.toggle('on',adv);
+}
+
+// ── BATCH EXPORT ─────────────────────────────────────────
+const BATCH_FIELDS=[
+  {key:'name',   label:'Name'},
+  {key:'title',  label:'Job Title'},
+  {key:'company',label:'Company'},
+  {key:'email',  label:'Email'},
+  {key:'website',label:'Website'},
+  {key:'phone',  label:'Phone'},
+];
+const BATCH_ALIASES={
+  name:    ['name','full name','fullname','full_name','person'],
+  title:   ['title','job title','jobtitle','job_title','position','role'],
+  company: ['company','organisation','organization','employer','org','business'],
+  email:   ['email','e-mail','email address','emailaddress'],
+  website: ['website','url','web','site','web address'],
+  phone:   ['phone','mobile','tel','telephone','cell','contact number'],
+};
+
+function batchAutoMap(headers){
+  const map={name:'',title:'',company:'',email:'',website:'',phone:''};
+  BATCH_FIELDS.forEach(({key})=>{
+    const aliases=BATCH_ALIASES[key];
+    const found=headers.find(h=>aliases.includes(h.toLowerCase().trim()));
+    if(found) map[key]=found;
+  });
+  return map;
+}
+
+function parseCsv(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length) return{headers:[],rows:[]};
+  function splitRow(line){
+    const out=[]; let cur='', inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+      else if(c===','&&!inQ){out.push(cur);cur='';}
+      else cur+=c;
+    }
+    out.push(cur);
+    return out.map(s=>s.trim());
+  }
+  const headers=splitRow(lines[0]);
+  const rows=lines.slice(1).map(l=>{
+    const vals=splitRow(l);
+    const obj={};
+    headers.forEach((h,i)=>obj[h]=vals[i]||'');
+    return obj;
+  }).filter(r=>Object.values(r).some(v=>v));
+  return{headers,rows};
+}
+
+function handleBatchFile(input){
+  const file=input.files[0]; if(!file) return;
+  const ext=file.name.split('.').pop().toLowerCase();
+  const reader=new FileReader();
+  if(ext==='csv'){
+    reader.onload=e=>loadBatchData(parseCsv(e.target.result));
+    reader.readAsText(file);
+  } else {
+    reader.onload=e=>{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const raw=XLSX.utils.sheet_to_json(ws,{defval:''});
+      const headers=raw.length?Object.keys(raw[0]):[];
+      loadBatchData({headers,rows:raw});
+    };
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+function loadBatchData({headers,rows}){
+  batchHeaders=headers;
+  batchRows=rows;
+  batchColMap=batchAutoMap(headers);
+  document.getElementById('batchZone').style.display='none';
+  document.getElementById('batchResult').style.display='block';
+  document.getElementById('batchInfo').textContent=`${rows.length} row${rows.length!==1?'s':''} loaded · ${headers.length} column${headers.length!==1?'s':''}`;
+  document.getElementById('batchRowCount').textContent=`(showing first 5 of ${rows.length})`;
+  renderBatchMap();
+  renderBatchTable();
+  dp();
+}
+
+function renderBatchMap(){
+  const opts=['<option value="">— skip —</option>',...batchHeaders.map(h=>`<option value="${esc(h)}">${esc(h)}</option>`)].join('');
+  document.getElementById('batchMapGrid').innerHTML=BATCH_FIELDS.map(({key,label})=>`
+    <div class="fgrp">
+      <label>${label}</label>
+      <select onchange="batchColMap['${key}']=this.value;renderBatchTable();dp()">
+        ${batchHeaders.map(h=>`<option value="${esc(h)}"${batchColMap[key]===h?' selected':''}>${esc(h)}</option>`).join('')}
+        <option value=""${batchColMap[key]===''?' selected':''}>— skip —</option>
+      </select>
+    </div>`).join('');
+}
+
+function renderBatchTable(){
+  const preview=batchRows.slice(0,5);
+  const activeCols=BATCH_FIELDS.map(f=>batchColMap[f.key]).filter(Boolean);
+  if(!activeCols.length){document.getElementById('batchTable').innerHTML='<tr><td style="padding:10px;color:#8a9baa;font-size:11px;">Map at least one column above to see a preview.</td></tr>';return;}
+  const head='<thead><tr>'+activeCols.map(c=>`<th>${esc(c)}</th>`).join('')+'</tr></thead>';
+  const body='<tbody>'+preview.map(row=>'<tr>'+activeCols.map(c=>`<td title="${esc(row[c]||'')}">${esc(row[c]||'')}</td>`).join('')+'</tr>').join('')+'</tbody>';
+  document.getElementById('batchTable').innerHTML=head+body;
+}
+
+function batchMerge(d,row){
+  const out=Object.assign({},d);
+  BATCH_FIELDS.forEach(({key})=>{
+    const col=batchColMap[key];
+    if(col&&row[col]!==undefined&&row[col]!=='') out[key]=String(row[col]).trim();
+  });
+  if(batchColMap.phone&&row[batchColMap.phone]){
+    const ph=String(row[batchColMap.phone]).trim();
+    if(ph) out.phones=[ph,...(out.phones||[]).slice(1)];
+  }
+  return out;
+}
+
+function batchSlug(row){
+  const name=batchColMap.name?String(row[batchColMap.name]||''):'';
+  if(!name) return 'signature';
+  return name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+}
+
+async function downloadBatchAll(){
+  if(!batchRows.length) return;
+  const btn=document.querySelector('.batch-dl-btn');
+  const prog=document.getElementById('batchProg');
+  const bar=document.getElementById('batchProgBar');
+  const status=document.getElementById('batchStatus');
+  btn.disabled=true; prog.style.display='block'; bar.style.width='0%';
+  const zip=new JSZip();
+  const base=gd();
+  const disc=disclaimerHtml(base);
+  for(let i=0;i<batchRows.length;i++){
+    const d=batchMerge(base,batchRows[i]);
+    const dh=genDesk(d)+disc, mh=genMob(d)+disc, uh=genUni(dh,mh);
+    const slug=batchSlug(batchRows[i]);
+    zip.file(`${slug}-${i+1}.html`,uh);
+    const pct=Math.round((i+1)/batchRows.length*100);
+    bar.style.width=pct+'%';
+    status.textContent=`Generating ${i+1} of ${batchRows.length}…`;
+    if(i%20===0) await new Promise(r=>setTimeout(r,0));
+  }
+  status.textContent='Creating ZIP…';
+  const blob=await zip.generateAsync({type:'blob'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='signatures.zip'; a.click();
+  btn.disabled=false; prog.style.display='none';
+  status.textContent=`✓ Downloaded ${batchRows.length} signature${batchRows.length!==1?'s':''}.`;
+}
+
+function clearBatch(){
+  batchRows=[]; batchHeaders=[]; batchColMap={name:'',title:'',company:'',email:'',website:'',phone:''};
+  document.getElementById('batchFile').value='';
+  document.getElementById('batchZone').style.display='block';
+  document.getElementById('batchResult').style.display='none';
+  document.getElementById('batchStatus').textContent='';
+  dp();
 }
 
 // ── RESET ALL ────────────────────────────────────────────
