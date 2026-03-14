@@ -24,7 +24,11 @@ input[type=text],input[type=email],input[type=url],select{padding:8px 11px;borde
 input[type=text]:focus,input[type=email]:focus,input[type=url]:focus,select:focus{outline:none;border-color:#00aeef;box-shadow:0 0 0 3px rgba(0,174,239,.1);background:#fff}
 input[type=text]::placeholder,input[type=email]::placeholder,input[type=url]::placeholder{color:#7a92a8}
 input[type=color]{padding:3px;border:1px solid #dde4ec;border-radius:7px;height:36px;width:54px;cursor:pointer;background:#f8fafc}
-input[type=range]{width:100%;accent-color:#00aeef}
+input[type=range]{width:100%;accent-color:#00aeef;cursor:pointer;}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:#dde4ec;}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:#dde4ec;}
+input[type=range]::-webkit-slider-thumb{margin-top:-4px;}
+input[type=range]::-moz-range-progress{background:#00aeef;height:4px;border-radius:2px;}
 .hr{border:none;border-top:1px solid #edf1f5;margin:20px 0}
 .sec-lbl{font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
 .phone-list,.social-list{display:flex;flex-direction:column;gap:8px}
