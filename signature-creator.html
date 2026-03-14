@@ -14,7 +14,7 @@ h1{font-size:26px;font-weight:700;margin-bottom:6px;color:#204456}
 .sub{color:#6b7f94;font-size:14px}
 .step{background:#ffffff;border-radius:14px;padding:28px 32px;margin-bottom:20px;box-shadow:0 1px 6px rgba(0,0,0,.07);border:1px solid #dde4ec}
 .step-hd{display:flex;align-items:center;gap:12px;margin-bottom:22px}
-.step-n{display:none}
+.step-n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;background:#00aeef;color:#fff;border-radius:50%;font-size:12px;font-weight:700;flex-shrink:0;}
 .step-t{font-size:17px;font-weight:600;color:#204456}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .fgrp{display:flex;flex-direction:column;gap:5px}
@@ -91,6 +91,19 @@ input[type=range]{width:100%;accent-color:#00aeef}
 textarea.field-ta{width:100%;height:90px;padding:8px 11px;border:1px solid #dde4ec;border-radius:7px;font-size:13px;line-height:1.5;font-family:'Montserrat','Segoe UI',sans-serif;background:#f8fafc;color:#1a2a3a;resize:vertical;transition:.15s}
 textarea.field-ta:focus{outline:none;border-color:#00aeef;box-shadow:0 0 0 3px rgba(0,174,239,.1);background:#fff}
 textarea.field-ta::placeholder{color:#7a92a8}
+.tab-btns{display:flex;gap:8px;margin-bottom:16px;}
+.tab-btn{padding:7px 16px;border-radius:20px;border:1.5px solid #dde4ec;background:#f8fafc;cursor:pointer;font-size:12px;font-weight:600;color:#3a5268;transition:.15s;font-family:'Montserrat','Segoe UI',sans-serif;}
+.tab-btn:hover{border-color:#00aeef;color:#00aeef;}
+.tab-btn.active{background:#00aeef;border-color:#00aeef;color:#fff;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.adv-only{display:none;}
+.adv-mode .adv-only{display:block;}
+.toggle-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.toggle-lbl{font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;}
+.toggle-sw{display:flex;background:#edf1f5;border-radius:20px;border:1px solid #dde4ec;overflow:hidden;}
+.toggle-sw button{padding:4px 12px;border:none;background:transparent;cursor:pointer;font-size:11px;font-weight:600;color:#6b7f94;transition:.15s;font-family:'Montserrat','Segoe UI',sans-serif;}
+.toggle-sw button.on{background:#00aeef;color:#fff;border-radius:20px;}
 @media(max-width:740px){
   .fg{grid-template-columns:1fr}
   .prev-grid{grid-template-columns:1fr}
@@ -107,8 +120,12 @@ textarea.field-ta::placeholder{color:#7a92a8}
 </head>
 <body>
 <div class="wrap">
-  <div class="hero">
-    <h1>Email Signature Creator</h1>
+  <div class="hero" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1>Email Signature Creator</h1>
+      <div class="sub">Fill in your details, pick a template, and copy the HTML straight to your email client.</div>
+    </div>
+    <button class="btn btn-s" onclick="resetAll()" style="font-size:12px;padding:7px 14px;margin-top:4px;flex-shrink:0;">Reset all</button>
   </div>
 
   <!-- STEP 1 -->
@@ -183,10 +200,8 @@ textarea.field-ta::placeholder{color:#7a92a8}
       </div>
     </div>
 
-    <div class="warn" style="margin-top:14px">&#9888; Base64-embedded images may be blocked by some email clients. After copying your signature, replace each <code style="background:#f5e8c0;padding:1px 4px;border-radius:3px">src</code> with a publicly hosted image URL for best results.</div>
-
     <hr class="hr">
-    <div class="img-upload-grid" style="display:grid;grid-template-columns:3fr 7fr;gap:20px;align-items:start">
+    <div class="img-upload-grid" style="display:grid;grid-template-columns:2fr 3fr;gap:20px;align-items:start">
       <div>
         <div class="sec-lbl">Extract Colours from Image</div>
         <div class="scan-zone" id="scanZone">
@@ -207,8 +222,14 @@ textarea.field-ta::placeholder{color:#7a92a8}
         </div>
       </div>
       <div>
-        <div class="sec-lbl">Typography &amp; Colour</div>
-        <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div class="sec-lbl" style="margin-bottom:0">Typography &amp; Colour</div>
+          <div class="toggle-sw">
+            <button class="on" id="swSimple" onclick="setColourMode('simple')">Simple</button>
+            <button id="swAdv" onclick="setColourMode('advanced')">Advanced</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px" id="colourPanel">
           <div class="fgrp">
             <label>Font Family</label>
             <select id="f_font" onchange="dp()">
@@ -255,21 +276,21 @@ textarea.field-ta::placeholder{color:#7a92a8}
                 <input type="text" class="hex-in" id="h_txt" value="#444444" oninput="syncP('h_txt','c_txt')">
               </div>
             </div>
-            <div class="fgrp">
+            <div class="fgrp adv-only">
               <label>Line / Divider <span style="font-weight:400;color:#6b8090">(rules &amp; borders)</span></label>
               <div class="color-row">
                 <input type="color" id="c_line" value="#e0e0e0" oninput="syncH('c_line','h_line');dp()">
                 <input type="text" class="hex-in" id="h_line" value="#e0e0e0" oninput="syncP('h_line','c_line')">
               </div>
             </div>
-            <div class="fgrp">
+            <div class="fgrp adv-only">
               <label>Separator <span style="font-weight:400;color:#6b8090">(pipes &amp; dots)</span></label>
               <div class="color-row">
                 <input type="color" id="c_sep" value="#cccccc" oninput="syncH('c_sep','h_sep');dp()">
                 <input type="text" class="hex-in" id="h_sep" value="#cccccc" oninput="syncP('h_sep','c_sep')">
               </div>
             </div>
-            <div class="fgrp">
+            <div class="fgrp adv-only">
               <label>Disclaimer text <span style="font-weight:400;color:#6b8090">(footer text)</span></label>
               <div class="color-row">
                 <input type="color" id="c_disc" value="#999999" oninput="syncH('c_disc','h_disc');dp()">
@@ -285,7 +306,12 @@ textarea.field-ta::placeholder{color:#7a92a8}
   <!-- STEP 3: Choose Template -->
   <div class="step">
     <div class="step-hd"><div class="step-n">3</div><div class="step-t">Choose Template</div></div>
-    <div class="tmpl-section-lbl">Logo Templates</div>
+    <div class="tab-btns">
+      <button class="tab-btn active" onclick="switchTab('logo')" id="tab-logo">Logo Templates</button>
+      <button class="tab-btn" onclick="switchTab('banner')" id="tab-banner">Banner Templates</button>
+    </div>
+    <div class="tab-panel active" id="panel-logo">
+    <div class="tmpl-section-lbl" style="display:none">Logo Templates</div>
     <div class="tmpl-grid">
       <label class="tmpl-card sel" onclick="selTmpl('classic-left')">
         <input type="radio" name="tmpl" value="classic-left" checked>
@@ -388,7 +414,9 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div class="tmpl-name">Three Column</div>
       </label>
     </div>
-    <div class="tmpl-section-lbl" style="margin-top:50px">Banner Templates</div>
+    </div><!-- end panel-logo -->
+    <div class="tab-panel" id="panel-banner">
+    <div class="tmpl-section-lbl" style="display:none">Banner Templates</div>
     <div class="tmpl-grid">
       <label class="tmpl-card" onclick="selTmpl('banner-classic')">
         <input type="radio" name="tmpl" value="banner-classic">
@@ -451,20 +479,33 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div class="tmpl-name">Banner Sidebar</div>
       </label>
     </div>
+    </div><!-- end panel-banner -->
     <div id="tmplWarn"></div>
   </div>
 
   <!-- STEP 4: Preview -->
   <div class="step step-sticky">
-    <div class="step-hd"><div class="step-n">4</div><div class="step-t">Preview</div></div>
+    <div class="step-hd" style="justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="step-n">4</div>
+        <div class="step-t">Preview</div>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#2da85c;background:#edfaf3;border:1px solid #b6e8cc;border-radius:20px;padding:2px 9px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:#2da85c;display:inline-block;"></span>Live
+        </span>
+      </div>
+      <div class="cb-btns" style="flex-shrink:0;">
+        <button class="btn-sm" id="cpPrev" onclick="cp('uniCode',this)">Copy HTML</button>
+        <button class="btn-dl" id="dlPrev" onclick="dl('uniCode','signature-universal.html')">&#8681; Download</button>
+      </div>
+    </div>
     <div class="prev-grid">
       <div>
         <div class="prev-lbl">Desktop</div>
-        <div class="prev-box"><div class="prev-inner" id="deskPrev"></div></div>
+        <div class="prev-box"><div class="prev-inner" id="deskPrev"><span style="color:#a0b0c0;font-size:12px;font-family:'Montserrat','Segoe UI',sans-serif;">Your signature will appear here as you type…</span></div></div>
       </div>
       <div>
         <div class="prev-lbl">Mobile (375px)</div>
-        <div class="prev-box"><div class="prev-inner" id="mobPrev"></div></div>
+        <div class="prev-box"><div class="prev-inner" id="mobPrev"><span style="color:#a0b0c0;font-size:12px;font-family:'Montserrat','Segoe UI',sans-serif;">Mobile version…</span></div></div>
       </div>
     </div>
   </div>
@@ -473,6 +514,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
   <div class="step">
     <div class="step-hd"><div class="step-n">5</div><div class="step-t">Download</div></div>
     <div class="code-sec">
+      <div class="warn" style="margin-bottom:6px">&#9888; Base64-embedded images may be blocked by some email clients. After copying your signature, replace each <code style="background:#f5e8c0;padding:1px 4px;border-radius:3px">src</code> with a publicly hosted image URL for best results.</div>
       <div>
         <div class="cb-hd"><span>Desktop HTML</span><div class="cb-btns"><button class="btn-sm" id="cpDesk" onclick="cp('deskCode',this)">Copy</button><button class="btn-dl" id="dlDesk" onclick="dl('deskCode','signature-desktop.html')">&#8681; Download</button></div></div>
         <textarea class="code-ta" id="deskCode" readonly></textarea>
@@ -682,7 +724,7 @@ function render(){
   }
   warnEl.innerHTML=warn;
   const disabled=!!warn;
-  ['cpDesk','dlDesk','cpMob','dlMob','cpUni','dlUni'].forEach(id=>{
+  ['cpDesk','dlDesk','cpMob','dlMob','cpUni','dlUni','cpPrev','dlPrev'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.disabled=disabled;
   });
   const disc=disclaimerHtml(d);
@@ -2029,6 +2071,39 @@ function drawThumbnails(){
     const el=document.getElementById('tw-'+id);
     if(el) el.innerHTML=html;
   });
+}
+
+// ── TEMPLATE TABS ────────────────────────────────────────
+function switchTab(tab){
+  document.getElementById('panel-logo').classList.toggle('active',tab==='logo');
+  document.getElementById('panel-banner').classList.toggle('active',tab==='banner');
+  document.getElementById('tab-logo').classList.toggle('active',tab==='logo');
+  document.getElementById('tab-banner').classList.toggle('active',tab==='banner');
+}
+
+// ── COLOUR MODE ──────────────────────────────────────────
+function setColourMode(mode){
+  const panel=document.getElementById('colourPanel');
+  if(mode==='advanced'){panel.classList.add('adv-mode');document.getElementById('swSimple').classList.remove('on');document.getElementById('swAdv').classList.add('on');}
+  else{panel.classList.remove('adv-mode');document.getElementById('swSimple').classList.add('on');document.getElementById('swAdv').classList.remove('on');}
+}
+
+// ── RESET ALL ────────────────────────────────────────────
+function resetAll(){
+  if(!confirm('Reset all fields and start over?')) return;
+  ['f_name','f_title','f_company','f_email','f_website','f_disclaimer'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('phoneList').innerHTML='';
+  document.getElementById('socialList').innerHTML='';
+  updSocBtn();
+  resetLogo(); resetBanner();
+  document.getElementById('logoW').value=150; document.getElementById('logoWVal').textContent='150px';
+  document.getElementById('bannerW').value=600; document.getElementById('bannerWVal').textContent='600px';
+  const defs={c_pri:'#1a237e',h_pri:'#1a237e',c_acc:'#1a237e',h_acc:'#1a237e',c_sec:'#1565c0',h_sec:'#1565c0',c_txt:'#444444',h_txt:'#444444',c_line:'#e0e0e0',h_line:'#e0e0e0',c_sep:'#cccccc',h_sep:'#cccccc',c_disc:'#999999',h_disc:'#999999'};
+  Object.entries(defs).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v;});
+  selTmpl('classic-left');
+  dp();
 }
 
 // ── INIT ─────────────────────────────────────────────────
