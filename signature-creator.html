@@ -11,7 +11,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Montserrat','Segoe UI',sans-serif;background:#f0f4f8;color:#1a2a3a;min-height:100vh}
 .wrap{max-width:1100px;margin:0 auto;padding:40px 24px}
-.hero{margin-bottom:16px;}
+.hero{margin-bottom:28px;}
 h1{font-size:26px;font-weight:700;margin-bottom:6px;color:#204456}
 .sub{color:#6b7f94;font-size:14px}
 .step{background:#ffffff;border-radius:14px;padding:28px 32px;margin-bottom:20px;box-shadow:0 1px 6px rgba(0,0,0,.07);border:1px solid #dde4ec}
@@ -124,7 +124,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .coll-sec.open .coll-body{display:block;}
 .s1-sec-lbl{font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
 /* Mode switcher */
-.mode-switcher{display:inline-flex;background:#01AEEF;border-radius:30px;padding:4px;gap:0;align-self:flex-start;}
+.mode-switcher{display:inline-flex;background:#01AEEF;border-radius:30px;padding:4px;gap:0;flex-shrink:0;}
 .mode-btn{padding:7px 28px;border:none;border-radius:26px;cursor:pointer;font-size:13px;font-weight:600;color:#fff;background:transparent;transition:.2s;font-family:'Montserrat','Segoe UI',sans-serif;letter-spacing:.2px;}
 .mode-btn.active{background:#fff;color:#1179A3;box-shadow:0 1px 6px rgba(0,0,0,.12);}
 /* Flex ordering for wrap in multi mode */
@@ -182,13 +182,14 @@ textarea.field-ta::placeholder{color:#7a92a8}
 <body>
 <div class="wrap">
   <div class="hero">
-    <h1>Email Signature Creator</h1>
-    <div class="sub">Fill in your details, pick a template, and copy the HTML straight to your email client.</div>
-  </div>
-
-  <div class="mode-switcher" style="margin-bottom:16px;width:fit-content;">
-    <button class="mode-btn active" id="modeBtn-single" onclick="setMode('single')">Single</button>
-    <button class="mode-btn" id="modeBtn-multi" onclick="setMode('multi')">Multiple</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <h1 style="margin-bottom:0;">Email Signature Creator</h1>
+      <div class="mode-switcher">
+        <button class="mode-btn active" id="modeBtn-single" onclick="setMode('single')">Single</button>
+        <button class="mode-btn" id="modeBtn-multi" onclick="setMode('multi')">Multiple</button>
+      </div>
+    </div>
+    <div class="sub" style="margin-top:6px;">Fill in your details, pick a template, and copy the HTML straight to your email client.</div>
   </div>
 
   <!-- STEP 1 -->
