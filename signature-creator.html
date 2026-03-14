@@ -570,7 +570,8 @@ function render(){
   ['cpDesk','dlDesk','cpMob','dlMob','cpUni','dlUni'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.disabled=disabled;
   });
-  const dh=genDesk(d), mh=genMob(d), uh=genUni(dh,mh);
+  const disc=disclaimerHtml(d);
+  const dh=genDesk(d)+disc, mh=genMob(d)+disc, uh=genUni(dh,mh);
   document.getElementById('deskPrev').innerHTML=dh;
   document.getElementById('mobPrev').innerHTML=mh;
   document.getElementById('deskCode').value=dh;
@@ -1150,6 +1151,13 @@ function genMob(d){
   }
   if(soc) rows.push(`<tr><td style="padding-top:8px;text-align:center;">${soc}</td></tr>`);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;max-width:375px;">\n  ${rows.join('\n  ')}\n</table>`;
+}
+
+// ── DISCLAIMER BLOCK ─────────────────────────────────────
+function disclaimerHtml(d){
+  if(!d.disclaimer) return '';
+  const text=esc(d.disclaimer).replace(/\n/g,'<br>');
+  return `\n<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="border-collapse:collapse;"><tr><td style="padding-top:10px;border-top:1px solid #e4e9ee;font-family:Arial,sans-serif;font-size:10px;color:#999999;line-height:1.6;max-width:600px;">${text}</td></tr></table>`;
 }
 
 // ── UNIVERSAL HTML ───────────────────────────────────────
