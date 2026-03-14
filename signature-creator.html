@@ -80,9 +80,9 @@ input[type=range]::-moz-range-progress{background:#00aeef;height:4px;border-radi
 .tmpl-card:hover{border-color:#00aeef;background:#f0f9ff}
 .tmpl-card.sel{border-color:#00aeef;background:#e8f6fd;box-shadow:0 0 0 3px rgba(0,174,239,.1)}
 .tmpl-card input[type=radio]{display:none}
-.tmpl-name{font-size:10px;font-weight:600;color:#1179A3;margin-top:7px;line-height:1.3}
+.tmpl-name{font-size:11px;font-weight:600;color:#1179A3;margin-top:7px;line-height:1.3}
 /* Wireframe thumbnail */
-.tw{width:100%;height:72px;background:#ffffff;border-radius:5px;border:1px solid #edf1f5;position:relative;overflow:hidden}
+.tw{width:100%;height:82px;background:#ffffff;border-radius:5px;border:1px solid #edf1f5;position:relative;overflow:hidden}
 /* Preview */
 .step-sticky{position:sticky;bottom:10px;z-index:50}
 .prev-grid{display:grid;grid-template-columns:1fr 395px;gap:20px;margin-top:4px}
@@ -142,9 +142,18 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .mode-multi #step5{display:none;}
 .mode-multi .batch-step-n{display:none;}
 .mode-multi .batch-optional{display:none;}
+.mode-multi .step-n{display:none;}
+/* Collapsible count badges */
+.coll-badge{display:none;background:#00aeef;color:#fff;font-size:10px;font-weight:600;border-radius:10px;padding:1px 7px;margin-left:6px;line-height:1.6;}
+.coll-badge.has-items{display:inline-block;}
+/* Font preview */
+.font-preview{font-size:13px;color:#3a5268;padding:6px 0 2px;line-height:1.4;transition:font-family .15s;}
+/* Download section descriptors */
+.dl-sub{font-size:10px;font-weight:400;color:#8a9baa;margin-left:6px;text-transform:none;letter-spacing:0;}
 /* Batch export */
 .batch-map-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 16px;margin-bottom:16px;}
-.batch-table-wrap{overflow-x:auto;border:1px solid #dde4ec;border-radius:8px;margin-bottom:16px;}
+.batch-table-wrap{overflow-x:auto;border:1px solid #dde4ec;border-radius:8px;margin-bottom:16px;position:relative;}
+.batch-table-wrap::after{content:'';position:absolute;top:0;right:0;bottom:0;width:36px;background:linear-gradient(to right,transparent,rgba(255,255,255,.85));pointer-events:none;border-radius:0 8px 8px 0;}
 .batch-table{width:100%;border-collapse:collapse;font-size:11px;}
 .batch-table th{background:#f0f4f8;padding:6px 10px;text-align:left;font-weight:600;color:#3a5268;border-bottom:1px solid #dde4ec;white-space:nowrap;}
 .batch-table td{padding:5px 10px;border-bottom:1px solid #f0f4f8;color:#1a2a3a;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;}
@@ -159,8 +168,9 @@ textarea.field-ta::placeholder{color:#7a92a8}
   .prev-grid{grid-template-columns:1fr}
   .tmpl-grid{grid-template-columns:repeat(2,1fr)}
   .img-upload-grid{grid-template-columns:1fr !important}
-  .color-grid{grid-template-columns:1fr !important}
+  .color-grid{grid-template-columns:1fr 1fr !important}
   .step-sticky{padding:14px 16px}
+  .step-sticky.minimised{padding:10px 16px;}
   .step-sticky .prev-grid{gap:10px;margin-top:2px}
   .step-sticky .prev-box{padding:10px}
   .step-sticky .prev-inner{min-height:40px;padding:10px;font-size:11px}
@@ -215,7 +225,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
           <button class="coll-hd" onclick="toggleColl('phones')">
             <span style="display:flex;align-items:center;gap:7px;">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 2h3l1.5 3.5-1.75 1.25C6.9 8.9 7.1 9.1 9.25 11.25L10.5 9.5 14 11v3c0 .55-.45 1-1 1C5.4 15 1 10.6 1 3c0-.55.45-1 1-1z" stroke="#1179A3" stroke-width="1.4" stroke-linejoin="round"/></svg>
-              Phone Numbers
+              Phone Numbers<span class="coll-badge" id="badge-phones"></span>
             </span>
             <span class="coll-chev">▾</span>
           </button>
@@ -229,7 +239,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
           <button class="coll-hd" onclick="toggleColl('social')">
             <span style="display:flex;align-items:center;gap:7px;">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="4" r="2" stroke="#1179A3" stroke-width="1.4"/><circle cx="4" cy="8" r="2" stroke="#1179A3" stroke-width="1.4"/><circle cx="12" cy="12" r="2" stroke="#1179A3" stroke-width="1.4"/><path d="M6 7l4-2M6 9l4 2" stroke="#1179A3" stroke-width="1.4" stroke-linecap="round"/></svg>
-              Social Media <span style="font-weight:400;color:#6b8090;font-size:10px;text-transform:none;letter-spacing:0;margin-left:4px;">(up to 4)</span>
+              Social Media <span style="font-weight:400;color:#6b8090;font-size:10px;text-transform:none;letter-spacing:0;margin-left:4px;">(up to 4)</span><span class="coll-badge" id="badge-socials"></span>
             </span>
             <span class="coll-chev">▾</span>
           </button>
@@ -243,13 +253,13 @@ textarea.field-ta::placeholder{color:#7a92a8}
           <button class="coll-hd" onclick="toggleColl('disclaimer')">
             <span style="display:flex;align-items:center;gap:7px;">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="1" width="12" height="14" rx="2" stroke="#1179A3" stroke-width="1.4"/><path d="M5 5h6M5 8h6M5 11h4" stroke="#1179A3" stroke-width="1.4" stroke-linecap="round"/></svg>
-              Disclaimer
+              Disclaimer<span class="coll-badge" id="badge-disc">✓</span>
             </span>
             <span class="coll-chev">▾</span>
           </button>
           <div class="coll-body">
             <div style="font-size:11px;color:#6b8090;margin-bottom:8px;line-height:1.5;">Optional — appears as small text below your signature.</div>
-            <textarea class="field-ta" id="f_disclaimer" placeholder="Company Reg No: 12345678&#10;Registered Address: 123 Example Street, City, AB1 2CD.&#10;&#10;This email and any attachments are confidential…" oninput="dp()"></textarea>
+            <textarea class="field-ta" id="f_disclaimer" placeholder="Company Reg No: 12345678&#10;Registered Address: 123 Example Street, City, AB1 2CD.&#10;&#10;This email and any attachments are confidential…" oninput="dp();updBadges()"></textarea>
           </div>
         </div>
       </div>
@@ -266,7 +276,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div class="scan-zone" id="logoZone">
           <input type="file" id="logoFile" accept="image/*" onchange="handleLogo(this)">
           <div style="font-size:24px;margin-bottom:6px">🖼️</div>
-          <div style="font-size:13px;color:#3a5268;margin-bottom:3px">Drop your logo here or click to browse</div>
+          <div class="drag-text" style="font-size:13px;color:#3a5268;margin-bottom:3px">Drop your logo here or click to browse</div>
           <div style="font-size:11px;color:#6b8090">PNG, SVG or JPG — processed locally in your browser</div>
         </div>
         <div id="logoResult" style="display:none;margin-bottom:10px">
@@ -286,7 +296,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div class="scan-zone" id="bannerZone">
           <input type="file" id="bannerFile" accept="image/*" onchange="handleBanner(this)">
           <div style="font-size:24px;margin-bottom:6px">🎌</div>
-          <div style="font-size:13px;color:#3a5268;margin-bottom:3px">Drop your banner here or click to browse</div>
+          <div class="drag-text" style="font-size:13px;color:#3a5268;margin-bottom:3px">Drop your banner here or click to browse</div>
           <div style="font-size:11px;color:#6b8090">PNG or JPG — recommended 600×100px</div>
         </div>
         <div id="bannerResult" style="display:none;margin-bottom:10px">
@@ -310,7 +320,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div class="scan-zone" id="scanZone">
           <input type="file" id="scanFile" accept="image/*" onchange="scanImage(this)">
           <div style="font-size:24px;margin-bottom:6px">🎨</div>
-          <div style="font-size:13px;color:#3a5268;margin-bottom:3px">Drop a signature image here to extract brand colours</div>
+          <div class="drag-text" style="font-size:13px;color:#3a5268;margin-bottom:3px">Drop a signature image here to extract brand colours</div>
           <div style="font-size:11px;color:#6b8090">JPG, PNG or WebP — no upload, all processing happens in your browser</div>
         </div>
         <div id="scanResult" style="display:none">
@@ -335,7 +345,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div style="display:flex;flex-direction:column;gap:14px" id="colourPanel">
           <div class="fgrp">
             <label>Font Family</label>
-            <select id="f_font" onchange="dp()">
+            <select id="f_font" onchange="dp();updFontPreview()">
               <optgroup label="Sans-serif">
                 <option>Arial</option><option>Helvetica</option><option>Verdana</option>
                 <option>Tahoma</option><option>Trebuchet MS</option><option>Century Gothic</option>
@@ -349,8 +359,9 @@ textarea.field-ta::placeholder{color:#7a92a8}
                 <option>Courier New</option><option>Lucida Console</option>
               </optgroup>
             </select>
+            <div class="font-preview" id="fontPreview" style="font-family:Arial,sans-serif;">Jane Smith · Senior Designer · Acme Corp</div>
           </div>
-          <div class="color-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px">
+          <div class="color-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 16px">
             <div class="fgrp">
               <label>Name <span style="font-weight:400;color:#6b8090">(person's name)</span></label>
               <div class="color-row">
@@ -393,7 +404,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
                 <input type="text" class="hex-in" id="h_sep" value="#cccccc" oninput="syncP('h_sep','c_sep')">
               </div>
             </div>
-            <div class="fgrp adv-only">
+            <div class="fgrp adv-only" style="grid-column:1/-1">
               <label>Disclaimer text <span style="font-weight:400;color:#6b8090">(footer text)</span></label>
               <div class="color-row">
                 <input type="color" id="c_disc" value="#999999" oninput="syncH('c_disc','h_disc');dp()">
@@ -594,6 +605,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
       </div>
       <div class="cb-btns" style="flex-shrink:0;">
         <button class="btn-sm" onclick="resetAll()" style="color:#b0bec8;">Reset all</button>
+        <span style="width:1px;background:#dde4ec;align-self:stretch;margin:0 2px;"></span>
         <button class="btn-sm" onclick="togglePreview(this)" id="prevToggle" style="color:#6b7f94;">Minimise</button>
       </div>
     </div>
@@ -617,16 +629,16 @@ textarea.field-ta::placeholder{color:#7a92a8}
     <div class="code-sec">
       <div style="margin-bottom:10px;font-size:11px;color:#8a9baa;line-height:1.6;">&#9432; Base64-embedded images may be blocked by some email clients. After copying, replace each <code style="background:#edf1f5;padding:1px 4px;border-radius:3px;font-size:10px;">src</code> with a publicly hosted image URL for best results.</div>
       <div>
-        <div class="cb-hd"><span>Desktop HTML</span><div class="cb-btns"><button class="btn-sm" id="cpDesk" onclick="cp('deskCode',this)">Copy</button><button class="btn-dl" id="dlDesk" onclick="dl('deskCode','signature-desktop.html')">&#8681; Download</button><button class="btn-sm" onclick="toggleCode('deskCode',this)" style="color:#6b7f94;">Show code</button></div></div>
+        <div class="cb-hd"><span>Desktop HTML<span class="dl-sub">Outlook &amp; desktop clients</span></span><div class="cb-btns"><button class="btn-sm" id="cpDesk" onclick="cp('deskCode',this)">Copy</button><button class="btn-dl" id="dlDesk" onclick="dl('deskCode','signature-desktop.html')">&#8681; Download</button><button class="btn-sm" onclick="toggleCode('deskCode',this)" style="color:#6b7f94;">Show code</button></div></div>
         <textarea class="code-ta" id="deskCode" readonly style="display:none"></textarea>
       </div>
       <div>
-        <div class="cb-hd"><span>Mobile HTML</span><div class="cb-btns"><button class="btn-sm" id="cpMob" onclick="cp('mobCode',this)">Copy</button><button class="btn-dl" id="dlMob" onclick="dl('mobCode','signature-mobile.html')">&#8681; Download</button><button class="btn-sm" onclick="toggleCode('mobCode',this)" style="color:#6b7f94;">Show code</button></div></div>
+        <div class="cb-hd"><span>Mobile HTML<span class="dl-sub">Mobile email apps</span></span><div class="cb-btns"><button class="btn-sm" id="cpMob" onclick="cp('mobCode',this)">Copy</button><button class="btn-dl" id="dlMob" onclick="dl('mobCode','signature-mobile.html')">&#8681; Download</button><button class="btn-sm" onclick="toggleCode('mobCode',this)" style="color:#6b7f94;">Show code</button></div></div>
         <textarea class="code-ta" id="mobCode" readonly style="display:none"></textarea>
       </div>
       <div>
         <div class="cb-hd">
-          <span>Universal HTML</span>
+          <span>Universal HTML<span class="dl-sub">Works across all clients</span></span>
           <div class="cb-btns"><button class="btn-sm" id="cpUni" onclick="cp('uniCode',this)">Copy</button><button class="btn-dl" id="dlUni" onclick="dl('uniCode','signature-universal.html')">&#8681; Download</button><button class="btn-sm" onclick="toggleCode('uniCode',this)" style="color:#6b7f94;">Show code</button></div>
         </div>
         <textarea class="code-ta tall" id="uniCode" readonly style="display:none"></textarea>
@@ -668,7 +680,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
     </div>
     <div class="scan-zone" id="batchZone" style="margin-bottom:0;">
       <input type="file" id="batchFile" accept=".csv,.xlsx,.xls" onchange="handleBatchFile(this)">
-      <div style="font-size:13px;font-weight:600;color:#3a5268;margin-bottom:4px;">Drop a CSV or XLSX file here</div>
+      <div class="drag-text" style="font-size:13px;font-weight:600;color:#3a5268;margin-bottom:4px;">Drop a CSV or XLSX file here</div>
       <div style="font-size:11px;color:#8a9baa;">Supports .csv, .xlsx, .xls</div>
     </div>
     <div id="batchResult" style="display:none;margin-top:16px;">
@@ -703,8 +715,9 @@ let batchColMap={name:'',title:'',company:'',email:'',website:'',phone:'',linked
 // ── PHONE ROWS ───────────────────────────────────────────
 function addPhone(val=''){
   const row=document.createElement('div'); row.className='phone-row';
-  row.innerHTML=`<input type="text" placeholder="+44 20 1234 5678" value="${esc(val)}" oninput="dp()"><button class="rm-btn" onclick="this.parentElement.remove();dp()" title="Remove">×</button>`;
+  row.innerHTML=`<input type="text" placeholder="+44 20 1234 5678" value="${esc(val)}" oninput="dp()"><button class="rm-btn" onclick="this.parentElement.remove();dp();updBadges()" title="Remove">×</button>`;
   document.getElementById('phoneList').appendChild(row);
+  updBadges();
 }
 
 // ── SOCIAL ROWS ──────────────────────────────────────────
@@ -715,16 +728,17 @@ function addSocial(platform='LinkedIn',url=''){
   if(sl.children.length>=4) return;
   const row=document.createElement('div'); row.className='social-row';
   const opts=PLATS.map(p=>`<option${p===platform?' selected':''}>${p}</option>`).join('');
-  row.innerHTML=`<select onchange="dp()">${opts}</select><input type="url" placeholder="https://linkedin.com/in/…" value="${esc(url)}" oninput="dp()"><label class="show-chk"><input type="checkbox" checked onchange="dp()"> Show</label><button class="rm-btn" onclick="this.parentElement.remove();updSocBtn();dp()" title="Remove">×</button>`;
-  sl.appendChild(row); updSocBtn();
+  row.innerHTML=`<select onchange="dp()">${opts}</select><input type="url" placeholder="https://linkedin.com/in/…" value="${esc(url)}" oninput="dp()"><label class="show-chk"><input type="checkbox" checked onchange="dp()"> Show</label><button class="rm-btn" onclick="this.parentElement.remove();updSocBtn();dp();updBadges()" title="Remove">×</button>`;
+  sl.appendChild(row); updSocBtn(); updBadges();
 }
 function updSocBtn(){ document.getElementById('addSocBtn').style.display=document.getElementById('socialList').children.length>=4?'none':''; }
 
 // ── LOGO ─────────────────────────────────────────────────
 const logoZone=document.getElementById('logoZone');
-logoZone.addEventListener('dragover',e=>{e.preventDefault();logoZone.classList.add('over');});
-logoZone.addEventListener('dragleave',()=>logoZone.classList.remove('over'));
-logoZone.addEventListener('drop',e=>{e.preventDefault();logoZone.classList.remove('over');const f=e.dataTransfer.files[0];if(f)loadLogoFile(f);});
+const logoDragText='Drop your logo here or click to browse';
+logoZone.addEventListener('dragover',e=>{e.preventDefault();logoZone.classList.add('over');logoZone.querySelector('.drag-text').textContent='Drop it here!';});
+logoZone.addEventListener('dragleave',()=>{logoZone.classList.remove('over');logoZone.querySelector('.drag-text').textContent=logoDragText;});
+logoZone.addEventListener('drop',e=>{e.preventDefault();logoZone.classList.remove('over');logoZone.querySelector('.drag-text').textContent=logoDragText;const f=e.dataTransfer.files[0];if(f)loadLogoFile(f);});
 function handleLogo(input){const f=input.files[0];if(f)loadLogoFile(f);}
 function loadLogoFile(file){
   if(!file.type.match(/image\//)) return;
@@ -752,9 +766,10 @@ function lh(w){return(!logoNatW||!logoNatH)?Math.round(w*.4):Math.round(w*logoNa
 
 // ── BANNER ───────────────────────────────────────────────
 const bannerZone=document.getElementById('bannerZone');
-bannerZone.addEventListener('dragover',e=>{e.preventDefault();bannerZone.classList.add('over');});
-bannerZone.addEventListener('dragleave',()=>bannerZone.classList.remove('over'));
-bannerZone.addEventListener('drop',e=>{e.preventDefault();bannerZone.classList.remove('over');const f=e.dataTransfer.files[0];if(f)loadBannerFile(f);});
+const bannerDragText='Drop your banner here or click to browse';
+bannerZone.addEventListener('dragover',e=>{e.preventDefault();bannerZone.classList.add('over');bannerZone.querySelector('.drag-text').textContent='Drop it here!';});
+bannerZone.addEventListener('dragleave',()=>{bannerZone.classList.remove('over');bannerZone.querySelector('.drag-text').textContent=bannerDragText;});
+bannerZone.addEventListener('drop',e=>{e.preventDefault();bannerZone.classList.remove('over');bannerZone.querySelector('.drag-text').textContent=bannerDragText;const f=e.dataTransfer.files[0];if(f)loadBannerFile(f);});
 function handleBanner(input){const f=input.files[0];if(f)loadBannerFile(f);}
 function loadBannerFile(file){
   if(!file.type.match(/image\//)) return;
@@ -1835,9 +1850,10 @@ function dl(id,filename){
 // ── COLOUR EXTRACTION ────────────────────────────────────
 let extractedColors=[];
 const scanZone=document.getElementById('scanZone');
-scanZone.addEventListener('dragover',e=>{e.preventDefault();scanZone.classList.add('over');});
-scanZone.addEventListener('dragleave',()=>scanZone.classList.remove('over'));
-scanZone.addEventListener('drop',e=>{e.preventDefault();scanZone.classList.remove('over');const f=e.dataTransfer.files[0];if(f)loadScanFile(f);});
+const scanDragText='Drop a signature image here to extract brand colours';
+scanZone.addEventListener('dragover',e=>{e.preventDefault();scanZone.classList.add('over');scanZone.querySelector('.drag-text').textContent='Drop it here!';});
+scanZone.addEventListener('dragleave',()=>{scanZone.classList.remove('over');scanZone.querySelector('.drag-text').textContent=scanDragText;});
+scanZone.addEventListener('drop',e=>{e.preventDefault();scanZone.classList.remove('over');scanZone.querySelector('.drag-text').textContent=scanDragText;const f=e.dataTransfer.files[0];if(f)loadScanFile(f);});
 function scanImage(input){const f=input.files[0];if(f)loadScanFile(f);}
 function loadScanFile(file){
   if(!file.type.match(/image\//)) return;
@@ -2244,7 +2260,10 @@ function toggleVisible(elId,btn,showLbl,hideLbl){
   btn.textContent=visible?showLbl:hideLbl;
 }
 function toggleCode(id,btn){toggleVisible(id,btn,'Show code','Hide code');}
-function togglePreview(btn){toggleVisible('prevBody',btn,'Expand','Minimise');}
+function togglePreview(btn){
+  toggleVisible('prevBody',btn,'Expand','Minimise');
+  document.getElementById('prevStep').classList.toggle('minimised',btn.textContent==='Expand');
+}
 
 // ── COLLAPSIBLE SECTIONS ─────────────────────────────────
 function toggleColl(id){el('coll-sec-'+id).classList.toggle('open');}
@@ -2262,6 +2281,24 @@ function setColourMode(mode){
   el('colourPanel').classList.toggle('adv-mode',adv);
   el('swSimple').classList.toggle('on',!adv);
   el('swAdv').classList.toggle('on',adv);
+}
+
+// ── BADGES & FONT PREVIEW ────────────────────────────────
+function updBadges(){
+  const phones=document.querySelectorAll('#phoneList .phone-row').length;
+  const pb=document.getElementById('badge-phones');
+  if(pb){pb.textContent=phones||'';pb.classList.toggle('has-items',phones>0);}
+  const socials=document.querySelectorAll('#socialList .social-row').length;
+  const sb=document.getElementById('badge-socials');
+  if(sb){sb.textContent=socials||'';sb.classList.toggle('has-items',socials>0);}
+  const hasDisc=(document.getElementById('f_disclaimer').value||'').trim().length>0;
+  const db=document.getElementById('badge-disc');
+  if(db) db.classList.toggle('has-items',hasDisc);
+}
+function updFontPreview(){
+  const font=document.getElementById('f_font').value;
+  const p=document.getElementById('fontPreview');
+  if(p) p.style.fontFamily=`'${font}',Arial,sans-serif`;
 }
 
 // ── MODE SWITCHER ─────────────────────────────────────────
@@ -2338,6 +2375,12 @@ function parseCsv(text){
   }).filter(r=>Object.values(r).some(v=>v));
   return{headers,rows};
 }
+
+const batchZoneEl=document.getElementById('batchZone');
+const batchDragText='Drop a CSV or XLSX file here';
+batchZoneEl.addEventListener('dragover',e=>{e.preventDefault();batchZoneEl.classList.add('over');batchZoneEl.querySelector('.drag-text').textContent='Drop it here!';});
+batchZoneEl.addEventListener('dragleave',()=>{batchZoneEl.classList.remove('over');batchZoneEl.querySelector('.drag-text').textContent=batchDragText;});
+batchZoneEl.addEventListener('drop',e=>{e.preventDefault();batchZoneEl.classList.remove('over');batchZoneEl.querySelector('.drag-text').textContent=batchDragText;const f=e.dataTransfer.files[0];if(f){const dt=new DataTransfer();dt.items.add(f);document.getElementById('batchFile').files=dt.files;handleBatchFile(document.getElementById('batchFile'));}});
 
 function handleBatchFile(input){
   const file=input.files[0]; if(!file) return;
@@ -2449,6 +2492,7 @@ async function downloadBatchAll(){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='signatures.zip'; a.click();
   btn.disabled=false; prog.style.display='none';
   status.textContent=`✓ Downloaded ${batchRows.length} signature${batchRows.length!==1?'s':''}.`;
+  status.style.color='#2e7d32';
 }
 
 function clearBatch(){
@@ -2475,12 +2519,15 @@ function resetAll(){
   const defs={c_pri:'#1a237e',h_pri:'#1a237e',c_acc:'#1a237e',h_acc:'#1a237e',c_sec:'#1565c0',h_sec:'#1565c0',c_txt:'#444444',h_txt:'#444444',c_line:'#e0e0e0',h_line:'#e0e0e0',c_sep:'#cccccc',h_sep:'#cccccc',c_disc:'#999999',h_disc:'#999999'};
   Object.entries(defs).forEach(([id,v])=>{const e=el(id);if(e)e.value=v;});
   selTmpl('classic-left');
+  updBadges();
 }
 
 // ── INIT ─────────────────────────────────────────────────
 addPhone();
 drawThumbnails();
 render();
+updBadges();
+updFontPreview();
 </script>
 </body>
 </html>
