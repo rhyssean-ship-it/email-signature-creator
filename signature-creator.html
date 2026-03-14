@@ -149,7 +149,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .batch-table th{background:#f0f4f8;padding:6px 10px;text-align:left;font-weight:600;color:#3a5268;border-bottom:1px solid #dde4ec;white-space:nowrap;}
 .batch-table td{padding:5px 10px;border-bottom:1px solid #f0f4f8;color:#1a2a3a;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;}
 .batch-table tr:last-child td{border-bottom:none;}
-.batch-dl-btn{width:100%;padding:10px 18px;border-radius:8px;border:none;background:#00aeef;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;font-family:'Montserrat','Segoe UI',sans-serif;}
+.batch-dl-btn{padding:10px 18px;border-radius:8px;border:none;background:#00aeef;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;font-family:'Montserrat','Segoe UI',sans-serif;}
 .batch-dl-btn:hover{background:#008ec0;}
 .batch-dl-btn:disabled{background:#b0cfe0;cursor:not-allowed;}
 .batch-prog{margin-top:10px;background:#edf1f5;border-radius:6px;height:6px;overflow:hidden;display:none;}
@@ -680,7 +680,9 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <div id="batchMapGrid"></div>
       <div style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Preview <span id="batchRowCount" style="font-weight:400;color:#8a9baa;text-transform:none;letter-spacing:0;"></span></div>
       <div class="batch-table-wrap"><table class="batch-table" id="batchTable"></table></div>
-      <button class="batch-dl-btn" onclick="downloadBatchAll()">&#8681; Download All Signatures</button>
+      <div style="display:flex;justify-content:center;">
+        <button class="batch-dl-btn" style="width:40%;" onclick="downloadBatchAll()">&#8681; Download All Signatures</button>
+      </div>
       <div class="batch-prog" id="batchProg"><div class="batch-prog-bar" id="batchProgBar"></div></div>
       <div id="batchStatus" style="font-size:11px;color:#6b8090;text-align:center;margin-top:6px;"></div>
     </div>
