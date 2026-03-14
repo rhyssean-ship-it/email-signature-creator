@@ -360,6 +360,26 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div class="tw" id="tw-ruled"></div>
         <div class="tmpl-name">Ruled</div>
       </label>
+      <label class="tmpl-card" onclick="selTmpl('name-row')">
+        <input type="radio" name="tmpl" value="name-row">
+        <div class="tw" id="tw-name-row"></div>
+        <div class="tmpl-name">Name Row</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('card')">
+        <input type="radio" name="tmpl" value="card">
+        <div class="tw" id="tw-card"></div>
+        <div class="tmpl-name">Card</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('top-bar')">
+        <input type="radio" name="tmpl" value="top-bar">
+        <div class="tw" id="tw-top-bar"></div>
+        <div class="tmpl-name">Top Bar</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('three-col')">
+        <input type="radio" name="tmpl" value="three-col">
+        <div class="tw" id="tw-three-col"></div>
+        <div class="tmpl-name">Three Column</div>
+      </label>
     </div>
     <div class="tmpl-section-lbl" style="margin-top:50px">Banner Templates</div>
     <div class="tmpl-grid">
@@ -402,6 +422,26 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <input type="radio" name="tmpl" value="banner-accent-block">
         <div class="tw" id="tw-banner-accent-block"></div>
         <div class="tmpl-name">Banner Accent Block</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('banner-logo-left')">
+        <input type="radio" name="tmpl" value="banner-logo-left">
+        <div class="tw" id="tw-banner-logo-left"></div>
+        <div class="tmpl-name">Banner Logo Left</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('banner-stacked')">
+        <input type="radio" name="tmpl" value="banner-stacked">
+        <div class="tw" id="tw-banner-stacked"></div>
+        <div class="tmpl-name">Banner Stacked</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('banner-ruled')">
+        <input type="radio" name="tmpl" value="banner-ruled">
+        <div class="tw" id="tw-banner-ruled"></div>
+        <div class="tmpl-name">Banner Ruled</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('banner-sidebar')">
+        <input type="radio" name="tmpl" value="banner-sidebar">
+        <div class="tw" id="tw-banner-sidebar"></div>
+        <div class="tmpl-name">Banner Sidebar</div>
       </label>
     </div>
     <div id="tmplWarn"></div>
@@ -1265,6 +1305,222 @@ function tmplRuled(d){
   ${soc?`<tr><td colspan="2" style="padding-top:8px;">${soc}</td></tr>`:''}
 </table>`;}
 
+// ── TEMPLATE: Name Row ────────────────────────────────────
+// Name + logo share one horizontal row (name left, logo right),
+// thin rule below, then title/company/contacts stacked.
+function tmplNameRow(d){
+  const lw=d.logoW, lhv=lh(lw);
+  const soc=socIcons(d.socials,20);
+  const cc=contactCells(d);
+  const hasC=d.phones.length||d.email||d.website;
+  const logoTd=d.logo?`<td style="padding-left:20px;vertical-align:middle;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td>`:'';
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  <tr>
+    <td style="vertical-align:middle;">
+      ${d.name?`<div style="font-family:${d.font},Arial,sans-serif;font-size:22px;font-weight:700;color:${d.pri};line-height:1.1;white-space:nowrap;">${esc(d.name)}</div>`:''}
+    </td>
+    ${logoTd}
+  </tr>
+  <tr><td colspan="2" style="border-top:1px solid ${d.line};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>
+  <tr><td colspan="2" style="padding-top:8px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+      ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
+      ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:8px;">${esc(d.company)}</td></tr>`:''}
+      ${hasC?`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
+      ${soc?`<tr><td>${soc}</td></tr>`:''}
+    </table>
+  </td></tr>
+</table>`;}
+
+// ── TEMPLATE: Card ────────────────────────────────────────
+// Entire signature enclosed in a bordered card. Logo + name/title
+// side by side at the top, rule, contacts below.
+function tmplCard(d){
+  const lw=Math.min(d.logoW,100), lhv=lh(lw);
+  const soc=socIcons(d.socials,18);
+  const cc=contactCells(d);
+  const hasC=d.phones.length||d.email||d.website;
+  const logoTd=d.logo?`<td style="padding-right:14px;vertical-align:middle;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td>`:'';
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;border:1px solid ${d.line};border-radius:6px;">
+  <tr><td style="padding:16px 20px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;">
+      <tr>
+        ${logoTd}
+        <td style="vertical-align:middle;">
+          ${d.name?`<div style="font-family:${d.font},Arial,sans-serif;font-size:17px;font-weight:700;color:${d.pri};line-height:1.2;margin-bottom:2px;">${esc(d.name)}</div>`:''}
+          ${d.title?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};margin-bottom:1px;">${esc(d.title)}</div>`:''}
+          ${d.company?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;font-weight:600;color:${d.txt};">${esc(d.company)}</div>`:''}
+        </td>
+      </tr>
+      ${hasC||soc?`<tr><td colspan="2" style="border-top:1px solid ${d.line};padding-top:0;font-size:0;line-height:0;padding-top:12px;">&nbsp;</td></tr>
+      <tr><td colspan="2">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+          ${hasC?`<tr><td style="padding-bottom:5px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
+          ${soc?`<tr><td>${soc}</td></tr>`:''}
+        </table>
+      </td></tr>`:''}
+    </table>
+  </td></tr>
+</table>`;}
+
+// ── TEMPLATE: Top Bar ─────────────────────────────────────
+// Thick 8px primary colour band spans full width at the top.
+// Logo left, name/title/company/contacts below the bar.
+function tmplTopBar(d){
+  const lw=d.logoW, lhv=lh(lw);
+  const soc=socIcons(d.socials,20);
+  const cc=contactCells(d);
+  const hasC=d.phones.length||d.email||d.website;
+  const logoRow=d.logo?`<tr><td style="padding-bottom:10px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>`:'';
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  <tr><td style="background:${d.pri};height:8px;font-size:0;line-height:0;padding:0;">&nbsp;</td></tr>
+  <tr><td style="padding-top:14px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+      ${logoRow}
+      ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:700;color:${d.pri};padding-bottom:2px;line-height:1.2;">${esc(d.name)}</td></tr>`:''}
+      ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
+      ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:8px;">${esc(d.company)}</td></tr>`:''}
+      ${hasC?`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
+      ${soc?`<tr><td>${soc}</td></tr>`:''}
+    </table>
+  </td></tr>
+</table>`;}
+
+// ── TEMPLATE: Three Column ────────────────────────────────
+// Three zones in one row: [Name / Title / Company] | divider
+// | [Phone / Email / Web] | divider | [Logo].
+function tmplThreeCol(d){
+  const lw=d.logoW, lhv=lh(lw);
+  const soc=socIcons(d.socials,18);
+  const ls=`font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};text-decoration:none;`;
+  const contactRows=[];
+  d.phones.forEach(p=>contactRows.push(`<tr><td style="padding-bottom:3px;"><a href="tel:${ea(p.replace(/\s/g,''))}" style="${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr><td style="padding-bottom:3px;"><a href="mailto:${ea(d.email)}" style="${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr><td><a href="${ea(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
+  const divider=`<td style="padding:0 16px;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:1px solid ${d.line};line-height:50px;font-size:50px;">&nbsp;</td></tr></table></td>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  <tr>
+    <td style="vertical-align:middle;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:17px;font-weight:700;color:${d.pri};padding-bottom:3px;line-height:1.2;white-space:nowrap;">${esc(d.name)}</td></tr>`:''}
+        ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
+        ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;font-weight:600;color:${d.txt};">${esc(d.company)}</td></tr>`:''}
+      </table>
+    </td>
+    ${divider}
+    <td style="vertical-align:middle;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${contactRows.join('\n        ')}
+        ${soc?`<tr><td style="padding-top:6px;">${soc}</td></tr>`:''}
+      </table>
+    </td>
+    ${d.logo?`${divider}<td style="vertical-align:middle;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td>`:''}
+  </tr>
+</table>`;}
+
+// ── TEMPLATE: Banner Logo Left ────────────────────────────
+// Banner above. Below: logo on far left with vertical separator,
+// name/title/company/contacts stacked to the right.
+function tmplBannerLogoLeft(d){
+  const lw=Math.min(d.logoW,120), lhv=lh(lw);
+  const soc=socIcons(d.socials,20);
+  const cc=contactCells(d);
+  const hasC=d.phones.length||d.email||d.website;
+  const hasI=d.name||d.title||d.company;
+  const logoTd=d.logo?`<td style="padding-right:0;vertical-align:middle;">
+      <img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;">
+    </td>
+    <td style="padding:0 18px;vertical-align:middle;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:1px solid ${d.line};line-height:50px;font-size:50px;">&nbsp;</td></tr></table>
+    </td>`:'';
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  ${bannerRow(d)}
+  <tr>
+    ${logoTd}
+    <td style="vertical-align:middle;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:700;color:${d.pri};padding-bottom:2px;line-height:1.2;">${esc(d.name)}</td></tr>`:''}
+        ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
+        ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:8px;">${esc(d.company)}</td></tr>`:''}
+        ${hasI&&(hasC||soc)?`<tr><td style="border-top:1px solid ${d.line};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr><tr><td style="padding-top:8px;font-size:0;"></td></tr>`:''}
+        ${hasC?`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
+        ${soc?`<tr><td>${soc}</td></tr>`:''}
+      </table>
+    </td>
+  </tr>
+</table>`;}
+
+// ── TEMPLATE: Banner Stacked ──────────────────────────────
+// Banner, then logo centred, then 2px rule, then name centred
+// in large text, then title·company, then contacts horizontal.
+function tmplBannerStacked(d){
+  const lw=Math.min(d.logoW,160), lhv=d.logo?lh(lw):0;
+  const soc=socIcons(d.socials,20);
+  const hasC=d.phones.length||d.email||d.website;
+  const rows=[];
+  const bw=d.bannerW, bhv=bh(bw);
+  if(d.banner) rows.push(`<tr><td style="padding-bottom:14px;text-align:center;"><img src="${d.banner}" width="${bw}" height="${bhv}" border="0" alt="Banner" style="display:inline-block;width:${bw}px;height:${bhv}px;"></td></tr>`);
+  else rows.push(`<tr><td style="padding-bottom:14px;text-align:center;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr><td style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr></table></td></tr>`);
+  if(d.logo) rows.push(`<tr><td style="padding-bottom:10px;text-align:center;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:inline-block;width:${lw}px;height:${lhv}px;"></td></tr>`);
+  rows.push(`<tr><td style="border-top:2px solid ${d.pri};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>`);
+  if(d.name) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:20px;font-weight:700;color:${d.pri};padding-top:10px;padding-bottom:3px;text-align:center;line-height:1.2;">${esc(d.name)}</td></tr>`);
+  const meta=[];
+  if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
+  if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
+  if(meta.length) rows.push(`<tr><td style="padding-bottom:8px;text-align:center;">${meta.join(`<span style="color:${d.sep};padding:0 6px;">·</span>`)}</td></tr>`);
+  if(hasC) rows.push(`<tr><td style="padding-bottom:4px;text-align:center;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr>${contactCells(d,11)}</tr></table></td></tr>`);
+  if(soc) rows.push(`<tr><td style="padding-top:6px;text-align:center;">${soc}</td></tr>`);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;}
+
+// ── TEMPLATE: Banner Ruled ────────────────────────────────
+// Banner, then name in large text, then each contact item on
+// its own hairline-ruled row. Banner version of Ruled template.
+function tmplBannerRuled(d){
+  const soc=socIcons(d.socials,20);
+  const ls='text-decoration:none;';
+  const items=[];
+  if(d.title&&d.company) items.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span> <span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sep};padding:0 4px;">·</span> <span style="font-family:${d.font},Arial,sans-serif;font-size:12px;font-weight:600;color:${d.txt};">${esc(d.company)}</span>`);
+  else if(d.title) items.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
+  else if(d.company) items.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;font-weight:600;color:${d.txt};">${esc(d.company)}</span>`);
+  d.phones.forEach(p=>items.push(`<a href="tel:${ea(p.replace(/\s/g,''))}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(p)}</a>`));
+  if(d.email) items.push(`<a href="mailto:${ea(d.email)}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(d.email)}</a>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;items.push(`<a href="${ea(href)}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(disp)}</a>`);}
+  const ruledRows=items.map(item=>`<tr><td style="border-top:1px solid ${d.line};padding:5px 0;">${item}</td></tr>`).join('');
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  ${bannerRow(d)}
+  ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:22px;font-weight:700;color:${d.pri};padding-bottom:8px;line-height:1.1;letter-spacing:-0.5px;">${esc(d.name)}</td></tr>`:''}
+  ${ruledRows?`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-top:2px solid ${d.pri};">${ruledRows}</table></td></tr>`:''}
+  ${soc?`<tr><td style="padding-top:8px;">${soc}</td></tr>`:''}
+</table>`;}
+
+// ── TEMPLATE: Banner Sidebar ──────────────────────────────
+// Banner image as a tall left column; logo + name/title/contacts
+// stacked in the right column. Portrait banner orientation.
+function tmplBannerSidebar(d){
+  const lw=Math.min(d.logoW,130), lhv=d.logo?lh(lw):0;
+  const soc=socIcons(d.socials,18);
+  const cc=contactCells(d,11);
+  const hasC=d.phones.length||d.email||d.website;
+  const bsw=160, bsh=Math.max(120,bh(d.bannerW));
+  const bannerTd=d.banner
+    ?`<td style="padding-right:0;vertical-align:top;"><img src="${d.banner}" width="${bsw}" height="${bsh}" border="0" alt="Banner" style="display:block;width:${bsw}px;height:${bsh}px;object-fit:cover;"></td>`
+    :`<td style="padding-right:0;vertical-align:top;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#e0e0e0;width:${bsw}px;height:${bsh}px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:11px;color:#999;line-height:1.4;">Upload a<br>banner image</td></tr></table></td>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  <tr>
+    ${bannerTd}
+    <td style="padding:0 0 0 18px;vertical-align:middle;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${d.logo?`<tr><td style="padding-bottom:10px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>`:''}
+        ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:16px;font-weight:700;color:${d.pri};padding-bottom:2px;line-height:1.2;">${esc(d.name)}</td></tr>`:''}
+        ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
+        ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;font-weight:600;color:${d.txt};padding-bottom:8px;">${esc(d.company)}</td></tr>`:''}
+        ${hasC?`<tr><td style="padding-bottom:5px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
+        ${soc?`<tr><td>${soc}</td></tr>`:''}
+      </table>
+    </td>
+  </tr>
+</table>`;}
+
 // ── DISPATCH ─────────────────────────────────────────────
 function genDesk(d){
   switch(currentTemplate){
@@ -1283,6 +1539,10 @@ function genDesk(d){
     case 'monogram':             return tmplMonogram(d);
     case 'dark-header':          return tmplDarkHeader(d);
     case 'ruled':                return tmplRuled(d);
+    case 'name-row':             return tmplNameRow(d);
+    case 'card':                 return tmplCard(d);
+    case 'top-bar':              return tmplTopBar(d);
+    case 'three-col':            return tmplThreeCol(d);
     case 'banner-classic':       return tmplBannerClassic(d);
     case 'banner-centred':       return tmplBannerCentred(d);
     case 'banner-plus-logo':     return tmplBannerPlusLogo(d);
@@ -1291,6 +1551,10 @@ function genDesk(d){
     case 'banner-split':         return tmplBannerSplit(d);
     case 'banner-minimal':       return tmplBannerMinimal(d);
     case 'banner-accent-block':  return tmplBannerAccentBlock(d);
+    case 'banner-logo-left':     return tmplBannerLogoLeft(d);
+    case 'banner-stacked':       return tmplBannerStacked(d);
+    case 'banner-ruled':         return tmplBannerRuled(d);
+    case 'banner-sidebar':       return tmplBannerSidebar(d);
     default:                     return tmplClassicLeft(d);
   }
 }
@@ -1642,6 +1906,42 @@ function drawThumbnails(){
       d(`left:5px;top:57px;width:6px;height:6px;background:${A};border-radius:1px`)+
       d(`left:14px;top:57px;width:6px;height:6px;background:${A};border-radius:1px`)+
       d(`left:23px;top:57px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'name-row':
+      d(`left:6px;top:8px;width:52px;height:8px;background:${N};border-radius:1px`)+
+      d(`right:6px;top:6px;width:20px;height:18px;background:${A};border-radius:2px`)+
+      d(`left:6px;top:20px;right:6px;height:1px;background:${D}`)+
+      d(`left:6px;top:26px;width:36px;height:4px;background:${L};border-radius:1px`)+
+      d(`left:6px;top:34px;width:28px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:6px;top:43px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:15px;top:43px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:24px;top:43px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'card':
+      d(`left:5px;right:5px;top:5px;bottom:5px;border:1.5px solid ${D};border-radius:4px`)+
+      d(`left:13px;top:14px;width:18px;height:18px;background:${A};border-radius:2px;opacity:.7`)+
+      d(`left:36px;top:15px;width:38px;height:5px;background:${N};border-radius:1px`)+
+      d(`left:36px;top:24px;width:26px;height:4px;background:${L};border-radius:1px`)+
+      d(`left:13px;top:36px;right:13px;height:1px;background:${D}`)+
+      d(`left:13px;top:43px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:22px;top:43px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:31px;top:43px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'top-bar':
+      d(`left:5px;right:5px;top:5px;height:6px;background:${A};border-radius:2px`)+
+      d(`left:6px;top:17px;width:22px;height:18px;background:${A};border-radius:2px;opacity:.7`)+
+      d(`left:6px;top:40px;width:46px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:6px;top:50px;width:34px;height:4px;background:${L};border-radius:1px`)+
+      d(`left:6px;top:58px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:15px;top:58px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:24px;top:58px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'three-col':
+      d(`left:5px;top:18px;width:34px;height:5px;background:${N};border-radius:1px`)+
+      d(`left:5px;top:27px;width:24px;height:4px;background:${L};border-radius:1px`)+
+      d(`left:5px;top:35px;width:28px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:43px;top:14px;width:1px;height:44px;background:${D}`)+
+      d(`left:48px;top:18px;width:24px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:48px;top:26px;width:30px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:48px;top:34px;width:20px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:82px;top:14px;width:1px;height:44px;background:${D}`)+
+      d(`left:88px;top:20px;width:14px;height:14px;background:${A};border-radius:2px;opacity:.7`),
     'editorial':
       d(`left:6px;top:8px;right:6px;height:9px;background:${N};border-radius:1px`)+
       d(`left:6px;top:21px;right:6px;height:3px;background:${A}`)+
@@ -1683,6 +1983,39 @@ function drawThumbnails(){
       d(`left:6px;top:57px;right:6px;height:1px;background:${D}`)+
       d(`left:6px;top:63px;width:6px;height:5px;background:${A};border-radius:1px`)+
       d(`left:14px;top:63px;width:6px;height:5px;background:${A};border-radius:1px`),
+    'banner-logo-left':
+      d(`left:5px;right:5px;top:5px;height:13px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:5px;top:23px;width:18px;height:18px;background:${A};border-radius:2px;opacity:.7`)+
+      d(`left:26px;top:23px;width:1px;height:28px;background:${D}`)+
+      d(`left:32px;top:24px;width:40px;height:5px;background:${N};border-radius:1px`)+
+      d(`left:32px;top:33px;width:30px;height:4px;background:${L};border-radius:1px`)+
+      d(`left:32px;top:41px;width:6px;height:5px;background:${A};border-radius:1px`)+
+      d(`left:41px;top:41px;width:6px;height:5px;background:${A};border-radius:1px`)+
+      d(`left:50px;top:41px;width:6px;height:5px;background:${A};border-radius:1px`),
+    'banner-stacked':
+      d(`left:5px;right:5px;top:5px;height:13px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:35px;top:23px;width:28px;height:14px;background:${A};border-radius:2px;opacity:.7`)+
+      d(`left:5px;right:5px;top:41px;height:2px;background:${A}`)+
+      d(`left:18px;top:48px;width:42px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:22px;top:58px;width:34px;height:4px;background:${L};border-radius:1px`),
+    'banner-ruled':
+      d(`left:5px;right:5px;top:5px;height:13px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:5px;top:23px;width:50px;height:7px;background:${N};border-radius:1px`)+
+      d(`left:5px;right:5px;top:34px;height:2px;background:${A}`)+
+      d(`left:5px;top:40px;width:44px;height:4px;background:${L};border-radius:1px`)+
+      d(`left:5px;top:46px;right:5px;height:1px;background:${D}`)+
+      d(`left:5px;top:52px;width:38px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;top:58px;right:5px;height:1px;background:${D}`)+
+      d(`left:5px;top:64px;width:6px;height:5px;background:${A};border-radius:1px`)+
+      d(`left:14px;top:64px;width:6px;height:5px;background:${A};border-radius:1px`),
+    'banner-sidebar':
+      d(`left:5px;top:5px;width:28px;bottom:5px;background:${A};border-radius:2px;opacity:.75`)+
+      d(`left:38px;top:5px;width:22px;height:14px;background:${A};border-radius:2px;opacity:.6`)+
+      d(`left:38px;top:24px;width:40px;height:5px;background:${N};border-radius:1px`)+
+      d(`left:38px;top:33px;width:30px;height:4px;background:${L};border-radius:1px`)+
+      d(`left:38px;top:41px;width:26px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:38px;top:52px;width:6px;height:5px;background:${A};border-radius:1px`)+
+      d(`left:47px;top:52px;width:6px;height:5px;background:${A};border-radius:1px`),
   };
   Object.entries(thumbs).forEach(([id,html])=>{
     const el=document.getElementById('tw-'+id);
