@@ -146,8 +146,6 @@ textarea.field-ta::placeholder{color:#7a92a8}
 /* Collapsible count badges */
 .coll-badge{display:none;background:#00aeef;color:#fff;font-size:10px;font-weight:600;border-radius:10px;padding:1px 7px;margin-left:6px;line-height:1.6;}
 .coll-badge.has-items{display:inline-block;}
-/* Font preview */
-.font-preview{font-size:13px;color:#3a5268;padding:6px 0 2px;line-height:1.4;transition:font-family .15s;}
 /* Download section descriptors */
 .dl-sub{font-size:10px;font-weight:400;color:#8a9baa;margin-left:6px;text-transform:none;letter-spacing:0;}
 /* Batch export */
@@ -345,7 +343,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div style="display:flex;flex-direction:column;gap:14px" id="colourPanel">
           <div class="fgrp">
             <label>Font Family</label>
-            <select id="f_font" onchange="dp();updFontPreview()">
+            <select id="f_font" onchange="dp()">
               <optgroup label="Sans-serif">
                 <option>Arial</option><option>Helvetica</option><option>Verdana</option>
                 <option>Tahoma</option><option>Trebuchet MS</option><option>Century Gothic</option>
@@ -359,7 +357,6 @@ textarea.field-ta::placeholder{color:#7a92a8}
                 <option>Courier New</option><option>Lucida Console</option>
               </optgroup>
             </select>
-            <div class="font-preview" id="fontPreview" style="font-family:Arial,sans-serif;">Jane Smith · Senior Designer · Acme Corp</div>
           </div>
           <div class="color-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 16px">
             <div class="fgrp">
@@ -2295,12 +2292,6 @@ function updBadges(){
   const db=document.getElementById('badge-disc');
   if(db) db.classList.toggle('has-items',hasDisc);
 }
-function updFontPreview(){
-  const font=document.getElementById('f_font').value;
-  const p=document.getElementById('fontPreview');
-  if(p) p.style.fontFamily=`'${font}',Arial,sans-serif`;
-}
-
 // ── MODE SWITCHER ─────────────────────────────────────────
 function setMode(mode){
   const isMulti=mode==='multi';
@@ -2527,7 +2518,6 @@ addPhone();
 drawThumbnails();
 render();
 updBadges();
-updFontPreview();
 </script>
 </body>
 </html>
