@@ -142,7 +142,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .mode-multi .batch-step-n{display:none;}
 .mode-multi .batch-optional{display:none;}
 /* Batch export */
-.batch-map-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 16px;margin-bottom:16px;}
+.batch-map-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 16px;margin-bottom:16px;}
 .batch-table-wrap{overflow-x:auto;border:1px solid #dde4ec;border-radius:8px;margin-bottom:16px;}
 .batch-table{width:100%;border-collapse:collapse;font-size:11px;}
 .batch-table th{background:#f0f4f8;padding:6px 10px;text-align:left;font-weight:600;color:#3a5268;border-bottom:1px solid #dde4ec;white-space:nowrap;}
@@ -639,22 +639,30 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <div class="step-t">Batch Export <span class="batch-optional" style="font-size:11px;font-weight:400;color:#8a9baa;margin-left:4px;">— optional</span></div>
     </div>
     <div style="font-size:12px;color:#6b8090;margin-bottom:12px;line-height:1.6;">Upload a CSV or XLSX file with one person per row. The first person will appear in the live preview. Click <strong>Download All</strong> to export a ZIP containing one Universal HTML signature per person, using the style, logo, and template settings below.</div>
-    <div style="background:#f0f4f8;border:1px solid #dde4ec;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#3a5268;line-height:2;">
-      <span style="font-weight:600;color:#1179A3;">Expected columns:</span>
-      <span style="display:inline-flex;flex-wrap:wrap;gap:6px;margin-left:4px;">
+    <div style="background:#f0f4f8;border:1px solid #dde4ec;border-radius:8px;padding:11px 14px;margin-bottom:16px;font-size:11px;color:#3a5268;display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:5px;">
+        <span style="font-weight:600;color:#1179A3;white-space:nowrap;margin-right:2px;">Contact</span>
         <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Name</span>
-        <span style="color:#b0bec8;">·</span>
         <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Job Title</span>
-        <span style="color:#b0bec8;">·</span>
         <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Company</span>
-        <span style="color:#b0bec8;">·</span>
         <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Email</span>
-        <span style="color:#b0bec8;">·</span>
         <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Website</span>
-        <span style="color:#b0bec8;">·</span>
         <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Phone</span>
-      </span>
-      <span style="color:#8a9baa;margin-left:6px;">— column names are flexible, extras are ignored</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:5px;">
+        <span style="font-weight:600;color:#1179A3;white-space:nowrap;margin-right:2px;">Socials</span>
+        <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">LinkedIn</span>
+        <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Twitter</span>
+        <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Facebook</span>
+        <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Instagram</span>
+        <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">YouTube</span>
+        <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">TikTok</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:5px;">
+        <span style="font-weight:600;color:#1179A3;white-space:nowrap;margin-right:2px;">Other</span>
+        <span style="background:#fff;border:1px solid #dde4ec;border-radius:4px;padding:1px 8px;font-family:monospace;">Disclaimer</span>
+        <span style="color:#8a9baa;margin-left:2px;">— all columns are optional; names are flexible, extras ignored</span>
+      </div>
     </div>
     <div class="scan-zone" id="batchZone" style="margin-bottom:0;">
       <input type="file" id="batchFile" accept=".csv,.xlsx,.xls" onchange="handleBatchFile(this)">
@@ -667,7 +675,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <button class="btn-sm" onclick="clearBatch()">Clear file</button>
       </div>
       <div style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Map columns to fields</div>
-      <div class="batch-map-grid" id="batchMapGrid"></div>
+      <div id="batchMapGrid"></div>
       <div style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Preview <span id="batchRowCount" style="font-weight:400;color:#8a9baa;text-transform:none;letter-spacing:0;"></span></div>
       <div class="batch-table-wrap"><table class="batch-table" id="batchTable"></table></div>
       <button class="batch-dl-btn" onclick="downloadBatchAll()">&#8681; Download All Signatures</button>
@@ -686,7 +694,7 @@ let currentTemplate='classic-left';
 const iconCache={};
 // Batch export state
 let batchRows=[], batchHeaders=[];
-let batchColMap={name:'',title:'',company:'',email:'',website:'',phone:''};
+let batchColMap={name:'',title:'',company:'',email:'',website:'',phone:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
 
 // ── PHONE ROWS ───────────────────────────────────────────
 function addPhone(val=''){
@@ -2262,24 +2270,39 @@ function setMode(mode){
 
 // ── BATCH EXPORT ─────────────────────────────────────────
 const BATCH_FIELDS=[
-  {key:'name',   label:'Name'},
-  {key:'title',  label:'Job Title'},
-  {key:'company',label:'Company'},
-  {key:'email',  label:'Email'},
-  {key:'website',label:'Website'},
-  {key:'phone',  label:'Phone'},
+  {key:'name',       label:'Name'},
+  {key:'title',      label:'Job Title'},
+  {key:'company',    label:'Company'},
+  {key:'email',      label:'Email'},
+  {key:'website',    label:'Website'},
+  {key:'phone',      label:'Phone'},
+  {key:'linkedin',   label:'LinkedIn'},
+  {key:'twitter',    label:'Twitter / X'},
+  {key:'facebook',   label:'Facebook'},
+  {key:'instagram',  label:'Instagram'},
+  {key:'youtube',    label:'YouTube'},
+  {key:'tiktok',     label:'TikTok'},
+  {key:'disclaimer', label:'Disclaimer'},
 ];
 const BATCH_ALIASES={
-  name:    ['name','full name','fullname','full_name','person'],
-  title:   ['title','job title','jobtitle','job_title','position','role'],
-  company: ['company','organisation','organization','employer','org','business'],
-  email:   ['email','e-mail','email address','emailaddress'],
-  website: ['website','url','web','site','web address'],
-  phone:   ['phone','mobile','tel','telephone','cell','contact number'],
+  name:       ['name','full name','fullname','full_name','person'],
+  title:      ['title','job title','jobtitle','job_title','position','role'],
+  company:    ['company','organisation','organization','employer','org','business'],
+  email:      ['email','e-mail','email address','emailaddress'],
+  website:    ['website','url','web','site','web address'],
+  phone:      ['phone','mobile','tel','telephone','cell','contact number'],
+  linkedin:   ['linkedin','linkedin url','linkedin profile'],
+  twitter:    ['twitter','twitter/x','x','twitter url','x url','twitter profile'],
+  facebook:   ['facebook','facebook url','facebook profile'],
+  instagram:  ['instagram','instagram url','instagram profile'],
+  youtube:    ['youtube','youtube url','youtube channel'],
+  tiktok:     ['tiktok','tiktok url','tiktok profile'],
+  disclaimer: ['disclaimer','legal','footer','footer text','legal text','disclaimer text'],
 };
+const SOCIAL_KEY_TO_PLAT={linkedin:'LinkedIn',twitter:'Twitter/X',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
 
 function batchAutoMap(headers){
-  const map={name:'',title:'',company:'',email:'',website:'',phone:''};
+  const map={name:'',title:'',company:'',email:'',website:'',phone:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
   BATCH_FIELDS.forEach(({key})=>{
     const aliases=BATCH_ALIASES[key];
     const found=headers.find(h=>aliases.includes(h.toLowerCase().trim()));
@@ -2345,15 +2368,21 @@ function loadBatchData({headers,rows}){
 }
 
 function renderBatchMap(){
-  const opts=['<option value="">— skip —</option>',...batchHeaders.map(h=>`<option value="${esc(h)}">${esc(h)}</option>`)].join('');
-  document.getElementById('batchMapGrid').innerHTML=BATCH_FIELDS.map(({key,label})=>`
-    <div class="fgrp">
-      <label>${label}</label>
-      <select onchange="batchColMap['${key}']=this.value;renderBatchTable();dp()">
-        ${batchHeaders.map(h=>`<option value="${esc(h)}"${batchColMap[key]===h?' selected':''}>${esc(h)}</option>`).join('')}
-        <option value=""${batchColMap[key]===''?' selected':''}>— skip —</option>
-      </select>
-    </div>`).join('');
+  const groups=[
+    {label:'Contact details', keys:['name','title','company','email','website','phone','disclaimer']},
+    {label:'Social accounts',  keys:['linkedin','twitter','facebook','instagram','youtube','tiktok']},
+  ];
+  function sel(key){
+    return `<select onchange="batchColMap['${key}']=this.value;renderBatchTable();dp()">
+      <option value=""${batchColMap[key]===''?' selected':''}>— skip —</option>
+      ${batchHeaders.map(h=>`<option value="${esc(h)}"${batchColMap[key]===h?' selected':''}>${esc(h)}</option>`).join('')}
+    </select>`;
+  }
+  document.getElementById('batchMapGrid').innerHTML=groups.map(g=>`
+    <div style="grid-column:1/-1;font-size:10px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;padding-top:4px;border-top:1px solid #edf1f5;margin-top:2px;">${g.label}</div>
+    ${g.keys.map(key=>{const f=BATCH_FIELDS.find(x=>x.key===key);return`<div class="fgrp"><label>${f.label}</label>${sel(key)}</div>`;}).join('')}
+  `).join('');
+  document.getElementById('batchMapGrid').style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:8px 16px;margin-bottom:16px;';
 }
 
 function renderBatchTable(){
@@ -2367,7 +2396,8 @@ function renderBatchTable(){
 
 function batchMerge(d,row){
   const out=Object.assign({},d);
-  BATCH_FIELDS.forEach(({key})=>{
+  const scalar=['name','title','company','email','website'];
+  scalar.forEach(key=>{
     const col=batchColMap[key];
     if(col&&row[col]!==undefined&&row[col]!=='') out[key]=String(row[col]).trim();
   });
@@ -2375,6 +2405,12 @@ function batchMerge(d,row){
     const ph=String(row[batchColMap.phone]).trim();
     if(ph) out.phones=[ph,...(out.phones||[]).slice(1)];
   }
+  const batchSocials=Object.entries(SOCIAL_KEY_TO_PLAT)
+    .filter(([key])=>batchColMap[key]&&row[batchColMap[key]]&&String(row[batchColMap[key]]).trim())
+    .map(([key,plat])=>({platform:plat,url:String(row[batchColMap[key]]).trim(),show:true}));
+  if(batchSocials.length) out.socials=batchSocials;
+  if(batchColMap.disclaimer&&row[batchColMap.disclaimer]!==undefined&&row[batchColMap.disclaimer]!=='')
+    out.disclaimer=String(row[batchColMap.disclaimer]).trim();
   return out;
 }
 
@@ -2412,7 +2448,7 @@ async function downloadBatchAll(){
 }
 
 function clearBatch(){
-  batchRows=[]; batchHeaders=[]; batchColMap={name:'',title:'',company:'',email:'',website:'',phone:''};
+  batchRows=[]; batchHeaders=[]; batchColMap={name:'',title:'',company:'',email:'',website:'',phone:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
   document.getElementById('batchFile').value='';
   document.getElementById('batchZone').style.display='block';
   document.getElementById('batchResult').style.display='none';
