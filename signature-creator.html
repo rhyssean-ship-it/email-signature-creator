@@ -552,8 +552,6 @@ textarea.field-ta::placeholder{color:#7a92a8}
         </span>
       </div>
       <div class="cb-btns" style="flex-shrink:0;">
-        <button class="btn-sm" id="cpPrev" onclick="cp('uniCode',this)">Copy HTML</button>
-        <button class="btn-dl" id="dlPrev" onclick="dl('uniCode','signature-universal.html')">&#8681; Download</button>
         <button class="btn-sm" onclick="resetAll()" style="color:#b0bec8;">Reset all</button>
         <button class="btn-sm" onclick="togglePreview(this)" id="prevToggle" style="color:#6b7f94;">Minimise</button>
       </div>
@@ -786,7 +784,7 @@ function render(){
   }
   warnEl.innerHTML=warn;
   const disabled=!!warn;
-  ['cpDesk','dlDesk','cpMob','dlMob','cpUni','dlUni','cpPrev','dlPrev'].forEach(id=>{
+  ['cpDesk','dlDesk','cpMob','dlMob','cpUni','dlUni'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.disabled=disabled;
   });
   const disc=disclaimerHtml(d);
