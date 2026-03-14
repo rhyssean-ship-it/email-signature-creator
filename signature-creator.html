@@ -134,6 +134,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
   .step-sticky .step-hd{margin-bottom:10px}
   .s1-grid{grid-template-columns:1fr;}
   .s1-divider{display:none;}
+  .s1-right{margin-top:20px;}
 }
 </style>
 </head>
@@ -285,7 +286,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
         </div>
       </div>
       <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
           <div class="sec-lbl" style="margin-bottom:0">Typography &amp; Colour</div>
           <div class="toggle-sw">
             <button class="on" id="swSimple" onclick="setColourMode('simple')">Simple</button>
@@ -586,7 +587,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
       </div>
       <div>
         <div class="cb-hd">
-          <span>Universal HTML <span class="cb-tag">Recommended</span></span>
+          <span>Universal HTML</span>
           <div class="cb-btns"><button class="btn-sm" id="cpUni" onclick="cp('uniCode',this)">Copy</button><button class="btn-dl" id="dlUni" onclick="dl('uniCode','signature-universal.html')">&#8681; Download</button><button class="btn-sm" onclick="toggleCode('uniCode',this)" style="color:#6b7f94;">Show code</button></div>
         </div>
         <textarea class="code-ta tall" id="uniCode" readonly style="display:none"></textarea>
