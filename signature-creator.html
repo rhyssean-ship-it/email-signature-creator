@@ -543,7 +543,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
   </div>
 
   <!-- STEP 4: Preview -->
-  <div class="step step-sticky">
+  <div class="step step-sticky" id="prevStep">
     <div class="step-hd" style="justify-content:space-between;">
       <div style="display:flex;align-items:center;gap:12px;">
         <div class="step-t">Preview</div>
@@ -555,15 +555,18 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <button class="btn-sm" id="cpPrev" onclick="cp('uniCode',this)">Copy HTML</button>
         <button class="btn-dl" id="dlPrev" onclick="dl('uniCode','signature-universal.html')">&#8681; Download</button>
         <button class="btn-sm" onclick="resetAll()" style="color:#b0bec8;">Reset all</button>
+        <button class="btn-sm" onclick="togglePreview(this)" id="prevToggle" style="color:#6b7f94;">Minimise</button>
       </div>
     </div>
-    <div class="prev-grid">
-      <div>
-        <div class="prev-lbl">Desktop</div>
+    <div id="prevBody">
+      <div class="tab-btns" style="margin-bottom:12px;">
+        <button class="tab-btn active" id="ptab-desk" onclick="switchPrevTab('desk')">Desktop</button>
+        <button class="tab-btn" id="ptab-mob" onclick="switchPrevTab('mob')">Mobile</button>
+      </div>
+      <div id="ppanel-desk">
         <div class="prev-box"><div class="prev-inner" id="deskPrev"><span style="color:#a0b0c0;font-size:12px;font-family:'Montserrat','Segoe UI',sans-serif;">Your signature will appear here as you type…</span></div></div>
       </div>
-      <div>
-        <div class="prev-lbl">Mobile (375px)</div>
+      <div id="ppanel-mob" style="display:none;">
         <div class="prev-box"><div class="prev-inner" id="mobPrev"><span style="color:#a0b0c0;font-size:12px;font-family:'Montserrat','Segoe UI',sans-serif;">Mobile version…</span></div></div>
       </div>
     </div>
@@ -2143,6 +2146,22 @@ function toggleCode(id,btn){
 // ── COLLAPSIBLE SECTIONS ─────────────────────────────────
 function toggleColl(id){
   document.getElementById('coll-sec-'+id).classList.toggle('open');
+}
+
+// ── PREVIEW TABS ─────────────────────────────────────────
+function switchPrevTab(tab){
+  document.getElementById('ppanel-desk').style.display=tab==='desk'?'block':'none';
+  document.getElementById('ppanel-mob').style.display=tab==='mob'?'block':'none';
+  document.getElementById('ptab-desk').classList.toggle('active',tab==='desk');
+  document.getElementById('ptab-mob').classList.toggle('active',tab==='mob');
+}
+
+// ── PREVIEW MINIMISE ─────────────────────────────────────
+function togglePreview(btn){
+  const body=document.getElementById('prevBody');
+  const collapsed=body.style.display==='none';
+  body.style.display=collapsed?'block':'none';
+  btn.textContent=collapsed?'Minimise':'Expand';
 }
 
 // ── TEMPLATE TABS ────────────────────────────────────────
