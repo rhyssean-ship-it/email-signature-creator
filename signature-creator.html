@@ -63,10 +63,10 @@ input[type=range]{width:100%;accent-color:#00aeef}
 .swatch{width:36px;height:36px;border-radius:8px;border:1px solid rgba(0,0,0,.08);flex-shrink:0;cursor:pointer;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .swatch:hover{transform:scale(1.1);box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .swatch-info{font-size:12px;color:#6b7f94;line-height:1.4}
-.swatch-hex{font-family:monospace;font-size:11px;color:#a0b0c0}
+.swatch-hex{font-family:monospace;font-size:11px;color:#6b8090}
 .apply-btn{margin-top:12px;padding:8px 16px;border-radius:7px;border:none;background:#00aeef;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;font-family:'Montserrat','Segoe UI',sans-serif}
 .apply-btn:hover{background:#008ec0}
-.scan-hint{font-size:12px;color:#a0b0c0;margin-top:6px}
+.scan-hint{font-size:12px;color:#6b8090;margin-top:6px}
 /* Template grid */
 .tmpl-section-lbl{font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px}
 .tmpl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
@@ -118,11 +118,11 @@ textarea.field-ta::placeholder{color:#7a92a8}
     <div class="phone-list" id="phoneList"></div>
     <button class="btn btn-s btn-add" onclick="addPhone()">+ Add Phone</button>
     <hr class="hr">
-    <div class="sec-lbl">Social Media <span style="font-weight:400;color:#bbb;font-size:10px;text-transform:none;letter-spacing:0">(up to 4)</span></div>
+    <div class="sec-lbl">Social Media <span style="font-weight:400;color:#6b8090;font-size:10px;text-transform:none;letter-spacing:0">(up to 4)</span></div>
     <div class="social-list" id="socialList"></div>
     <button class="btn btn-s btn-add" id="addSocBtn" onclick="addSocial()">+ Add Social Link</button>
     <hr class="hr">
-    <div class="sec-lbl">Disclaimer <span style="font-weight:400;color:#bbb;font-size:10px;text-transform:none;letter-spacing:0">(optional — appears as small text below your signature)</span></div>
+    <div class="sec-lbl">Disclaimer <span style="font-weight:400;color:#6b8090;font-size:10px;text-transform:none;letter-spacing:0">(optional — appears as small text below your signature)</span></div>
     <div class="fgrp span2">
       <textarea class="field-ta" id="f_disclaimer" placeholder="Company Reg No: 12345678&#10;Registered Address: 123 Example Street, City, AB1 2CD.&#10;&#10;This email and any attachments are confidential…" oninput="dp()"></textarea>
     </div>
@@ -137,7 +137,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <input type="file" id="logoFile" accept="image/*" onchange="handleLogo(this)">
       <div style="font-size:28px;margin-bottom:8px">🖼️</div>
       <div style="font-size:14px;color:#3a5268;margin-bottom:4px">Drop your logo here or click to browse</div>
-      <div style="font-size:12px;color:#a0b0c0">PNG, SVG or JPG — processed locally in your browser</div>
+      <div style="font-size:12px;color:#6b8090">PNG, SVG or JPG — processed locally in your browser</div>
     </div>
     <div id="logoResult" style="display:none;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -152,12 +152,12 @@ textarea.field-ta::placeholder{color:#7a92a8}
     </div>
 
     <hr class="hr">
-    <div class="sec-lbl">Banner Image <span style="font-weight:400;color:#bbb;font-size:10px;text-transform:none;letter-spacing:0">Used by banner templates. Recommended size: 600×100px.</span></div>
+    <div class="sec-lbl">Banner Image <span style="font-weight:400;color:#6b8090;font-size:10px;text-transform:none;letter-spacing:0">Used by banner templates. Recommended size: 600×100px.</span></div>
     <div class="scan-zone" id="bannerZone">
       <input type="file" id="bannerFile" accept="image/*" onchange="handleBanner(this)">
       <div style="font-size:28px;margin-bottom:8px">🎌</div>
       <div style="font-size:14px;color:#3a5268;margin-bottom:4px">Drop your banner here or click to browse</div>
-      <div style="font-size:12px;color:#a0b0c0">PNG or JPG — recommended 600×100px</div>
+      <div style="font-size:12px;color:#6b8090">PNG or JPG — recommended 600×100px</div>
     </div>
     <div id="bannerResult" style="display:none;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -179,7 +179,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <input type="file" id="scanFile" accept="image/*" onchange="scanImage(this)">
       <div style="font-size:28px;margin-bottom:8px">🎨</div>
       <div style="font-size:14px;color:#3a5268;margin-bottom:4px">Drop a signature image here to extract brand colours</div>
-      <div style="font-size:12px;color:#a0b0c0">JPG, PNG or WebP — no upload, all processing happens in your browser</div>
+      <div style="font-size:12px;color:#6b8090">JPG, PNG or WebP — no upload, all processing happens in your browser</div>
     </div>
     <div id="scanResult" style="display:none">
       <div class="scan-preview">
@@ -213,21 +213,21 @@ textarea.field-ta::placeholder{color:#7a92a8}
         </select>
       </div>
       <div class="fgrp">
-        <label>Primary <span style="font-weight:400;color:#aaa">(name / accents)</span></label>
+        <label>Primary <span style="font-weight:400;color:#6b8090">(name / accents)</span></label>
         <div class="color-row">
           <input type="color" id="c_pri" value="#1a237e" oninput="syncH('c_pri','h_pri');dp()">
           <input type="text" class="hex-in" id="h_pri" value="#1a237e" oninput="syncP('h_pri','c_pri')">
         </div>
       </div>
       <div class="fgrp">
-        <label>Secondary <span style="font-weight:400;color:#aaa">(job title)</span></label>
+        <label>Secondary <span style="font-weight:400;color:#6b8090">(job title)</span></label>
         <div class="color-row">
           <input type="color" id="c_sec" value="#1565c0" oninput="syncH('c_sec','h_sec');dp()">
           <input type="text" class="hex-in" id="h_sec" value="#1565c0" oninput="syncP('h_sec','c_sec')">
         </div>
       </div>
       <div class="fgrp">
-        <label>Text <span style="font-weight:400;color:#aaa">(body / contact)</span></label>
+        <label>Text <span style="font-weight:400;color:#6b8090">(body / contact)</span></label>
         <div class="color-row">
           <input type="color" id="c_txt" value="#444444" oninput="syncH('c_txt','h_txt');dp()">
           <input type="text" class="hex-in" id="h_txt" value="#444444" oninput="syncP('h_txt','c_txt')">
