@@ -649,27 +649,36 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <div class="step-n batch-step-n">6</div>
       <div class="step-t">Batch Export <span class="batch-optional" style="font-size:11px;font-weight:400;color:#8a9baa;margin-left:4px;">— optional</span></div>
     </div>
-    <div class="scan-zone" id="batchZone" style="margin-bottom:0;">
-      <input type="file" id="batchFile" accept=".csv,.xlsx,.xls" onchange="handleBatchFile(this)">
-      <div class="drag-text" style="font-size:13px;font-weight:600;color:#3a5268;margin-bottom:4px;">Drop a CSV or XLSX file here</div>
-      <div style="font-size:11px;color:#8a9baa;">Supports .csv, .xlsx, .xls</div>
-      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #dde4ec;">
-        <button onclick="downloadBatchTemplate();event.stopPropagation();" style="background:none;border:none;cursor:pointer;font-size:11px;color:#1179A3;font-family:'Montserrat','Segoe UI',sans-serif;font-weight:600;text-decoration:underline;text-underline-offset:2px;padding:0;">&#8681; Download XLSX template</button>
+    <p style="font-size:12px;color:#6b8090;margin-bottom:16px;line-height:1.6;">Upload a CSV or XLSX file with one person per row. The first person will appear in the live preview. Click <strong>Download All</strong> to export a ZIP containing one Universal HTML signature per person, using the style, logo, and template settings below.</p>
+    <div id="batchUploadGrid" style="display:grid;grid-template-columns:1fr auto;gap:14px;align-items:stretch;margin-bottom:0;">
+      <div class="scan-zone" id="batchZone" style="margin-bottom:0;text-align:center;">
+        <input type="file" id="batchFile" accept=".csv,.xlsx,.xls" onchange="handleBatchFile(this)">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="margin-bottom:8px;opacity:.4;"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#1179A3" stroke-width="1.5"/><path d="M3 8h18M8 8v13" stroke="#1179A3" stroke-width="1.5"/><path d="M12 12h5M12 15h5M12 18h3" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <div class="drag-text" style="font-size:13px;font-weight:600;color:#3a5268;margin-bottom:4px;">Drop a CSV or XLSX file here</div>
+        <div style="font-size:11px;color:#8a9baa;">or click to browse — .csv, .xlsx, .xls</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f8fafc;border:1px solid #dde4ec;border-radius:12px;padding:20px 24px;gap:10px;text-align:center;min-width:180px;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="#1179A3" stroke-width="1.5" stroke-linejoin="round"/><path d="M14 2v6h6M8 13h8M8 17h5" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <div style="font-size:12px;font-weight:600;color:#1a2a3a;">Need a template?</div>
+        <div style="font-size:11px;color:#6b8090;line-height:1.5;">Download our pre-formatted spreadsheet, fill it in, and upload it back.</div>
+        <button onclick="downloadBatchTemplate()" class="btn-dl" style="width:100%;margin-top:2px;">&#8681; Download Template</button>
       </div>
     </div>
-    <div id="batchResult" style="display:none;margin-top:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-        <div id="batchInfo" style="font-size:12px;color:#6b8090;"></div>
-        <button class="btn-sm" onclick="clearBatch()">Clear file</button>
+    <div id="batchResult" style="display:none;margin-top:20px;padding-top:20px;border-top:1px solid #edf1f5;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#1a2a3a;" id="batchInfo"></div>
+        </div>
+        <button class="btn-sm" onclick="clearBatch()">&#8592; Upload different file</button>
       </div>
       <div style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Map columns to fields</div>
       <div id="batchMapGrid"></div>
       <div style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Preview <span id="batchRowCount" style="font-weight:400;color:#8a9baa;text-transform:none;letter-spacing:0;"></span></div>
       <div class="batch-table-wrap"><table class="batch-table" id="batchTable"></table></div>
-      <div style="display:flex;justify-content:center;">
+      <div style="display:flex;justify-content:center;margin-top:4px;">
         <button class="batch-dl-btn" style="width:40%;" onclick="downloadBatchAll()">&#8681; Download All Signatures</button>
       </div>
-      <div class="batch-prog" id="batchProg"><div class="batch-prog-bar" id="batchProgBar"></div></div>
+      <div class="batch-prog" id="batchProg" style="margin-top:12px;"><div class="batch-prog-bar" id="batchProgBar"></div></div>
       <div id="batchStatus" style="font-size:11px;color:#6b8090;text-align:center;margin-top:6px;"></div>
     </div>
   </div>
@@ -2373,7 +2382,7 @@ function loadBatchData({headers,rows}){
   batchHeaders=headers;
   batchRows=rows;
   batchColMap=batchAutoMap(headers);
-  document.getElementById('batchZone').style.display='none';
+  document.getElementById('batchUploadGrid').style.display='none';
   document.getElementById('batchResult').style.display='block';
   document.getElementById('batchInfo').textContent=`${rows.length} row${rows.length!==1?'s':''} loaded · ${headers.length} column${headers.length!==1?'s':''}`;
   document.getElementById('batchRowCount').textContent=`(showing first 5 of ${rows.length})`;
@@ -2476,7 +2485,7 @@ function downloadBatchTemplate(){
 function clearBatch(){
   batchRows=[]; batchHeaders=[]; batchColMap={name:'',title:'',company:'',email:'',website:'',phone:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
   document.getElementById('batchFile').value='';
-  document.getElementById('batchZone').style.display='block';
+  document.getElementById('batchUploadGrid').style.display='grid';
   document.getElementById('batchResult').style.display='none';
   document.getElementById('batchStatus').textContent='';
   dp();
