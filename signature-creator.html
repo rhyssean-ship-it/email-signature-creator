@@ -104,6 +104,19 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .toggle-sw{display:flex;background:#edf1f5;border-radius:20px;border:1px solid #dde4ec;overflow:hidden;}
 .toggle-sw button{padding:4px 12px;border:none;background:transparent;cursor:pointer;font-size:11px;font-weight:600;color:#6b7f94;transition:.15s;font-family:'Montserrat','Segoe UI',sans-serif;}
 .toggle-sw button.on{background:#00aeef;color:#fff;border-radius:20px;}
+/* Step 1 two-column layout */
+.s1-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:0 4px;align-items:start;}
+.s1-divider{width:1px;background:#edf1f5;margin:0 4px;align-self:stretch;}
+/* Collapsible sections */
+.coll-sec{border:1px solid #edf1f5;border-radius:10px;overflow:hidden;margin-bottom:10px;}
+.coll-sec:last-child{margin-bottom:0;}
+.coll-hd{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fafc;border:none;cursor:pointer;font-family:'Montserrat','Segoe UI',sans-serif;font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;transition:.15s;text-align:left;}
+.coll-hd:hover{background:#edf1f5;}
+.coll-chev{font-size:10px;color:#6b8090;transition:transform .2s;display:inline-block;flex-shrink:0;}
+.coll-sec.open .coll-chev{transform:rotate(180deg);}
+.coll-body{display:none;padding:14px;}
+.coll-sec.open .coll-body{display:block;}
+.s1-sec-lbl{font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
 @media(max-width:740px){
   .fg{grid-template-columns:1fr}
   .prev-grid{grid-template-columns:1fr}
@@ -115,6 +128,8 @@ textarea.field-ta::placeholder{color:#7a92a8}
   .step-sticky .prev-box{padding:10px}
   .step-sticky .prev-inner{min-height:40px;padding:10px;font-size:11px}
   .step-sticky .step-hd{margin-bottom:10px}
+  .s1-grid{grid-template-columns:1fr;}
+  .s1-divider{display:none;}
 }
 </style>
 </head>
@@ -131,25 +146,72 @@ textarea.field-ta::placeholder{color:#7a92a8}
   <!-- STEP 1 -->
   <div class="step">
     <div class="step-hd"><div class="step-n">1</div><div class="step-t">Your Details</div></div>
-    <div class="fg">
-      <div class="fgrp"><label>Full Name</label><input type="text" id="f_name" placeholder="Jane Smith" oninput="dp()"></div>
-      <div class="fgrp"><label>Job Title</label><input type="text" id="f_title" placeholder="Senior Designer" oninput="dp()"></div>
-      <div class="fgrp"><label>Company Name</label><input type="text" id="f_company" placeholder="Acme Corp" oninput="dp()"></div>
-      <div class="fgrp"><label>Email Address</label><input type="email" id="f_email" placeholder="jane@acme.com" oninput="dp()"></div>
-      <div class="fgrp span2"><label>Website URL</label><input type="url" id="f_website" placeholder="https://acme.com" oninput="dp()"></div>
-    </div>
-    <hr class="hr">
-    <div class="sec-lbl">Phone Numbers</div>
-    <div class="phone-list" id="phoneList"></div>
-    <button class="btn btn-s btn-add" onclick="addPhone()">+ Add Phone</button>
-    <hr class="hr">
-    <div class="sec-lbl">Social Media <span style="font-weight:400;color:#6b8090;font-size:10px;text-transform:none;letter-spacing:0">(up to 4)</span></div>
-    <div class="social-list" id="socialList"></div>
-    <button class="btn btn-s btn-add" id="addSocBtn" onclick="addSocial()">+ Add Social Link</button>
-    <hr class="hr">
-    <div class="sec-lbl">Disclaimer <span style="font-weight:400;color:#6b8090;font-size:10px;text-transform:none;letter-spacing:0">(optional — appears as small text below your signature)</span></div>
-    <div class="fgrp span2">
-      <textarea class="field-ta" id="f_disclaimer" placeholder="Company Reg No: 12345678&#10;Registered Address: 123 Example Street, City, AB1 2CD.&#10;&#10;This email and any attachments are confidential…" oninput="dp()"></textarea>
+    <div class="s1-grid">
+      <!-- Left: core identity -->
+      <div class="s1-left">
+        <div class="s1-sec-lbl">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="5" r="3" stroke="#1179A3" stroke-width="1.5"/><path d="M2 13c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Identity
+        </div>
+        <div class="fg">
+          <div class="fgrp"><label>Full Name</label><input type="text" id="f_name" placeholder="Jane Smith" oninput="dp()"></div>
+          <div class="fgrp"><label>Job Title</label><input type="text" id="f_title" placeholder="Senior Designer" oninput="dp()"></div>
+          <div class="fgrp"><label>Company Name</label><input type="text" id="f_company" placeholder="Acme Corp" oninput="dp()"></div>
+          <div class="fgrp"><label>Email Address</label><input type="email" id="f_email" placeholder="jane@acme.com" oninput="dp()"></div>
+          <div class="fgrp span2"><label>Website URL</label><input type="url" id="f_website" placeholder="https://acme.com" oninput="dp()"></div>
+        </div>
+      </div>
+      <!-- Divider -->
+      <div class="s1-divider"></div>
+      <!-- Right: contact extras -->
+      <div class="s1-right">
+        <div class="s1-sec-lbl">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5" stroke="#1179A3" stroke-width="1.5"/><path d="M5 6h6M5 9h4" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Contact &amp; Extras
+        </div>
+        <!-- Phone collapsible -->
+        <div class="coll-sec" id="coll-sec-phones">
+          <button class="coll-hd" onclick="toggleColl('phones')">
+            <span style="display:flex;align-items:center;gap:7px;">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 2h3l1.5 3.5-1.75 1.25C6.9 8.9 7.1 9.1 9.25 11.25L10.5 9.5 14 11v3c0 .55-.45 1-1 1C5.4 15 1 10.6 1 3c0-.55.45-1 1-1z" stroke="#1179A3" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              Phone Numbers
+            </span>
+            <span class="coll-chev">▾</span>
+          </button>
+          <div class="coll-body">
+            <div class="phone-list" id="phoneList"></div>
+            <button class="btn btn-s btn-add" onclick="addPhone()">+ Add Phone</button>
+          </div>
+        </div>
+        <!-- Social collapsible -->
+        <div class="coll-sec" id="coll-sec-social">
+          <button class="coll-hd" onclick="toggleColl('social')">
+            <span style="display:flex;align-items:center;gap:7px;">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="4" r="2" stroke="#1179A3" stroke-width="1.4"/><circle cx="4" cy="8" r="2" stroke="#1179A3" stroke-width="1.4"/><circle cx="12" cy="12" r="2" stroke="#1179A3" stroke-width="1.4"/><path d="M6 7l4-2M6 9l4 2" stroke="#1179A3" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Social Media <span style="font-weight:400;color:#6b8090;font-size:10px;text-transform:none;letter-spacing:0;margin-left:4px;">(up to 4)</span>
+            </span>
+            <span class="coll-chev">▾</span>
+          </button>
+          <div class="coll-body">
+            <div class="social-list" id="socialList"></div>
+            <button class="btn btn-s btn-add" id="addSocBtn" onclick="addSocial()">+ Add Social Link</button>
+          </div>
+        </div>
+        <!-- Disclaimer collapsible -->
+        <div class="coll-sec" id="coll-sec-disclaimer">
+          <button class="coll-hd" onclick="toggleColl('disclaimer')">
+            <span style="display:flex;align-items:center;gap:7px;">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="1" width="12" height="14" rx="2" stroke="#1179A3" stroke-width="1.4"/><path d="M5 5h6M5 8h6M5 11h4" stroke="#1179A3" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Disclaimer
+            </span>
+            <span class="coll-chev">▾</span>
+          </button>
+          <div class="coll-body">
+            <div style="font-size:11px;color:#6b8090;margin-bottom:8px;line-height:1.5;">Optional — appears as small text below your signature.</div>
+            <textarea class="field-ta" id="f_disclaimer" placeholder="Company Reg No: 12345678&#10;Registered Address: 123 Example Street, City, AB1 2CD.&#10;&#10;This email and any attachments are confidential…" oninput="dp()"></textarea>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2071,6 +2133,11 @@ function drawThumbnails(){
     const el=document.getElementById('tw-'+id);
     if(el) el.innerHTML=html;
   });
+}
+
+// ── COLLAPSIBLE SECTIONS ─────────────────────────────────
+function toggleColl(id){
+  document.getElementById('coll-sec-'+id).classList.toggle('open');
 }
 
 // ── TEMPLATE TABS ────────────────────────────────────────
