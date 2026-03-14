@@ -228,10 +228,17 @@ textarea.field-ta::placeholder{color:#7a92a8}
           </div>
           <div class="color-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px">
             <div class="fgrp">
-              <label>Primary <span style="font-weight:400;color:#6b8090">(name / accents)</span></label>
+              <label>Name <span style="font-weight:400;color:#6b8090">(person's name)</span></label>
               <div class="color-row">
                 <input type="color" id="c_pri" value="#1a237e" oninput="syncH('c_pri','h_pri');dp()">
                 <input type="text" class="hex-in" id="h_pri" value="#1a237e" oninput="syncP('h_pri','c_pri')">
+              </div>
+            </div>
+            <div class="fgrp">
+              <label>Accent <span style="font-weight:400;color:#6b8090">(bars, rules, blocks)</span></label>
+              <div class="color-row">
+                <input type="color" id="c_acc" value="#1a237e" oninput="syncH('c_acc','h_acc');dp()">
+                <input type="text" class="hex-in" id="h_acc" value="#1a237e" oninput="syncP('h_acc','c_acc')">
               </div>
             </div>
             <div class="fgrp">
@@ -649,6 +656,7 @@ function gd(){
     bannerW:parseInt(document.getElementById('bannerW').value)||600,
     font:document.getElementById('f_font').value,
     pri:document.getElementById('c_pri').value,
+    acc:document.getElementById('c_acc').value,
     sec:document.getElementById('c_sec').value,
     txt:document.getElementById('c_txt').value,
     line:document.getElementById('c_line').value,
@@ -733,7 +741,7 @@ function tmplClassicLeft(d){
         <img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;">
       </td>
       <td style="padding:0 18px;vertical-align:top;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:2px solid ${d.pri};line-height:${lhv}px;font-size:${lhv}px;">&nbsp;</td></tr></table>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:2px solid ${d.acc};line-height:${lhv}px;font-size:${lhv}px;">&nbsp;</td></tr></table>
       </td>`:'';
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>${logoCol}
@@ -807,7 +815,7 @@ function tmplBoldBlock(d){
     ${d.logo?`<td style="padding-right:16px;vertical-align:top;padding-top:4px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td>`:''}
     <td style="vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-        ${(d.name||d.title||d.company)?`<tr><td style="background:${d.pri};padding:10px 16px;border-radius:4px;">
+        ${(d.name||d.title||d.company)?`<tr><td style="background:${d.acc};padding:10px 16px;border-radius:4px;">
           ${d.name?`<div style="font-family:${d.font},Arial,sans-serif;font-size:20px;font-weight:bold;color:#ffffff;line-height:1.2;margin-bottom:2px;">${esc(d.name)}</div>`:''}
           ${d.title?`<div style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:rgba(255,255,255,0.85);margin-bottom:1px;">${esc(d.title)}</div>`:''}
           ${d.company?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:rgba(255,255,255,0.7);">${esc(d.company)}</div>`:''}
@@ -831,7 +839,7 @@ function tmplBannerClassic(d){
   ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:3px;line-height:1.2;">${esc(d.name)}</td></tr>`:''}
   ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
   ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:9px;">${esc(d.company)}</td></tr>`:''}
-  ${hasI&&(hasC||soc)?`<tr><td style="border-top:2px solid ${d.pri};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr><tr><td style="padding-top:8px;font-size:0;"></td></tr>`:''}
+  ${hasI&&(hasC||soc)?`<tr><td style="border-top:2px solid ${d.acc};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr><tr><td style="padding-top:8px;font-size:0;"></td></tr>`:''}
   ${hasC?`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
   ${soc?`<tr><td style="padding-top:2px;">${soc}</td></tr>`:''}
 </table>`;
@@ -871,7 +879,7 @@ function tmplBannerPlusLogo(d){
         <img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;">
       </td>
       <td style="padding:0 18px;vertical-align:top;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:2px solid ${d.pri};line-height:${lhv}px;font-size:${lhv}px;">&nbsp;</td></tr></table>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:2px solid ${d.acc};line-height:${lhv}px;font-size:${lhv}px;">&nbsp;</td></tr></table>
       </td>`:'';
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${bannerRow(d)}
@@ -897,7 +905,7 @@ function tmplBannerBold(d){
   const hasC=d.phones.length||d.email||d.website;
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${bannerRow(d)}
-  ${(d.name||d.title||d.company)?`<tr><td style="background:${d.pri};padding:10px 16px;border-radius:4px;">
+  ${(d.name||d.title||d.company)?`<tr><td style="background:${d.acc};padding:10px 16px;border-radius:4px;">
     ${d.name?`<div style="font-family:${d.font},Arial,sans-serif;font-size:20px;font-weight:bold;color:#ffffff;line-height:1.2;margin-bottom:2px;">${esc(d.name)}</div>`:''}
     ${d.title?`<div style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:rgba(255,255,255,0.85);margin-bottom:1px;">${esc(d.title)}</div>`:''}
     ${d.company?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:rgba(255,255,255,0.7);">${esc(d.company)}</div>`:''}
@@ -916,7 +924,7 @@ function tmplMinimal(d){
   const rows=[];
   if(d.logo) rows.push(`<tr><td style="padding-bottom:8px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>`);
   if(d.name) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:20px;font-weight:700;color:${d.pri};line-height:1.2;padding-bottom:5px;">${esc(d.name)}</td></tr>`);
-  rows.push(`<tr><td style="border-top:2px solid ${d.pri};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>`);
+  rows.push(`<tr><td style="border-top:2px solid ${d.acc};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>`);
   const meta=[];
   if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
   if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
@@ -984,7 +992,7 @@ function tmplAccentBar(d){
   const hasC=d.phones.length||d.email||d.website;
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
-    <td style="background:${d.pri};width:4px;padding:0;">&nbsp;</td>
+    <td style="background:${d.acc};width:4px;padding:0;">&nbsp;</td>
     <td style="padding:0 16px 0 14px;vertical-align:middle;">
       ${d.logo?`<img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;margin-bottom:10px;">`:''}
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
@@ -1067,7 +1075,7 @@ function tmplSplitPanel(d){
   if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr><td><a href="${ea(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
-    <td style="background:${d.pri};padding:14px 20px;vertical-align:middle;border-radius:4px 0 0 4px;">
+    <td style="background:${d.acc};padding:14px 20px;vertical-align:middle;border-radius:4px 0 0 4px;">
       ${d.name?`<div style="font-family:${d.font},Arial,sans-serif;font-size:17px;font-weight:bold;color:#ffffff;line-height:1.2;margin-bottom:3px;">${esc(d.name)}</div>`:''}
       ${d.title?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:rgba(255,255,255,0.8);margin-bottom:2px;">${esc(d.title)}</div>`:''}
       ${d.company?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:rgba(255,255,255,0.65);">${esc(d.company)}</div>`:''}
@@ -1098,7 +1106,7 @@ function tmplLayered(d){
     </td>
     ${d.logo?`<td style="padding-left:24px;vertical-align:middle;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td>`:''}
   </tr>
-  <tr><td colspan="2" style="border-top:2px solid ${d.pri};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>
+  <tr><td colspan="2" style="border-top:2px solid ${d.acc};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>
   <tr><td colspan="2" style="padding-top:8px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0">
       ${hasC?`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
@@ -1178,7 +1186,7 @@ function tmplBannerMinimal(d){
     rows.push(`<tr><td style="padding-bottom:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr></table></td></tr>`);
   }
   if(d.name) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:20px;font-weight:700;color:${d.pri};padding-bottom:5px;line-height:1.2;">${esc(d.name)}</td></tr>`);
-  rows.push(`<tr><td style="border-top:2px solid ${d.pri};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>`);
+  rows.push(`<tr><td style="border-top:2px solid ${d.acc};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>`);
   const meta=[];
   if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
   if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
@@ -1195,7 +1203,7 @@ function tmplBannerAccentBlock(d){
   const hasC=d.phones.length||d.email||d.website;
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${bannerRow(d)}
-  ${(d.name||d.title||d.company)?`<tr><td style="background:${d.pri};padding:12px 18px;border-radius:4px;margin-bottom:10px;">
+  ${(d.name||d.title||d.company)?`<tr><td style="background:${d.acc};padding:12px 18px;border-radius:4px;margin-bottom:10px;">
     ${d.name?`<div style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:#ffffff;line-height:1.2;margin-bottom:2px;">${esc(d.name)}</div>`:''}
     ${d.title?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:rgba(255,255,255,0.85);">${esc(d.title)}</div>`:''}
     ${d.company?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:rgba(255,255,255,0.65);margin-top:1px;">${esc(d.company)}</div>`:''}
@@ -1221,7 +1229,7 @@ function tmplEditorial(d){
   const logoTd=d.logo?`<td style="padding-left:28px;vertical-align:top;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td>`:'';
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${d.name?`<tr><td colspan="2" style="font-family:${d.font},Arial,sans-serif;font-size:28px;font-weight:700;color:${d.pri};line-height:1.1;padding-bottom:8px;letter-spacing:-0.5px;white-space:nowrap;">${esc(d.name)}</td></tr>`:''}
-  <tr><td colspan="2" style="border-top:3px solid ${d.pri};padding-bottom:12px;font-size:0;line-height:0;">&nbsp;</td></tr>
+  <tr><td colspan="2" style="border-top:3px solid ${d.acc};padding-bottom:12px;font-size:0;line-height:0;">&nbsp;</td></tr>
   <tr>
     <td style="vertical-align:top;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">${infoRows.join('')}</table></td>
     ${logoTd}
@@ -1237,7 +1245,7 @@ function tmplMonogram(d){
   const initial=d.name?d.name.trim()[0].toUpperCase():'?';
   const badge=d.logo
     ?`<img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;border-radius:4px;">`
-    :`<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:${d.pri};width:54px;height:54px;text-align:center;vertical-align:middle;border-radius:4px;font-family:${d.font},Arial,sans-serif;font-size:28px;font-weight:700;color:#ffffff;line-height:1;">${esc(initial)}</td></tr></table>`;
+    :`<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:${d.acc};width:54px;height:54px;text-align:center;vertical-align:middle;border-radius:4px;font-family:${d.font},Arial,sans-serif;font-size:28px;font-weight:700;color:#ffffff;line-height:1;">${esc(initial)}</td></tr></table>`;
   const titleCo=[d.title,d.company].filter(Boolean).map(esc).join(' &nbsp;·&nbsp; ');
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
@@ -1245,7 +1253,7 @@ function tmplMonogram(d){
     <td style="vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
         ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:17px;font-weight:700;color:${d.pri};padding-bottom:5px;line-height:1.2;">${esc(d.name)}</td></tr>`:''}
-        ${(d.name&&(titleCo||hasC))?`<tr><td style="border-top:2px solid ${d.pri};padding-bottom:5px;font-size:0;line-height:0;">&nbsp;</td></tr>`:''}
+        ${(d.name&&(titleCo||hasC))?`<tr><td style="border-top:2px solid ${d.acc};padding-bottom:5px;font-size:0;line-height:0;">&nbsp;</td></tr>`:''}
         ${titleCo?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};padding-bottom:7px;">${titleCo}</td></tr>`:''}
         ${hasC?`<tr><td style="padding-bottom:4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
         ${soc?`<tr><td style="padding-top:4px;">${soc}</td></tr>`:''}
@@ -1268,7 +1276,7 @@ function tmplDarkHeader(d){
   if(soc) cRows.push(`<tr><td style="padding-top:6px;">${soc}</td></tr>`);
   const logoTd=d.logo?`<td style="padding-right:16px;padding-left:0;vertical-align:middle;border-right:1px solid ${d.line};"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td><td style="padding-right:0;font-size:0;">&nbsp;</td>`:'';
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
-  ${(d.name||d.title)?`<tr><td style="background:${d.pri};padding:12px 18px;border-radius:4px 4px 0 0;">
+  ${(d.name||d.title)?`<tr><td style="background:${d.acc};padding:12px 18px;border-radius:4px 4px 0 0;">
     ${d.name?`<div style="font-family:${d.font},Arial,sans-serif;font-size:19px;font-weight:700;color:#ffffff;line-height:1.2;margin-bottom:2px;">${esc(d.name)}</div>`:''}
     ${d.title?`<div style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:rgba(255,255,255,0.8);">${esc(d.title)}</div>`:''}
   </td></tr>`:''}
@@ -1301,7 +1309,7 @@ function tmplRuled(d){
     </td>
     ${d.logo?`<td style="vertical-align:bottom;padding-bottom:10px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td>`:''}
   </tr>
-  ${ruledRows?`<tr><td colspan="2"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-top:2px solid ${d.pri};">${ruledRows}</table></td></tr>`:''}
+  ${ruledRows?`<tr><td colspan="2"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-top:2px solid ${d.acc};">${ruledRows}</table></td></tr>`:''}
   ${soc?`<tr><td colspan="2" style="padding-top:8px;">${soc}</td></tr>`:''}
 </table>`;}
 
@@ -1373,7 +1381,7 @@ function tmplTopBar(d){
   const hasC=d.phones.length||d.email||d.website;
   const logoRow=d.logo?`<tr><td style="padding-bottom:10px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>`:'';
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
-  <tr><td style="background:${d.pri};height:8px;font-size:0;line-height:0;padding:0;">&nbsp;</td></tr>
+  <tr><td style="background:${d.acc};height:8px;font-size:0;line-height:0;padding:0;">&nbsp;</td></tr>
   <tr><td style="padding-top:14px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0">
       ${logoRow}
@@ -1462,7 +1470,7 @@ function tmplBannerStacked(d){
   if(d.banner) rows.push(`<tr><td style="padding-bottom:14px;text-align:center;"><img src="${d.banner}" width="${bw}" height="${bhv}" border="0" alt="Banner" style="display:inline-block;width:${bw}px;height:${bhv}px;"></td></tr>`);
   else rows.push(`<tr><td style="padding-bottom:14px;text-align:center;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr><td style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr></table></td></tr>`);
   if(d.logo) rows.push(`<tr><td style="padding-bottom:10px;text-align:center;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${ea(d.company)} logo" style="display:inline-block;width:${lw}px;height:${lhv}px;"></td></tr>`);
-  rows.push(`<tr><td style="border-top:2px solid ${d.pri};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>`);
+  rows.push(`<tr><td style="border-top:2px solid ${d.acc};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>`);
   if(d.name) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:20px;font-weight:700;color:${d.pri};padding-top:10px;padding-bottom:3px;text-align:center;line-height:1.2;">${esc(d.name)}</td></tr>`);
   const meta=[];
   if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
@@ -1489,7 +1497,7 @@ function tmplBannerRuled(d){
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${bannerRow(d)}
   ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:22px;font-weight:700;color:${d.pri};padding-bottom:8px;line-height:1.1;letter-spacing:-0.5px;">${esc(d.name)}</td></tr>`:''}
-  ${ruledRows?`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-top:2px solid ${d.pri};">${ruledRows}</table></td></tr>`:''}
+  ${ruledRows?`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-top:2px solid ${d.acc};">${ruledRows}</table></td></tr>`:''}
   ${soc?`<tr><td style="padding-top:8px;">${soc}</td></tr>`:''}
 </table>`;}
 
@@ -1682,7 +1690,7 @@ function getColors(img){
   picked.sort((a,b)=>{const ha=getHSL(...a),hb=getHSL(...b);if(Math.abs(ha.s-hb.s)>0.15)return hb.s-ha.s;return ha.l-hb.l;});
   return picked.map(([r,g,b])=>({hex:rgbToHex(r,g,b),hsl:getHSL(r,g,b),r,g,b}));
 }
-const SWATCH_ROLES=['Primary (name & accents)','Secondary (job title)','Text colour','Accent 4','Accent 5','Accent 6'];
+const SWATCH_ROLES=['Name / Accent colour','Secondary (job title)','Text colour','Colour 4','Colour 5','Colour 6'];
 function renderSwatches(){
   const list=document.getElementById('swatchList'); list.innerHTML='';
   if(!extractedColors.length){document.getElementById('scanHint').textContent='No distinct colours found — try a different image.';return;}
@@ -1695,7 +1703,7 @@ function renderSwatches(){
 }
 function applyExtracted(){
   const set=(pickId,hexId,hex)=>{document.getElementById(pickId).value=hex;document.getElementById(hexId).value=hex;};
-  if(extractedColors[0]) set('c_pri','h_pri',extractedColors[0].hex);
+  if(extractedColors[0]){set('c_pri','h_pri',extractedColors[0].hex);set('c_acc','h_acc',extractedColors[0].hex);}
   if(extractedColors[1]) set('c_sec','h_sec',extractedColors[1].hex);
   const dark=extractedColors.slice(2).find(c=>c.hsl.l<0.45);
   set('c_txt','h_txt',dark?dark.hex:'#444444');
