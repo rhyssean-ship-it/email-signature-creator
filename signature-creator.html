@@ -11,7 +11,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Montserrat','Segoe UI',sans-serif;background:#f0f4f8;color:#1a2a3a;min-height:100vh}
 .wrap{max-width:1100px;margin:0 auto;padding:40px 24px}
-.hero{margin-bottom:36px}
+.hero{margin-bottom:36px;display:flex;flex-direction:column;align-items:flex-start;}
 h1{font-size:26px;font-weight:700;margin-bottom:6px;color:#204456}
 .sub{color:#6b7f94;font-size:14px}
 .step{background:#ffffff;border-radius:14px;padding:28px 32px;margin-bottom:20px;box-shadow:0 1px 6px rgba(0,0,0,.07);border:1px solid #dde4ec}
@@ -123,6 +123,24 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .coll-body{display:none;padding:14px;}
 .coll-sec.open .coll-body{display:block;}
 .s1-sec-lbl{font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+/* Mode switcher */
+.mode-switcher{display:inline-flex;margin-top:16px;background:#e4ecf4;border-radius:30px;padding:4px;gap:0;}
+.mode-btn{padding:7px 28px;border:none;border-radius:26px;cursor:pointer;font-size:13px;font-weight:600;color:#4a6070;background:transparent;transition:.2s;font-family:'Montserrat','Segoe UI',sans-serif;letter-spacing:.2px;}
+.mode-btn.active{background:#fff;color:#1179A3;box-shadow:0 1px 6px rgba(0,0,0,.12);}
+/* Flex ordering for wrap in multi mode */
+.wrap{display:flex;flex-direction:column;}
+.hero{order:0;}
+#step1{order:1;}
+#step2{order:2;}
+#step3{order:3;}
+#prevStep{order:4;}
+#step5{order:5;}
+#step6{order:6;}
+.mode-multi #step6{order:1;}
+.mode-multi #step1{display:none;}
+.mode-multi #step5{display:none;}
+.mode-multi .batch-step-n{display:none;}
+.mode-multi .batch-optional{display:none;}
 /* Batch export */
 .batch-map-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 16px;margin-bottom:16px;}
 .batch-table-wrap{overflow-x:auto;border:1px solid #dde4ec;border-radius:8px;margin-bottom:16px;}
@@ -158,10 +176,14 @@ textarea.field-ta::placeholder{color:#7a92a8}
   <div class="hero">
     <h1>Email Signature Creator</h1>
     <div class="sub">Fill in your details, pick a template, and copy the HTML straight to your email client.</div>
+    <div class="mode-switcher">
+      <button class="mode-btn active" id="modeBtn-single" onclick="setMode('single')">Single</button>
+      <button class="mode-btn" id="modeBtn-multi" onclick="setMode('multi')">Multiple</button>
+    </div>
   </div>
 
   <!-- STEP 1 -->
-  <div class="step">
+  <div class="step" id="step1">
     <div class="step-hd"><div class="step-n">1</div><div class="step-t">Your Details</div></div>
     <div class="s1-grid">
       <!-- Left: core identity -->
@@ -233,7 +255,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
   </div>
 
   <!-- STEP 2 -->
-  <div class="step">
+  <div class="step" id="step2">
     <div class="step-hd"><div class="step-n">2</div><div class="step-t">Logo, Banner &amp; Style</div></div>
 
     <div class="img-upload-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
@@ -383,7 +405,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
   </div>
 
   <!-- STEP 3: Choose Template -->
-  <div class="step">
+  <div class="step" id="step3">
     <div class="step-hd"><div class="step-n">3</div><div class="step-t">Choose Template</div></div>
     <div class="tab-btns">
       <button class="tab-btn active" onclick="switchTab('logo')" id="tab-logo">Logo Templates</button>
@@ -588,7 +610,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
   </div>
 
   <!-- STEP 5: Download -->
-  <div class="step">
+  <div class="step" id="step5">
     <div class="step-hd"><div class="step-t">Download</div></div>
     <div class="code-sec">
       <div style="margin-bottom:10px;font-size:11px;color:#8a9baa;line-height:1.6;">&#9432; Base64-embedded images may be blocked by some email clients. After copying, replace each <code style="background:#edf1f5;padding:1px 4px;border-radius:3px;font-size:10px;">src</code> with a publicly hosted image URL for best results.</div>
@@ -611,12 +633,12 @@ textarea.field-ta::placeholder{color:#7a92a8}
   </div>
 
   <!-- STEP 6: Batch Export -->
-  <div class="step">
+  <div class="step" id="step6">
     <div class="step-hd">
-      <div class="step-n">6</div>
-      <div class="step-t">Batch Export <span style="font-size:11px;font-weight:400;color:#8a9baa;margin-left:4px;">— optional</span></div>
+      <div class="step-n batch-step-n">6</div>
+      <div class="step-t">Batch Export <span class="batch-optional" style="font-size:11px;font-weight:400;color:#8a9baa;margin-left:4px;">— optional</span></div>
     </div>
-    <div style="font-size:12px;color:#6b8090;margin-bottom:16px;line-height:1.6;">Upload a CSV or XLSX file with one person per row. The first person will replace the live preview. Click <strong>Download All</strong> to export a ZIP containing one Universal HTML signature per person, using the style settings from Steps 1–3.</div>
+    <div style="font-size:12px;color:#6b8090;margin-bottom:16px;line-height:1.6;">Upload a CSV or XLSX file with one person per row. The first person will appear in the live preview. Click <strong>Download All</strong> to export a ZIP containing one Universal HTML signature per person, using the style, logo, and template settings below.</div>
     <div class="scan-zone" id="batchZone" style="margin-bottom:0;">
       <input type="file" id="batchFile" accept=".csv,.xlsx,.xls" onchange="handleBatchFile(this)">
       <div style="font-size:13px;font-weight:600;color:#3a5268;margin-bottom:4px;">Drop a CSV or XLSX file here</div>
@@ -2211,6 +2233,14 @@ function setColourMode(mode){
   el('colourPanel').classList.toggle('adv-mode',adv);
   el('swSimple').classList.toggle('on',!adv);
   el('swAdv').classList.toggle('on',adv);
+}
+
+// ── MODE SWITCHER ─────────────────────────────────────────
+function setMode(mode){
+  const isMulti=mode==='multi';
+  document.querySelector('.wrap').classList.toggle('mode-multi',isMulti);
+  document.getElementById('modeBtn-single').classList.toggle('active',!isMulti);
+  document.getElementById('modeBtn-multi').classList.toggle('active',isMulti);
 }
 
 // ── BATCH EXPORT ─────────────────────────────────────────
