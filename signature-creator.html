@@ -78,6 +78,7 @@ input[type=range]{width:100%;accent-color:#00aeef}
 /* Wireframe thumbnail */
 .tw{width:100%;height:72px;background:#ffffff;border-radius:5px;border:1px solid #edf1f5;position:relative;overflow:hidden}
 /* Preview */
+.step-sticky{position:sticky;bottom:20px;z-index:50}
 .prev-grid{display:grid;grid-template-columns:1fr 395px;gap:20px;margin-top:4px}
 .prev-box{background:#edf1f5;border-radius:10px;padding:20px;border:1px solid #dde4ec}
 .prev-lbl{font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
@@ -349,7 +350,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
   </div>
 
   <!-- STEP 4: Preview -->
-  <div class="step">
+  <div class="step step-sticky">
     <div class="step-hd"><div class="step-n">4</div><div class="step-t">Preview</div></div>
     <div class="prev-grid">
       <div>
