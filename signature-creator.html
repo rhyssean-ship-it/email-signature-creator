@@ -217,12 +217,10 @@ textarea.field-ta::placeholder{color:#7a92a8}
   #batchUploadGrid{grid-template-columns:1fr !important;}
   #step5 .cb-hd{flex-direction:column;align-items:flex-start;gap:8px;}
   #step2b>div{grid-template-columns:1fr !important;}
-  /* Preview — remove sticky, declutter header, expand preview area */
-  .step-sticky{position:static;bottom:auto;}
+  /* Preview — declutter header, expand preview area */
   #undoBtn,#redoBtn{display:none;}
   #prevStep .cb-btns span{display:none;}
-  .prev-tab-row{flex-direction:column;align-items:flex-start;gap:8px;}
-  #sigSizeInfo{text-align:left !important;}
+  .prev-toggle-txt{display:none;}
   .prev-inner{max-height:none !important;min-height:120px;}
   .prev-box{padding:12px;}
 }
@@ -649,16 +647,15 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <span style="width:1px;background:#dde4ec;align-self:stretch;margin:0 2px;"></span>
         <button class="btn-sm" onclick="resetAll()" style="color:#b0bec8;">Reset all</button>
         <span style="width:1px;background:#dde4ec;align-self:stretch;margin:0 2px;"></span>
-        <button class="btn-sm" onclick="togglePreview(this)" id="prevToggle" style="color:#6b7f94;">Minimise</button>
+        <button class="btn-sm" onclick="togglePreview(this)" id="prevToggle" style="color:#6b7f94;">&#9660; <span class="prev-toggle-txt">Minimise</span></button>
       </div>
     </div>
     <div id="prevBody">
-      <div class="prev-tab-row" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="prev-tab-row" style="display:flex;align-items:center;margin-bottom:12px;">
         <div class="tab-btns" style="margin-bottom:0;">
           <button class="tab-btn active" id="ptab-desk" onclick="switchPrevTab('desk')">Desktop</button>
           <button class="tab-btn" id="ptab-mob" onclick="switchPrevTab('mob')">Mobile</button>
         </div>
-        <div id="sigSizeInfo" style="font-size:11px;color:#8a9baa;display:none;text-align:right;line-height:1.4;"></div>
       </div>
       <div id="ppanel-desk" class="tab-panel active">
         <div class="prev-box"><div class="prev-inner" id="deskPrev"><span style="color:#a0b0c0;font-size:12px;font-family:'Montserrat','Segoe UI',sans-serif;">Your signature will appear here as you type…</span></div></div>
@@ -666,6 +663,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <div id="ppanel-mob" class="tab-panel">
         <div class="prev-box"><div class="prev-inner" id="mobPrev"><span style="color:#a0b0c0;font-size:12px;font-family:'Montserrat','Segoe UI',sans-serif;">Mobile version…</span></div></div>
       </div>
+      <div id="sigSizeInfo" style="font-size:11px;color:#8a9baa;display:none;line-height:1.4;margin-top:8px;"></div>
     </div>
   </div>
 
@@ -2338,8 +2336,13 @@ function toggleVisible(elId,btn,showLbl,hideLbl){
 }
 function toggleCode(id,btn){toggleVisible(id,btn,'Show code','Hide code');}
 function togglePreview(btn){
-  toggleVisible('prevBody',btn,'Expand','Minimise');
-  document.getElementById('prevStep').classList.toggle('minimised',btn.textContent==='Expand');
+  const body=document.getElementById('prevBody');
+  const visible=body.style.display!=='none';
+  body.style.display=visible?'none':'block';
+  const lbl=btn.querySelector('.prev-toggle-txt');
+  if(lbl) lbl.textContent=visible?'Expand':'Minimise';
+  btn.querySelector('span:first-of-type') && (btn.querySelector('span:first-of-type').innerHTML=visible?'&#9650;':'&#9660;');
+  document.getElementById('prevStep').classList.toggle('minimised',visible);
 }
 
 // ── COLLAPSIBLE SECTIONS ─────────────────────────────────
