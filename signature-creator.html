@@ -137,6 +137,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
 #step3{order:4;}
 #prevStep{order:5;}
 #step5{order:6;}
+#stepBatchDl{order:6;}
 #presetsStep{order:7;}
 #step6{order:8;}
 #step6{display:none;}
@@ -144,6 +145,8 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .mode-multi #step1{display:none;}
 .mode-multi #step2b{order:2;}
 .mode-multi #step5{display:none;}
+#stepBatchDl{display:none;}
+.mode-multi #stepBatchDl{display:flex;flex-direction:column;order:6;}
 .mode-multi .batch-step-n{display:none;}
 .mode-multi .batch-optional{display:none;}
 /* Collapsible count badges */
@@ -735,7 +738,15 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <div id="batchMapGrid"></div>
       <div style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Preview <span id="batchRowCount" style="font-weight:400;color:#8a9baa;text-transform:none;letter-spacing:0;"></span></div>
       <div class="batch-table-wrap"><table class="batch-table" id="batchTable"></table></div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px;">
+    </div>
+  </div>
+
+  <!-- BATCH DOWNLOAD -->
+  <div class="step" id="stepBatchDl">
+    <div class="step-hd"><div class="step-t">Download</div></div>
+    <div id="stepBatchDlEmpty" style="font-size:13px;color:#8a9baa;padding:10px 0;">Upload a CSV or XLSX file above to enable batch export.</div>
+    <div id="stepBatchDlBtns" style="display:none;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
         <button class="batch-dl-btn" onclick="downloadBatchAll('desk')">&#8681; Download Desktop</button>
         <button class="batch-dl-btn" onclick="downloadBatchAll('mob')">&#8681; Download Mobile</button>
         <button class="batch-dl-btn" onclick="downloadBatchAll('uni')">&#8681; Download Universal</button>
@@ -2458,6 +2469,8 @@ function loadBatchData({headers,rows}){
   batchColMap=batchAutoMap(headers);
   document.getElementById('batchUploadGrid').style.display='none';
   document.getElementById('batchResult').style.display='block';
+  document.getElementById('stepBatchDlEmpty').style.display='none';
+  document.getElementById('stepBatchDlBtns').style.display='block';
   document.getElementById('batchInfo').textContent=`${rows.length} row${rows.length!==1?'s':''} loaded · ${headers.length} column${headers.length!==1?'s':''}`;
   document.getElementById('batchRowCount').textContent=`(showing first 5 of ${rows.length})`;
   renderBatchMap();
@@ -2564,6 +2577,8 @@ function clearBatch(){
   document.getElementById('batchUploadGrid').style.display='grid';
   document.getElementById('batchResult').style.display='none';
   document.getElementById('batchStatus').textContent='';
+  document.getElementById('stepBatchDlEmpty').style.display='block';
+  document.getElementById('stepBatchDlBtns').style.display='none';
   dp();
 }
 
