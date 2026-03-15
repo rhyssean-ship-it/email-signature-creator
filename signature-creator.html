@@ -625,6 +625,9 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div class="step-t">Live Preview</div>
       </div>
       <div class="cb-btns" style="flex-shrink:0;">
+        <button class="btn-sm" id="undoBtn" onclick="undo()" title="Undo" disabled style="font-size:14px;padding:5px 10px;">&#8617;</button>
+        <button class="btn-sm" id="redoBtn" onclick="redo()" title="Redo" disabled style="font-size:14px;padding:5px 10px;">&#8618;</button>
+        <span style="width:1px;background:#dde4ec;align-self:stretch;margin:0 2px;"></span>
         <button class="btn-sm" onclick="resetAll()" style="color:#b0bec8;">Reset all</button>
         <span style="width:1px;background:#dde4ec;align-self:stretch;margin:0 2px;"></span>
         <button class="btn-sm" onclick="togglePreview(this)" id="prevToggle" style="color:#6b7f94;">Minimise</button>
@@ -952,6 +955,8 @@ function render(){
     sizeEl.innerHTML=`Desktop&nbsp;<strong>${dkb}KB</strong>${flag(dkb)}&ensp;Mobile&nbsp;<strong>${mkb}KB</strong>${flag(mkb)}&ensp;Universal&nbsp;<strong>${ukb}KB</strong>${flag(ukb)}`;
     sizeEl.style.display='block';
   }
+  // Push to undo history
+  if(!suppressHistory) pushHistory(captureState());
 }
 
 // ── HELPERS ──────────────────────────────────────────────
@@ -2552,6 +2557,102 @@ function clearBatch(){
   document.getElementById('batchResult').style.display='none';
   document.getElementById('batchStatus').textContent='';
   dp();
+}
+
+// ── UNDO / REDO ──────────────────────────────────────────
+const MAX_HISTORY=50;
+let sigHistory=[],historyIdx=-1,suppressHistory=false;
+
+function captureState(){
+  const phones=[...document.getElementById('phoneList').querySelectorAll('.phone-row input[type=text]')].map(i=>i.value);
+  const socials=[...document.getElementById('socialList').querySelectorAll('.social-row')].map(r=>({
+    platform:r.querySelector('select').value,
+    url:r.querySelector('input[type=url]').value,
+    show:r.querySelector('input[type=checkbox]').checked
+  }));
+  return{
+    name:el('f_name')?.value||'',title:el('f_title')?.value||'',company:el('f_company')?.value||'',
+    email:el('f_email')?.value||'',website:el('f_website')?.value||'',disclaimer:el('f_disclaimer')?.value||'',
+    phones,socials,
+    logoDataUrl,logoW:parseInt(el('logoW')?.value)||150,
+    bannerDataUrl,bannerW:parseInt(el('bannerW')?.value)||600,
+    font:el('f_font')?.value||'',template:currentTemplate,
+    pri:el('c_pri')?.value||'',acc:el('c_acc')?.value||'',sec:el('c_sec')?.value||'',
+    txt:el('c_txt')?.value||'',line:el('c_line')?.value||'',sep:el('c_sep')?.value||'',disc:el('c_disc')?.value||''
+  };
+}
+
+function pushHistory(state){
+  if(suppressHistory) return;
+  // Avoid duplicate consecutive entries
+  if(historyIdx>=0&&JSON.stringify(sigHistory[historyIdx])===JSON.stringify(state)) return;
+  sigHistory=sigHistory.slice(0,historyIdx+1);
+  sigHistory.push(state);
+  if(sigHistory.length>MAX_HISTORY) sigHistory.shift();
+  historyIdx=sigHistory.length-1;
+  updUndoRedo();
+}
+
+function applyState(state){
+  suppressHistory=true;
+  ['name','title','company','email','website','disclaimer'].forEach(k=>{const e=el('f_'+k);if(e)e.value=state[k]||'';});
+  el('phoneList').innerHTML='';
+  (state.phones||[]).forEach(v=>addPhone(v));
+  el('socialList').innerHTML='';
+  (state.socials||[]).forEach(s=>{
+    addSocial(s.platform,s.url);
+    const rows=el('socialList').querySelectorAll('.social-row');
+    const last=rows[rows.length-1];
+    if(last) last.querySelector('input[type=checkbox]').checked=s.show;
+  });
+  updSocBtn();
+  if(state.logoDataUrl){
+    logoDataUrl=state.logoDataUrl;
+    document.getElementById('logoThumb').src=logoDataUrl;
+    document.getElementById('logoZone').style.display='none';
+    document.getElementById('logoResult').style.display='block';
+    const lw=el('logoW');if(lw){lw.value=state.logoW;lw.dispatchEvent(new Event('input'));}
+  } else { resetLogo(); }
+  if(state.bannerDataUrl){
+    bannerDataUrl=state.bannerDataUrl;
+    document.getElementById('bannerThumb').src=bannerDataUrl;
+    document.getElementById('bannerZone').style.display='none';
+    document.getElementById('bannerResult').style.display='block';
+    const bw=el('bannerW');if(bw){bw.value=state.bannerW;bw.dispatchEvent(new Event('input'));}
+  } else { resetBanner(); }
+  const fs=el('f_font');if(fs)fs.value=state.font||'';
+  selTmpl(state.template||'classic-left');
+  ['pri','acc','sec','txt','line','sep','disc'].forEach(k=>{
+    const ce=el('c_'+k);if(ce)ce.value=state[k]||'';
+    const he=el('h_'+k);if(he)he.value=state[k]||'';
+  });
+  suppressHistory=false;
+  render();
+  updBadges();
+}
+
+function undo(){
+  if(historyIdx<=0) return;
+  historyIdx--;
+  suppressHistory=true;
+  applyState(sigHistory[historyIdx]);
+  suppressHistory=false;
+  updUndoRedo();
+}
+
+function redo(){
+  if(historyIdx>=sigHistory.length-1) return;
+  historyIdx++;
+  suppressHistory=true;
+  applyState(sigHistory[historyIdx]);
+  suppressHistory=false;
+  updUndoRedo();
+}
+
+function updUndoRedo(){
+  const u=document.getElementById('undoBtn'),r=document.getElementById('redoBtn');
+  if(u) u.disabled=historyIdx<=0;
+  if(r) r.disabled=historyIdx>=sigHistory.length-1;
 }
 
 // ── PNG EXPORT ───────────────────────────────────────────
