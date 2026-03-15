@@ -412,33 +412,33 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div class="color-grid" id="colourPanel" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
           <div class="fgrp color-card">
             <label>Name <span style="font-weight:400;color:#6b8090;">name colour</span></label>
-            <input type="color" id="c_pri" value="#1a237e" oninput="syncH('c_pri','h_pri');dp()">
-            <input type="text" class="hex-in" id="h_pri" value="#1a237e" oninput="syncP('h_pri','c_pri')">
+            <input type="color" id="c_pri" value="#204456" oninput="syncH('c_pri','h_pri');dp()">
+            <input type="text" class="hex-in" id="h_pri" value="#204456" oninput="syncP('h_pri','c_pri')">
           </div>
           <div class="fgrp color-card">
             <label>Accent <span style="font-weight:400;color:#6b8090;">bars &amp; blocks</span></label>
-            <input type="color" id="c_acc" value="#1a237e" oninput="syncH('c_acc','h_acc');dp()">
-            <input type="text" class="hex-in" id="h_acc" value="#1a237e" oninput="syncP('h_acc','c_acc')">
+            <input type="color" id="c_acc" value="#00aeef" oninput="syncH('c_acc','h_acc');dp()">
+            <input type="text" class="hex-in" id="h_acc" value="#00aeef" oninput="syncP('h_acc','c_acc')">
           </div>
           <div class="fgrp color-card">
             <label>Secondary <span style="font-weight:400;color:#6b8090;">job title</span></label>
-            <input type="color" id="c_sec" value="#1565c0" oninput="syncH('c_sec','h_sec');dp()">
-            <input type="text" class="hex-in" id="h_sec" value="#1565c0" oninput="syncP('h_sec','c_sec')">
+            <input type="color" id="c_sec" value="#1179A3" oninput="syncH('c_sec','h_sec');dp()">
+            <input type="text" class="hex-in" id="h_sec" value="#1179A3" oninput="syncP('h_sec','c_sec')">
           </div>
           <div class="fgrp color-card">
             <label>Text <span style="font-weight:400;color:#6b8090;">body &amp; contact</span></label>
-            <input type="color" id="c_txt" value="#444444" oninput="syncH('c_txt','h_txt');dp()">
-            <input type="text" class="hex-in" id="h_txt" value="#444444" oninput="syncP('h_txt','c_txt')">
+            <input type="color" id="c_txt" value="#1a2a3a" oninput="syncH('c_txt','h_txt');dp()">
+            <input type="text" class="hex-in" id="h_txt" value="#1a2a3a" oninput="syncP('h_txt','c_txt')">
           </div>
           <div class="fgrp color-card">
             <label>Lines <span style="font-weight:400;color:#6b8090;">rules, borders &amp; dots</span></label>
-            <input type="color" id="c_line" value="#e0e0e0" oninput="syncH('c_line','h_line');dp()">
-            <input type="text" class="hex-in" id="h_line" value="#e0e0e0" oninput="syncP('h_line','c_line')">
+            <input type="color" id="c_line" value="#dde4ec" oninput="syncH('c_line','h_line');dp()">
+            <input type="text" class="hex-in" id="h_line" value="#dde4ec" oninput="syncP('h_line','c_line')">
           </div>
           <div class="fgrp color-card">
             <label>Disclaimer <span style="font-weight:400;color:#6b8090;">footer text</span></label>
-            <input type="color" id="c_disc" value="#999999" oninput="syncH('c_disc','h_disc');dp()">
-            <input type="text" class="hex-in" id="h_disc" value="#999999" oninput="syncP('h_disc','c_disc')">
+            <input type="color" id="c_disc" value="#6b7f94" oninput="syncH('c_disc','h_disc');dp()">
+            <input type="text" class="hex-in" id="h_disc" value="#6b7f94" oninput="syncP('h_disc','c_disc')">
           </div>
         </div>
       </div>
@@ -2835,7 +2835,7 @@ function resetAll(){
   resetLogo(); resetBanner();
   const logoW=el('logoW'); logoW.value=150; logoW.dispatchEvent(new Event('input'));
   const bannerW=el('bannerW'); bannerW.value=600; bannerW.dispatchEvent(new Event('input'));
-  const defs={c_pri:'#1a237e',h_pri:'#1a237e',c_acc:'#1a237e',h_acc:'#1a237e',c_sec:'#1565c0',h_sec:'#1565c0',c_txt:'#444444',h_txt:'#444444',c_line:'#e0e0e0',h_line:'#e0e0e0',c_sep:'#cccccc',h_sep:'#cccccc',c_disc:'#999999',h_disc:'#999999'};
+  const defs={c_pri:'#204456',h_pri:'#204456',c_acc:'#00aeef',h_acc:'#00aeef',c_sec:'#1179A3',h_sec:'#1179A3',c_txt:'#1a2a3a',h_txt:'#1a2a3a',c_line:'#dde4ec',h_line:'#dde4ec',c_sep:'#dde4ec',h_sep:'#dde4ec',c_disc:'#6b7f94',h_disc:'#6b7f94'};
   Object.entries(defs).forEach(([id,v])=>{const e=el(id);if(e)e.value=v;});
   selTmpl('classic-left');
   updBadges();
