@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Montserrat','Segoe UI',sans-serif;background:#f0f4f8;color:#1a2a3a;min-height:100vh}
@@ -630,9 +631,12 @@ textarea.field-ta::placeholder{color:#7a92a8}
       </div>
     </div>
     <div id="prevBody">
-      <div class="tab-btns" style="margin-bottom:12px;">
-        <button class="tab-btn active" id="ptab-desk" onclick="switchPrevTab('desk')">Desktop</button>
-        <button class="tab-btn" id="ptab-mob" onclick="switchPrevTab('mob')">Mobile</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="tab-btns" style="margin-bottom:0;">
+          <button class="tab-btn active" id="ptab-desk" onclick="switchPrevTab('desk')">Desktop</button>
+          <button class="tab-btn" id="ptab-mob" onclick="switchPrevTab('mob')">Mobile</button>
+        </div>
+        <div id="sigSizeInfo" style="font-size:11px;color:#8a9baa;display:none;text-align:right;line-height:1.4;"></div>
       </div>
       <div id="ppanel-desk" class="tab-panel active">
         <div class="prev-box"><div class="prev-inner" id="deskPrev"><span style="color:#a0b0c0;font-size:12px;font-family:'Montserrat','Segoe UI',sans-serif;">Your signature will appear here as you type…</span></div></div>
@@ -662,6 +666,17 @@ textarea.field-ta::placeholder{color:#7a92a8}
           <div class="cb-btns"><button class="btn-sm" id="cpUni" onclick="cp('uniCode',this)">Copy</button><button class="btn-dl" id="dlUni" onclick="dl('uniCode','signature-universal.html')">&#8681; Download</button><button class="btn-sm" onclick="toggleCode('uniCode',this)" style="color:#6b7f94;">Show code</button></div>
         </div>
         <textarea class="code-ta tall" id="uniCode" readonly style="display:none"></textarea>
+      </div>
+      <hr class="hr" style="margin:6px 0 14px;">
+      <div>
+        <div class="cb-hd">
+          <span>PNG Image<span class="dl-sub">For proposals, slide decks &amp; previews</span></span>
+          <div class="cb-btns">
+            <button class="btn-dl" id="dlPngDesk" onclick="downloadPng('desk')">&#8681; Desktop PNG</button>
+            <button class="btn-dl" id="dlPngMob" onclick="downloadPng('mob')">&#8681; Mobile PNG</button>
+          </div>
+        </div>
+        <div id="pngStatus" style="font-size:11px;color:#6b8090;margin-top:6px;display:none;"></div>
       </div>
     </div>
   </div>
@@ -927,6 +942,16 @@ function render(){
   document.getElementById('deskCode').value=dh;
   document.getElementById('mobCode').value=mh;
   document.getElementById('uniCode').value=uh;
+  // Update size indicator
+  const sizeEl=document.getElementById('sigSizeInfo');
+  if(sizeEl){
+    const dkb=(new Blob([dh]).size/1024).toFixed(1);
+    const mkb=(new Blob([mh]).size/1024).toFixed(1);
+    const ukb=(new Blob([uh]).size/1024).toFixed(1);
+    const flag=c=>{const n=parseFloat(c);return n>50?' <span style="color:#e67e22;font-weight:600;" title="Large file — some email clients may block images over 50KB">&#9888;</span>':n>100?' <span style="color:#c00;font-weight:600;" title="Very large — replace base64 images with hosted URLs">&#9888;</span>':''};
+    sizeEl.innerHTML=`Desktop&nbsp;<strong>${dkb}KB</strong>${flag(dkb)}&ensp;Mobile&nbsp;<strong>${mkb}KB</strong>${flag(mkb)}&ensp;Universal&nbsp;<strong>${ukb}KB</strong>${flag(ukb)}`;
+    sizeEl.style.display='block';
+  }
 }
 
 // ── HELPERS ──────────────────────────────────────────────
@@ -2527,6 +2552,52 @@ function clearBatch(){
   document.getElementById('batchResult').style.display='none';
   document.getElementById('batchStatus').textContent='';
   dp();
+}
+
+// ── PNG EXPORT ───────────────────────────────────────────
+async function downloadPng(fmt){
+  const srcEl=document.getElementById(fmt==='desk'?'deskPrev':'mobPrev');
+  const btn=document.getElementById(fmt==='desk'?'dlPngDesk':'dlPngMob');
+  const status=document.getElementById('pngStatus');
+  if(!srcEl||!srcEl.querySelector('table')){
+    status.textContent='Nothing to export — fill in your details first.';
+    status.style.display='block';status.style.color='#c00';
+    setTimeout(()=>status.style.display='none',3000);
+    return;
+  }
+  const origTxt=btn.innerHTML;
+  btn.disabled=true; btn.textContent='Generating…';
+  status.style.display='none';
+  // Clone into an off-screen container so overflow constraints don't apply
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;left:-9999px;top:0;background:#ffffff;padding:24px;width:auto;';
+  wrap.innerHTML=srcEl.innerHTML;
+  document.body.appendChild(wrap);
+  try{
+    const canvas=await html2canvas(wrap,{
+      backgroundColor:'#ffffff',
+      scale:2,
+      useCORS:true,
+      allowTaint:true,
+      logging:false
+    });
+    const a=document.createElement('a');
+    a.href=canvas.toDataURL('image/png');
+    a.download='signature-'+(fmt==='desk'?'desktop':'mobile')+'.png';
+    a.click();
+    status.textContent='✓ PNG downloaded.';
+    status.style.color='#2e7d32';
+    status.style.display='block';
+    setTimeout(()=>status.style.display='none',3000);
+  }catch(e){
+    console.error(e);
+    status.textContent='PNG export failed — try again.';
+    status.style.color='#c00';
+    status.style.display='block';
+    setTimeout(()=>status.style.display='none',4000);
+  }
+  document.body.removeChild(wrap);
+  btn.disabled=false; btn.innerHTML=origTxt;
 }
 
 // ── PRESETS ──────────────────────────────────────────────
