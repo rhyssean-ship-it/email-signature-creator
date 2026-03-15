@@ -190,6 +190,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .preset-swatches{display:flex;gap:4px;align-items:center;margin:2px 0;}
 .preset-swatch{width:18px;height:18px;border-radius:4px;border:1px solid rgba(0,0,0,.08);flex-shrink:0;}
 .preset-card-btns{display:flex;gap:6px;margin-top:2px;}
+.prev-hd-tabs{display:none;}
 .preset-save-row{display:flex;gap:8px;align-items:center;margin-top:4px;}
 .preset-name-in{flex:1;padding:8px 11px;border:1px solid #dde4ec;border-radius:7px;font-size:13px;background:#f8fafc;color:#1a2a3a;font-family:'Montserrat','Segoe UI',sans-serif;}
 .preset-name-in:focus{outline:none;border-color:#00aeef;box-shadow:0 0 0 3px rgba(0,174,239,.1);background:#fff;}
@@ -217,10 +218,13 @@ textarea.field-ta::placeholder{color:#7a92a8}
   #batchUploadGrid{grid-template-columns:1fr !important;}
   #step5 .cb-hd{flex-direction:column;align-items:flex-start;gap:8px;}
   #step2b>div{grid-template-columns:1fr !important;}
-  /* Preview — declutter header, expand preview area */
-  #undoBtn,#redoBtn,#prevToggle{display:none;}
+  /* Preview — mobile layout */
+  #prevToggle{display:none;}
   #prevStep .cb-btns span{display:none;}
-  .prev-toggle-txt{display:none;}
+  .prev-hd-tabs{display:flex !important;}
+  .prev-tab-row{display:none !important;}
+  #prevStep .step-hd{flex-wrap:wrap;gap:6px 0;}
+  #prevStep .cb-btns{width:100%;justify-content:flex-start;gap:6px;}
   .prev-inner{max-height:none !important;min-height:120px;}
   .prev-box{padding:12px;}
 }
@@ -638,8 +642,12 @@ textarea.field-ta::placeholder{color:#7a92a8}
   <!-- STEP 4: Preview -->
   <div class="step step-sticky" id="prevStep">
     <div class="step-hd" style="justify-content:space-between;">
-      <div style="display:flex;align-items:center;gap:12px;">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
         <div class="step-t">Live Preview</div>
+        <div class="tab-btns prev-hd-tabs" style="margin-bottom:0;">
+          <button class="tab-btn active" id="ptab-desk-hd" onclick="switchPrevTab('desk')">Desktop</button>
+          <button class="tab-btn" id="ptab-mob-hd" onclick="switchPrevTab('mob')">Mobile</button>
+        </div>
       </div>
       <div class="cb-btns" style="flex-shrink:0;">
         <button class="btn-sm" id="undoBtn" onclick="undo()" title="Undo" disabled style="font-size:13px;padding:5px 10px;display:flex;align-items:center;gap:4px;"><span style="font-size:14px;">&#8617;</span> Undo</button>
@@ -2353,7 +2361,10 @@ function switchTabGroup(panels,tabs,active){
   [...panels,...tabs].forEach(id=>el(id).classList.toggle('active',id.endsWith(active)));
 }
 function switchTab(tab){switchTabGroup(['panel-logo','panel-banner'],['tab-logo','tab-banner'],tab);}
-function switchPrevTab(tab){switchTabGroup(['ppanel-desk','ppanel-mob'],['ptab-desk','ptab-mob'],tab);}
+function switchPrevTab(tab){
+  switchTabGroup(['ppanel-desk','ppanel-mob'],['ptab-desk','ptab-mob'],tab);
+  ['desk','mob'].forEach(t=>{const hd=el('ptab-'+t+'-hd');if(hd)hd.classList.toggle('active',t===tab);});
+}
 
 // ── COLOUR MODE ──────────────────────────────────────────
 
