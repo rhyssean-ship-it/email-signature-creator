@@ -176,7 +176,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .s2-sub-lbl{font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
 /* Colour cards */
 .color-card{background:#fff;border:1px solid #edf1f5;border-radius:8px;padding:10px 10px 8px;}
-.color-card input[type=color]{width:100%;height:30px;border-radius:5px;padding:2px;border:1px solid #dde4ec;cursor:pointer;background:#f8fafc;margin-top:6px;}
+.color-card input[type=color]{width:100%;height:48px;border-radius:5px;padding:2px;border:1px solid #dde4ec;cursor:pointer;background:#f8fafc;margin-top:6px;}
 .color-card .hex-in{width:100% !important;margin-top:5px;}
 
 /* Presets section */
@@ -388,13 +388,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
 
       <!-- Right: Extract colours (compact) + Colour cards -->
       <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div class="s2-sub-lbl" style="margin-bottom:0;">Colours</div>
-          <div class="toggle-sw">
-            <button class="on" id="swSimple" onclick="setColourMode('simple')">Simple</button>
-            <button id="swAdv" onclick="setColourMode('advanced')">Advanced</button>
-          </div>
-        </div>
+        <div class="s2-sub-lbl" style="margin-bottom:8px;">Colours</div>
         <!-- Compact extract zone -->
         <div class="scan-zone scan-zone-sm" id="scanZone" style="margin-bottom:10px;">
           <input type="file" id="scanFile" accept="image/*" onchange="scanImage(this)">
@@ -415,7 +409,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
           </div>
         </div>
         <!-- Colour cards -->
-        <div class="color-grid" id="colourPanel" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div class="color-grid" id="colourPanel" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
           <div class="fgrp color-card">
             <label>Name <span style="font-weight:400;color:#6b8090;">name colour</span></label>
             <input type="color" id="c_pri" value="#1a237e" oninput="syncH('c_pri','h_pri');dp()">
@@ -436,17 +430,17 @@ textarea.field-ta::placeholder{color:#7a92a8}
             <input type="color" id="c_txt" value="#444444" oninput="syncH('c_txt','h_txt');dp()">
             <input type="text" class="hex-in" id="h_txt" value="#444444" oninput="syncP('h_txt','c_txt')">
           </div>
-          <div class="fgrp color-card adv-only">
+          <div class="fgrp color-card">
             <label>Line <span style="font-weight:400;color:#6b8090;">rules &amp; borders</span></label>
             <input type="color" id="c_line" value="#e0e0e0" oninput="syncH('c_line','h_line');dp()">
             <input type="text" class="hex-in" id="h_line" value="#e0e0e0" oninput="syncP('h_line','c_line')">
           </div>
-          <div class="fgrp color-card adv-only">
+          <div class="fgrp color-card">
             <label>Separator <span style="font-weight:400;color:#6b8090;">pipes &amp; dots</span></label>
             <input type="color" id="c_sep" value="#cccccc" oninput="syncH('c_sep','h_sep');dp()">
             <input type="text" class="hex-in" id="h_sep" value="#cccccc" oninput="syncP('h_sep','c_sep')">
           </div>
-          <div class="fgrp color-card adv-only" style="grid-column:1/-1;">
+          <div class="fgrp color-card" style="grid-column:span 2;">
             <label>Disclaimer <span style="font-weight:400;color:#6b8090;">footer text</span></label>
             <input type="color" id="c_disc" value="#999999" oninput="syncH('c_disc','h_disc');dp()">
             <input type="text" class="hex-in" id="h_disc" value="#999999" oninput="syncP('h_disc','c_disc')">
