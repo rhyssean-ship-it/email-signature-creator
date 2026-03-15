@@ -654,7 +654,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <div class="step-n batch-step-n">6</div>
       <div class="step-t">Batch Export <span class="batch-optional" style="font-size:11px;font-weight:400;color:#8a9baa;margin-left:4px;">— optional</span></div>
     </div>
-    <p style="font-size:12px;color:#6b8090;margin-bottom:16px;line-height:1.6;">Upload a CSV or XLSX file with one person per row. The first person will appear in the live preview. Click <strong>Download All</strong> to export a ZIP containing one Universal HTML signature per person, using the style, logo, and template settings below.</p>
+    <p style="font-size:12px;color:#6b8090;margin-bottom:16px;line-height:1.6;">Upload a CSV or XLSX file with one person per row. The first person will appear in the live preview. Choose <strong>Desktop</strong>, <strong>Mobile</strong>, or <strong>Universal</strong> to export a ZIP of that format for every person, using the style, logo, and template settings below.</p>
     <div id="batchUploadGrid" style="display:grid;grid-template-columns:1fr auto;gap:14px;align-items:stretch;margin-bottom:0;">
       <div class="scan-zone" id="batchZone" style="margin-bottom:0;text-align:center;">
         <input type="file" id="batchFile" accept=".csv,.xlsx,.xls" onchange="handleBatchFile(this)">
@@ -680,8 +680,10 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <div id="batchMapGrid"></div>
       <div style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Preview <span id="batchRowCount" style="font-weight:400;color:#8a9baa;text-transform:none;letter-spacing:0;"></span></div>
       <div class="batch-table-wrap"><table class="batch-table" id="batchTable"></table></div>
-      <div style="display:flex;justify-content:center;margin-top:4px;">
-        <button class="batch-dl-btn" style="width:40%;" onclick="downloadBatchAll()">&#8681; Download All Signatures</button>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px;">
+        <button class="batch-dl-btn" onclick="downloadBatchAll('desk')">&#8681; Desktop</button>
+        <button class="batch-dl-btn" onclick="downloadBatchAll('mob')">&#8681; Mobile</button>
+        <button class="batch-dl-btn" onclick="downloadBatchAll('uni')">&#8681; Universal</button>
       </div>
       <div class="batch-prog" id="batchProg" style="margin-top:12px;"><div class="batch-prog-bar" id="batchProgBar"></div></div>
       <div id="batchStatus" style="font-size:11px;color:#6b8090;text-align:center;margin-top:6px;"></div>
@@ -2449,21 +2451,23 @@ function batchSlug(row){
   return name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 }
 
-async function downloadBatchAll(){
+async function downloadBatchAll(fmt){
   if(!batchRows.length) return;
-  const btn=document.querySelector('.batch-dl-btn');
+  const btns=document.querySelectorAll('.batch-dl-btn');
   const prog=document.getElementById('batchProg');
   const bar=document.getElementById('batchProgBar');
   const status=document.getElementById('batchStatus');
-  btn.disabled=true; prog.style.display='block'; bar.style.width='0%';
+  btns.forEach(b=>b.disabled=true); prog.style.display='block'; bar.style.width='0%';
   const zip=new JSZip();
   const base=gd();
+  const labels={desk:'desktop',mob:'mobile',uni:'universal'};
   for(let i=0;i<batchRows.length;i++){
     const d=batchMerge(base,batchRows[i]);
     const disc=disclaimerHtml(d);
-    const dh=genDesk(d)+disc, mh=genMob(d)+disc, uh=genUni(dh,mh);
+    const dh=genDesk(d)+disc, mh=genMob(d)+disc;
+    const html=fmt==='desk'?dh:fmt==='mob'?mh:genUni(dh,mh);
     const slug=batchSlug(batchRows[i]);
-    zip.file(`${slug}-${i+1}.html`,uh);
+    zip.file(`${slug}-${i+1}.html`,html);
     const pct=Math.round((i+1)/batchRows.length*100);
     bar.style.width=pct+'%';
     status.textContent=`Generating ${i+1} of ${batchRows.length}…`;
@@ -2471,9 +2475,9 @@ async function downloadBatchAll(){
   }
   status.textContent='Creating ZIP…';
   const blob=await zip.generateAsync({type:'blob'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='signatures.zip'; a.click();
-  btn.disabled=false; prog.style.display='none';
-  status.textContent=`✓ Downloaded ${batchRows.length} signature${batchRows.length!==1?'s':''}.`;
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`signatures-${labels[fmt]}.zip`; a.click();
+  btns.forEach(b=>b.disabled=false); prog.style.display='none';
+  status.textContent=`✓ Downloaded ${batchRows.length} ${labels[fmt]} signature${batchRows.length!==1?'s':''}.`;
   status.style.color='#2e7d32';
 }
 
