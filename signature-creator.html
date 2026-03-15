@@ -161,6 +161,19 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .batch-dl-btn:disabled{background:#b0cfe0;cursor:not-allowed;}
 .batch-prog{margin-top:10px;background:#edf1f5;border-radius:6px;height:6px;overflow:hidden;display:none;}
 .batch-prog-bar{height:100%;background:#00aeef;width:0%;transition:width .2s;}
+/* Step 2 inner cards */
+.s2-card{background:#f8fafc;border:1px solid #edf1f5;border-radius:10px;padding:18px 20px;}
+.s2-field-lbl{font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.s2-result-card{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#fff;border:1px solid #dde4ec;border-radius:8px;padding:10px 14px;}
+.s2-result-info{display:flex;flex-direction:column;gap:6px;}
+.s2-result-dim{font-size:11px;color:#8a9baa;font-weight:500;}
+.s2-sub-group{background:#fff;border:1px solid #edf1f5;border-radius:8px;padding:12px 14px;}
+.s2-sub-lbl{font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+/* Colour cards */
+.color-card{background:#fff;border:1px solid #edf1f5;border-radius:8px;padding:10px 10px 8px;}
+.color-card input[type=color]{width:100%;height:30px;border-radius:5px;padding:2px;border:1px solid #dde4ec;cursor:pointer;background:#f8fafc;margin-top:6px;}
+.color-card .hex-in{width:100% !important;margin-top:5px;}
+
 /* Presets section */
 #presetsStep{order:6;}
 #step6{order:7;}
@@ -292,145 +305,145 @@ textarea.field-ta::placeholder{color:#7a92a8}
   <div class="step" id="step2">
     <div class="step-hd"><div class="step-t">Logo, Banner &amp; Style</div></div>
 
-    <div class="img-upload-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-      <div>
-        <div class="sec-lbl">Company Logo</div>
-        <div class="scan-zone" id="logoZone">
-          <input type="file" id="logoFile" accept="image/*" onchange="handleLogo(this)">
-          <div style="font-size:24px;margin-bottom:6px">🖼️</div>
-          <div class="drag-text" style="font-size:13px;color:#3a5268;margin-bottom:3px">Drop your logo here or click to browse</div>
-          <div style="font-size:11px;color:#6b8090">PNG, SVG or JPG — processed locally in your browser</div>
-        </div>
-        <div id="logoResult" style="display:none;margin-bottom:10px">
-          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-            <img id="logoThumb" class="logo-thumb" src="" alt="">
-            <button class="btn btn-s" style="font-size:12px;padding:6px 13px" onclick="resetLogo()">Change logo</button>
+    <!-- Inner card: Image uploads -->
+    <div class="s2-card">
+      <div class="sec-lbl" style="margin-bottom:14px;">Images</div>
+      <div class="img-upload-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <div class="s2-field-lbl">Company Logo</div>
+          <div class="scan-zone" id="logoZone">
+            <input type="file" id="logoFile" accept="image/*" onchange="handleLogo(this)">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="margin-bottom:8px;opacity:.45;"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#1179A3" stroke-width="1.5"/><circle cx="8.5" cy="8.5" r="1.5" stroke="#1179A3" stroke-width="1.5"/><path d="M21 15l-5-5L5 21" stroke="#1179A3" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            <div class="drag-text" style="font-size:13px;font-weight:600;color:#3a5268;margin-bottom:3px;">Drop your logo here or click to browse</div>
+            <div style="font-size:11px;color:#8a9baa;">PNG, SVG or JPG — processed locally in your browser</div>
+          </div>
+          <div id="logoResult" style="display:none;">
+            <div class="s2-result-card">
+              <img id="logoThumb" class="logo-thumb" src="" alt="">
+              <div class="s2-result-info">
+                <div id="logoMeta" class="s2-result-dim"></div>
+                <button class="btn-sm" onclick="resetLogo()">Replace</button>
+              </div>
+            </div>
+            <div class="slider-row" style="margin-top:10px;">
+              <label style="min-width:72px;">Logo width</label>
+              <input type="range" id="logoW" min="50" max="300" value="150" oninput="document.getElementById('logoWVal').textContent=this.value+'px';dp()">
+              <span class="slider-val" id="logoWVal">150px</span>
+            </div>
           </div>
         </div>
-        <div class="slider-row">
-          <label style="min-width:72px">Logo width</label>
-          <input type="range" id="logoW" min="50" max="300" value="150" oninput="document.getElementById('logoWVal').textContent=this.value+'px';dp()">
-          <span class="slider-val" id="logoWVal">150px</span>
-        </div>
-      </div>
-      <div>
-        <div class="sec-lbl">Banner Image <span style="font-weight:400;color:#6b8090;font-size:10px;text-transform:none;letter-spacing:0">Used by banner templates. Recommended size: 600×100px.</span></div>
-        <div class="scan-zone" id="bannerZone">
-          <input type="file" id="bannerFile" accept="image/*" onchange="handleBanner(this)">
-          <div style="font-size:24px;margin-bottom:6px">🎌</div>
-          <div class="drag-text" style="font-size:13px;color:#3a5268;margin-bottom:3px">Drop your banner here or click to browse</div>
-          <div style="font-size:11px;color:#6b8090">PNG or JPG — recommended 600×100px</div>
-        </div>
-        <div id="bannerResult" style="display:none;margin-bottom:10px">
-          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-            <img id="bannerThumb" style="max-height:48px;max-width:260px;border-radius:4px;border:1px solid #eee" src="" alt="">
-            <button class="btn btn-s" style="font-size:12px;padding:6px 13px" onclick="resetBanner()">Change banner</button>
+        <div>
+          <div class="s2-field-lbl">Banner Image <span style="font-weight:400;color:#6b8090;font-size:10px;">Recommended: 600&#215;100px</span></div>
+          <div class="scan-zone" id="bannerZone">
+            <input type="file" id="bannerFile" accept="image/*" onchange="handleBanner(this)">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="margin-bottom:8px;opacity:.45;"><rect x="2" y="6" width="20" height="12" rx="2" stroke="#1179A3" stroke-width="1.5"/><path d="M2 11h20" stroke="#1179A3" stroke-width="1.2" stroke-dasharray="3 2" opacity=".5"/><circle cx="7" cy="14.5" r="1.3" fill="#1179A3" opacity=".4"/><path d="M10.5 14.5l2.5-2.5 2.5 2.5 1.5-1.5" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="drag-text" style="font-size:13px;font-weight:600;color:#3a5268;margin-bottom:3px;">Drop your banner here or click to browse</div>
+            <div style="font-size:11px;color:#8a9baa;">PNG or JPG — recommended 600&#215;100px</div>
           </div>
-        </div>
-        <div class="slider-row">
-          <label style="min-width:72px">Banner width</label>
-          <input type="range" id="bannerW" min="400" max="700" value="600" oninput="document.getElementById('bannerWVal').textContent=this.value+'px';dp()">
-          <span class="slider-val" id="bannerWVal">600px</span>
+          <div id="bannerResult" style="display:none;">
+            <div class="s2-result-card">
+              <img id="bannerThumb" style="max-height:48px;max-width:240px;border-radius:4px;border:1px solid #edf1f5;" src="" alt="">
+              <div class="s2-result-info">
+                <div id="bannerMeta" class="s2-result-dim"></div>
+                <button class="btn-sm" onclick="resetBanner()">Replace</button>
+              </div>
+            </div>
+            <div class="slider-row" style="margin-top:10px;">
+              <label style="min-width:72px;">Banner width</label>
+              <input type="range" id="bannerW" min="400" max="700" value="600" oninput="document.getElementById('bannerWVal').textContent=this.value+'px';dp()">
+              <span class="slider-val" id="bannerWVal">600px</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <hr class="hr">
-    <div class="img-upload-grid" style="display:grid;grid-template-columns:2fr 3fr;gap:20px;align-items:start">
-      <div>
-        <div class="sec-lbl">Extract Colours from Image</div>
-        <div class="scan-zone" id="scanZone">
-          <input type="file" id="scanFile" accept="image/*" onchange="scanImage(this)">
-          <div style="font-size:24px;margin-bottom:6px">🎨</div>
-          <div class="drag-text" style="font-size:13px;color:#3a5268;margin-bottom:3px">Drop a signature image here to extract brand colours</div>
-          <div style="font-size:11px;color:#6b8090">JPG, PNG or WebP — no upload, all processing happens in your browser</div>
-        </div>
-        <div id="scanResult" style="display:none">
-          <div class="scan-preview">
-            <div class="scan-img-wrap"><img id="scanThumb" src="" alt="Reference image"></div>
-            <div>
-              <div class="swatches" id="swatchList"></div>
-              <button class="apply-btn" onclick="applyExtracted()">Apply colours to signature</button>
-              <div class="scan-hint" id="scanHint"></div>
+    <!-- Inner card: Colours & Extract -->
+    <div class="s2-card" style="margin-top:14px;">
+      <div class="img-upload-grid" style="display:grid;grid-template-columns:2fr 3fr;gap:20px;align-items:start">
+        <div>
+          <div class="sec-lbl">Extract Colours from Image</div>
+          <div class="scan-zone" id="scanZone">
+            <input type="file" id="scanFile" accept="image/*" onchange="scanImage(this)">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="margin-bottom:8px;opacity:.45;"><circle cx="12" cy="12" r="9" stroke="#1179A3" stroke-width="1.5"/><circle cx="8" cy="11" r="1.5" fill="#1179A3" opacity=".5"/><circle cx="12" cy="8" r="1.5" fill="#1179A3" opacity=".6"/><circle cx="16" cy="11" r="1.5" fill="#1179A3" opacity=".5"/><circle cx="14" cy="15" r="1.5" fill="#1179A3" opacity=".6"/><circle cx="10" cy="15" r="1.5" fill="#1179A3" opacity=".5"/></svg>
+            <div class="drag-text" style="font-size:13px;font-weight:600;color:#3a5268;margin-bottom:3px;">Drop a signature image to extract brand colours</div>
+            <div style="font-size:11px;color:#8a9baa;">JPG, PNG or WebP — no upload, all local</div>
+          </div>
+          <div id="scanResult" style="display:none">
+            <div class="scan-preview">
+              <div class="scan-img-wrap"><img id="scanThumb" src="" alt="Reference image"></div>
+              <div>
+                <div class="swatches" id="swatchList"></div>
+                <button class="apply-btn" onclick="applyExtracted()">Apply colours to signature</button>
+                <div class="scan-hint" id="scanHint"></div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-          <div class="sec-lbl" style="margin-bottom:0">Typography &amp; Colour</div>
-          <div class="toggle-sw">
-            <button class="on" id="swSimple" onclick="setColourMode('simple')">Simple</button>
-            <button id="swAdv" onclick="setColourMode('advanced')">Advanced</button>
+        <div>
+          <div class="sec-lbl" style="margin-bottom:12px;">Typography &amp; Colour</div>
+          <div class="s2-sub-group">
+            <div class="s2-sub-lbl">Font</div>
+            <div class="fgrp">
+              <label>Font Family</label>
+              <select id="f_font" onchange="dp()">
+                <optgroup label="Sans-serif">
+                  <option>Arial</option><option>Helvetica</option><option>Verdana</option>
+                  <option>Tahoma</option><option>Trebuchet MS</option><option>Century Gothic</option>
+                  <option>Calibri</option><option>Gill Sans</option>
+                </optgroup>
+                <optgroup label="Serif">
+                  <option>Georgia</option><option>Times New Roman</option><option>Palatino Linotype</option>
+                  <option>Cambria</option><option>Garamond</option><option>Book Antiqua</option>
+                </optgroup>
+                <optgroup label="Monospace">
+                  <option>Courier New</option><option>Lucida Console</option>
+                </optgroup>
+              </select>
+            </div>
           </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:14px" id="colourPanel">
-          <div class="fgrp">
-            <label>Font Family</label>
-            <select id="f_font" onchange="dp()">
-              <optgroup label="Sans-serif">
-                <option>Arial</option><option>Helvetica</option><option>Verdana</option>
-                <option>Tahoma</option><option>Trebuchet MS</option><option>Century Gothic</option>
-                <option>Calibri</option><option>Gill Sans</option>
-              </optgroup>
-              <optgroup label="Serif">
-                <option>Georgia</option><option>Times New Roman</option><option>Palatino Linotype</option>
-                <option>Cambria</option><option>Garamond</option><option>Book Antiqua</option>
-              </optgroup>
-              <optgroup label="Monospace">
-                <option>Courier New</option><option>Lucida Console</option>
-              </optgroup>
-            </select>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;margin-top:14px;">
+            <div class="s2-sub-lbl" style="margin-bottom:0;">Colours</div>
+            <div class="toggle-sw">
+              <button class="on" id="swSimple" onclick="setColourMode('simple')">Simple</button>
+              <button id="swAdv" onclick="setColourMode('advanced')">Advanced</button>
+            </div>
           </div>
-          <div class="color-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 16px">
-            <div class="fgrp">
-              <label>Name <span style="font-weight:400;color:#6b8090">(person's name)</span></label>
-              <div class="color-row">
-                <input type="color" id="c_pri" value="#1a237e" oninput="syncH('c_pri','h_pri');dp()">
-                <input type="text" class="hex-in" id="h_pri" value="#1a237e" oninput="syncP('h_pri','c_pri')">
-              </div>
+          <div class="color-grid" id="colourPanel" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div class="fgrp color-card">
+              <label>Name <span style="font-weight:400;color:#6b8090;">name colour</span></label>
+              <input type="color" id="c_pri" value="#1a237e" oninput="syncH('c_pri','h_pri');dp()">
+              <input type="text" class="hex-in" id="h_pri" value="#1a237e" oninput="syncP('h_pri','c_pri')">
             </div>
-            <div class="fgrp">
-              <label>Accent <span style="font-weight:400;color:#6b8090">(bars, rules, blocks)</span></label>
-              <div class="color-row">
-                <input type="color" id="c_acc" value="#1a237e" oninput="syncH('c_acc','h_acc');dp()">
-                <input type="text" class="hex-in" id="h_acc" value="#1a237e" oninput="syncP('h_acc','c_acc')">
-              </div>
+            <div class="fgrp color-card">
+              <label>Accent <span style="font-weight:400;color:#6b8090;">bars &amp; blocks</span></label>
+              <input type="color" id="c_acc" value="#1a237e" oninput="syncH('c_acc','h_acc');dp()">
+              <input type="text" class="hex-in" id="h_acc" value="#1a237e" oninput="syncP('h_acc','c_acc')">
             </div>
-            <div class="fgrp">
-              <label>Secondary <span style="font-weight:400;color:#6b8090">(job title)</span></label>
-              <div class="color-row">
-                <input type="color" id="c_sec" value="#1565c0" oninput="syncH('c_sec','h_sec');dp()">
-                <input type="text" class="hex-in" id="h_sec" value="#1565c0" oninput="syncP('h_sec','c_sec')">
-              </div>
+            <div class="fgrp color-card">
+              <label>Secondary <span style="font-weight:400;color:#6b8090;">job title</span></label>
+              <input type="color" id="c_sec" value="#1565c0" oninput="syncH('c_sec','h_sec');dp()">
+              <input type="text" class="hex-in" id="h_sec" value="#1565c0" oninput="syncP('h_sec','c_sec')">
             </div>
-            <div class="fgrp">
-              <label>Text <span style="font-weight:400;color:#6b8090">(body / contact)</span></label>
-              <div class="color-row">
-                <input type="color" id="c_txt" value="#444444" oninput="syncH('c_txt','h_txt');dp()">
-                <input type="text" class="hex-in" id="h_txt" value="#444444" oninput="syncP('h_txt','c_txt')">
-              </div>
+            <div class="fgrp color-card">
+              <label>Text <span style="font-weight:400;color:#6b8090;">body &amp; contact</span></label>
+              <input type="color" id="c_txt" value="#444444" oninput="syncH('c_txt','h_txt');dp()">
+              <input type="text" class="hex-in" id="h_txt" value="#444444" oninput="syncP('h_txt','c_txt')">
             </div>
-            <div class="fgrp adv-only">
-              <label>Line / Divider <span style="font-weight:400;color:#6b8090">(rules &amp; borders)</span></label>
-              <div class="color-row">
-                <input type="color" id="c_line" value="#e0e0e0" oninput="syncH('c_line','h_line');dp()">
-                <input type="text" class="hex-in" id="h_line" value="#e0e0e0" oninput="syncP('h_line','c_line')">
-              </div>
+            <div class="fgrp color-card adv-only">
+              <label>Line <span style="font-weight:400;color:#6b8090;">rules &amp; borders</span></label>
+              <input type="color" id="c_line" value="#e0e0e0" oninput="syncH('c_line','h_line');dp()">
+              <input type="text" class="hex-in" id="h_line" value="#e0e0e0" oninput="syncP('h_line','c_line')">
             </div>
-            <div class="fgrp adv-only">
-              <label>Separator <span style="font-weight:400;color:#6b8090">(pipes &amp; dots)</span></label>
-              <div class="color-row">
-                <input type="color" id="c_sep" value="#cccccc" oninput="syncH('c_sep','h_sep');dp()">
-                <input type="text" class="hex-in" id="h_sep" value="#cccccc" oninput="syncP('h_sep','c_sep')">
-              </div>
+            <div class="fgrp color-card adv-only">
+              <label>Separator <span style="font-weight:400;color:#6b8090;">pipes &amp; dots</span></label>
+              <input type="color" id="c_sep" value="#cccccc" oninput="syncH('c_sep','h_sep');dp()">
+              <input type="text" class="hex-in" id="h_sep" value="#cccccc" oninput="syncP('h_sep','c_sep')">
             </div>
-            <div class="fgrp adv-only" style="grid-column:1/-1">
-              <label>Disclaimer text <span style="font-weight:400;color:#6b8090">(footer text)</span></label>
-              <div class="color-row">
-                <input type="color" id="c_disc" value="#999999" oninput="syncH('c_disc','h_disc');dp()">
-                <input type="text" class="hex-in" id="h_disc" value="#999999" oninput="syncP('h_disc','c_disc')">
-              </div>
+            <div class="fgrp color-card adv-only" style="grid-column:1/-1;">
+              <label>Disclaimer <span style="font-weight:400;color:#6b8090;">footer text</span></label>
+              <input type="color" id="c_disc" value="#999999" oninput="syncH('c_disc','h_disc');dp()">
+              <input type="text" class="hex-in" id="h_disc" value="#999999" oninput="syncP('h_disc','c_disc')">
             </div>
           </div>
         </div>
@@ -784,7 +797,7 @@ function loadLogoFile(file){
     logoDataUrl=e.target.result;
     document.getElementById('logoThumb').src=logoDataUrl;
     const img=new Image();
-    img.onload=()=>{logoNatW=img.naturalWidth;logoNatH=img.naturalHeight;dp();};
+    img.onload=()=>{logoNatW=img.naturalWidth;logoNatH=img.naturalHeight;const m=document.getElementById('logoMeta');if(m)m.textContent=logoNatW+'×'+logoNatH+'px';dp();};
     img.src=logoDataUrl;
     document.getElementById('logoZone').style.display='none';
     document.getElementById('logoResult').style.display='block';
@@ -815,7 +828,7 @@ function loadBannerFile(file){
     bannerDataUrl=e.target.result;
     document.getElementById('bannerThumb').src=bannerDataUrl;
     const img=new Image();
-    img.onload=()=>{bannerNatW=img.naturalWidth;bannerNatH=img.naturalHeight;dp();};
+    img.onload=()=>{bannerNatW=img.naturalWidth;bannerNatH=img.naturalHeight;const m=document.getElementById('bannerMeta');if(m)m.textContent=bannerNatW+'×'+bannerNatH+'px';dp();};
     img.src=bannerDataUrl;
     document.getElementById('bannerZone').style.display='none';
     document.getElementById('bannerResult').style.display='block';
