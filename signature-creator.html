@@ -417,8 +417,8 @@ textarea.field-ta::placeholder{color:#7a92a8}
           </div>
           <div class="fgrp color-card">
             <label>Accent <span style="font-weight:400;color:#6b8090;">bars &amp; blocks</span></label>
-            <input type="color" id="c_acc" value="#00aeef" oninput="syncH('c_acc','h_acc');dp()">
-            <input type="text" class="hex-in" id="h_acc" value="#00aeef" oninput="syncP('h_acc','c_acc')">
+            <input type="color" id="c_acc" value="#00AEEF" oninput="syncH('c_acc','h_acc');dp()">
+            <input type="text" class="hex-in" id="h_acc" value="#00AEEF" oninput="syncP('h_acc','c_acc')">
           </div>
           <div class="fgrp color-card">
             <label>Secondary <span style="font-weight:400;color:#6b8090;">job title</span></label>
@@ -427,18 +427,18 @@ textarea.field-ta::placeholder{color:#7a92a8}
           </div>
           <div class="fgrp color-card">
             <label>Text <span style="font-weight:400;color:#6b8090;">body &amp; contact</span></label>
-            <input type="color" id="c_txt" value="#1a2a3a" oninput="syncH('c_txt','h_txt');dp()">
-            <input type="text" class="hex-in" id="h_txt" value="#1a2a3a" oninput="syncP('h_txt','c_txt')">
+            <input type="color" id="c_txt" value="#1A2A3A" oninput="syncH('c_txt','h_txt');dp()">
+            <input type="text" class="hex-in" id="h_txt" value="#1A2A3A" oninput="syncP('h_txt','c_txt')">
           </div>
           <div class="fgrp color-card">
             <label>Lines <span style="font-weight:400;color:#6b8090;">rules, borders &amp; dots</span></label>
-            <input type="color" id="c_line" value="#dde4ec" oninput="syncH('c_line','h_line');dp()">
-            <input type="text" class="hex-in" id="h_line" value="#dde4ec" oninput="syncP('h_line','c_line')">
+            <input type="color" id="c_line" value="#DDE4EC" oninput="syncH('c_line','h_line');dp()">
+            <input type="text" class="hex-in" id="h_line" value="#DDE4EC" oninput="syncP('h_line','c_line')">
           </div>
           <div class="fgrp color-card">
             <label>Disclaimer <span style="font-weight:400;color:#6b8090;">footer text</span></label>
-            <input type="color" id="c_disc" value="#6b7f94" oninput="syncH('c_disc','h_disc');dp()">
-            <input type="text" class="hex-in" id="h_disc" value="#6b7f94" oninput="syncP('h_disc','c_disc')">
+            <input type="color" id="c_disc" value="#6B7F94" oninput="syncH('c_disc','h_disc');dp()">
+            <input type="text" class="hex-in" id="h_disc" value="#6B7F94" oninput="syncP('h_disc','c_disc')">
           </div>
         </div>
       </div>
@@ -851,8 +851,8 @@ function selTmpl(id){
 }
 
 // ── COLOUR SYNC ──────────────────────────────────────────
-function syncH(pid,hid){document.getElementById(hid).value=document.getElementById(pid).value;}
-function syncP(hid,pid){const v=document.getElementById(hid).value;if(/^#[0-9A-Fa-f]{6}$/.test(v)){document.getElementById(pid).value=v;dp();}}
+function syncH(pid,hid){document.getElementById(hid).value=document.getElementById(pid).value.toUpperCase();}
+function syncP(hid,pid){const v=document.getElementById(hid).value.toUpperCase();document.getElementById(hid).value=v;if(/^#[0-9A-F]{6}$/.test(v)){document.getElementById(pid).value=v;dp();}}
 
 // ── SOCIAL ICONS (canvas) ────────────────────────────────
 function icon(platform,size=20){
@@ -1986,7 +1986,7 @@ function applyExtracted(){
 
 // ── WIREFRAME THUMBNAILS ─────────────────────────────────
 function drawThumbnails(){
-  const A='#00aeef', N='#b3dff5', L='#ddf0fa', D='#d0dde8', T='#e4ecf4';
+  const A='#00AEEF', N='#B3DFF5', L='#DDF0FA', D='#D0DDE8', T='#E4ECF4';
   function d(s){return `<div style="position:absolute;${s}"></div>`;}
   const thumbs={
     'classic-left':
@@ -2545,7 +2545,7 @@ async function downloadBatchAll(fmt){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`signatures-${labels[fmt]}.zip`; a.click();
   btns.forEach(b=>b.disabled=false); prog.style.display='none';
   status.textContent=`✓ Downloaded ${batchRows.length} ${labels[fmt]} signature${batchRows.length!==1?'s':''}.`;
-  status.style.color='#2e7d32';
+  status.style.color='#2E7D32';
 }
 
 function downloadBatchTemplate(){
@@ -2684,7 +2684,7 @@ async function downloadPng(fmt){
   document.body.appendChild(wrap);
   try{
     const canvas=await html2canvas(wrap,{
-      backgroundColor:'#ffffff',
+      backgroundColor:'#FFFFFF',
       scale:2,
       useCORS:true,
       allowTaint:true,
@@ -2695,7 +2695,7 @@ async function downloadPng(fmt){
     a.download='signature-'+(fmt==='desk'?'desktop':'mobile')+'.png';
     a.click();
     status.textContent='✓ PNG downloaded.';
-    status.style.color='#2e7d32';
+    status.style.color='#2E7D32';
     status.style.display='block';
     setTimeout(()=>status.style.display='none',3000);
   }catch(e){
@@ -2717,7 +2717,7 @@ function setPresets(arr){localStorage.setItem(PRESET_KEY,JSON.stringify(arr));}
 function savePreset(){
   const nameIn=document.getElementById('presetNameIn');
   const name=nameIn.value.trim();
-  if(!name){nameIn.focus();nameIn.style.borderColor='#f0b0b0';setTimeout(()=>nameIn.style.borderColor='',1500);return;}
+  if(!name){nameIn.focus();nameIn.style.borderColor='#F0B0B0';setTimeout(()=>nameIn.style.borderColor='',1500);return;}
   const d=gd();
   const preset={
     id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
@@ -2835,7 +2835,7 @@ function resetAll(){
   resetLogo(); resetBanner();
   const logoW=el('logoW'); logoW.value=150; logoW.dispatchEvent(new Event('input'));
   const bannerW=el('bannerW'); bannerW.value=600; bannerW.dispatchEvent(new Event('input'));
-  const defs={c_pri:'#204456',h_pri:'#204456',c_acc:'#00aeef',h_acc:'#00aeef',c_sec:'#1179A3',h_sec:'#1179A3',c_txt:'#1a2a3a',h_txt:'#1a2a3a',c_line:'#dde4ec',h_line:'#dde4ec',c_sep:'#dde4ec',h_sep:'#dde4ec',c_disc:'#6b7f94',h_disc:'#6b7f94'};
+  const defs={c_pri:'#204456',h_pri:'#204456',c_acc:'#00AEEF',h_acc:'#00AEEF',c_sec:'#1179A3',h_sec:'#1179A3',c_txt:'#1A2A3A',h_txt:'#1A2A3A',c_line:'#DDE4EC',h_line:'#DDE4EC',c_sep:'#DDE4EC',h_sep:'#DDE4EC',c_disc:'#6B7F94',h_disc:'#6B7F94'};
   Object.entries(defs).forEach(([id,v])=>{const e=el(id);if(e)e.value=v;});
   selTmpl('classic-left');
   updBadges();
