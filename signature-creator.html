@@ -160,6 +160,24 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .batch-dl-btn:disabled{background:#b0cfe0;cursor:not-allowed;}
 .batch-prog{margin-top:10px;background:#edf1f5;border-radius:6px;height:6px;overflow:hidden;display:none;}
 .batch-prog-bar{height:100%;background:#00aeef;width:0%;transition:width .2s;}
+/* Presets section */
+#presetsStep{order:6;}
+#step6{order:7;}
+.preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:14px;}
+.preset-card{background:#f8fafc;border:1px solid #dde4ec;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;transition:.15s;}
+.preset-card:hover{border-color:#00aeef;box-shadow:0 2px 8px rgba(0,174,239,.12);}
+.preset-card-name{font-size:13px;font-weight:700;color:#1a2a3a;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.preset-card-meta{font-size:11px;color:#8a9baa;}
+.preset-swatches{display:flex;gap:4px;align-items:center;margin:2px 0;}
+.preset-swatch{width:18px;height:18px;border-radius:4px;border:1px solid rgba(0,0,0,.08);flex-shrink:0;}
+.preset-card-btns{display:flex;gap:6px;margin-top:2px;}
+.preset-save-row{display:flex;gap:8px;align-items:center;margin-top:4px;}
+.preset-name-in{flex:1;padding:8px 11px;border:1px solid #dde4ec;border-radius:7px;font-size:13px;background:#f8fafc;color:#1a2a3a;font-family:'Montserrat','Segoe UI',sans-serif;}
+.preset-name-in:focus{outline:none;border-color:#00aeef;box-shadow:0 0 0 3px rgba(0,174,239,.1);background:#fff;}
+.preset-empty{font-size:13px;color:#8a9baa;padding:20px;text-align:center;background:#f8fafc;border-radius:8px;border:1px dashed #dde4ec;}
+.preset-del-btn{padding:5px 10px;border-radius:6px;border:1px solid #fbb;background:#fff5f5;cursor:pointer;font-size:12px;font-weight:500;color:#c00;transition:.15s;font-family:'Montserrat','Segoe UI',sans-serif;}
+.preset-del-btn:hover{background:#ffe0e0;}
+
 @media(max-width:740px){
   .fg{grid-template-columns:1fr}
   .prev-grid{grid-template-columns:1fr}
@@ -646,6 +664,17 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <textarea class="code-ta tall" id="uniCode" readonly style="display:none"></textarea>
       </div>
     </div>
+  </div>
+
+  <!-- PRESETS -->
+  <div class="step" id="presetsStep">
+    <div class="step-hd"><div class="step-t">Presets</div></div>
+    <p style="font-size:12px;color:#6b8090;margin-bottom:16px;line-height:1.6;">Save your current style settings — logo, banner, colours, font, and template — as a named preset. Load it any time, even after refreshing the page.</p>
+    <div class="preset-save-row">
+      <input type="text" class="preset-name-in" id="presetNameIn" placeholder="e.g. Acme Corp, Client A…" maxlength="60">
+      <button class="btn-dl" onclick="savePreset()">Save Preset</button>
+    </div>
+    <div id="presetCards" style="margin-top:16px;"></div>
   </div>
 
   <!-- STEP 6: Batch Export -->
@@ -2500,6 +2529,120 @@ function clearBatch(){
   dp();
 }
 
+// ── PRESETS ──────────────────────────────────────────────
+const PRESET_KEY='sig_presets';
+function getPresets(){try{return JSON.parse(localStorage.getItem(PRESET_KEY)||'[]');}catch(e){return[];}}
+function setPresets(arr){localStorage.setItem(PRESET_KEY,JSON.stringify(arr));}
+
+function savePreset(){
+  const nameIn=document.getElementById('presetNameIn');
+  const name=nameIn.value.trim();
+  if(!name){nameIn.focus();nameIn.style.borderColor='#f0b0b0';setTimeout(()=>nameIn.style.borderColor='',1500);return;}
+  const d=gd();
+  const preset={
+    id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+    name,
+    ts:Date.now(),
+    template:currentTemplate,
+    logo:logoDataUrl,logoW:d.logoW,
+    banner:bannerDataUrl,bannerW:d.bannerW,
+    font:d.font,
+    pri:d.pri,acc:d.acc,sec:d.sec,txt:d.txt,line:d.line,sep:d.sep,disc:d.disc
+  };
+  const arr=getPresets();
+  arr.unshift(preset);
+  setPresets(arr);
+  nameIn.value='';
+  renderPresetCards();
+}
+
+function applyPreset(preset){
+  // Logo
+  if(preset.logo){
+    logoDataUrl=preset.logo;
+    const img=new Image();
+    img.onload=()=>{logoNatW=img.naturalWidth;logoNatH=img.naturalHeight;};
+    img.src=logoDataUrl;
+    document.getElementById('logoThumb').src=logoDataUrl;
+    document.getElementById('logoZone').style.display='none';
+    document.getElementById('logoResult').style.display='block';
+  } else {
+    resetLogo();
+  }
+  // Logo width
+  if(preset.logoW!=null){const lw=el('logoW');lw.value=preset.logoW;lw.dispatchEvent(new Event('input'));}
+  // Banner
+  if(preset.banner){
+    bannerDataUrl=preset.banner;
+    const img2=new Image();
+    img2.onload=()=>{bannerNatW=img2.naturalWidth;bannerNatH=img2.naturalHeight;};
+    img2.src=bannerDataUrl;
+    document.getElementById('bannerThumb').src=bannerDataUrl;
+    document.getElementById('bannerZone').style.display='none';
+    document.getElementById('bannerResult').style.display='block';
+  } else {
+    resetBanner();
+  }
+  if(preset.bannerW!=null){const bw=el('bannerW');bw.value=preset.bannerW;bw.dispatchEvent(new Event('input'));}
+  // Font
+  if(preset.font){const fs=el('f_font');if(fs){fs.value=preset.font;}}
+  // Colours
+  const colMap={pri:'c_pri',acc:'c_acc',sec:'c_sec',txt:'c_txt',line:'c_line',sep:'c_sep',disc:'c_disc'};
+  Object.entries(colMap).forEach(([key,id])=>{
+    if(preset[key]){
+      const ce=el(id); if(ce) ce.value=preset[key];
+      const he=el('h_'+id.slice(2)); if(he) he.value=preset[key];
+    }
+  });
+  // Template
+  if(preset.template) selTmpl(preset.template);
+  dp();
+}
+
+function applyPresetById(id){
+  const preset=getPresets().find(p=>p.id===id);
+  if(preset) applyPreset(preset);
+}
+
+function deletePreset(id){
+  if(!confirm('Delete this preset?')) return;
+  setPresets(getPresets().filter(p=>p.id!==id));
+  renderPresetCards();
+}
+
+function renderPresetCards(){
+  const cont=document.getElementById('presetCards');
+  if(!cont) return;
+  const arr=getPresets();
+  if(!arr.length){
+    cont.innerHTML='<div class="preset-empty">No presets saved yet. Configure your style above and click <strong>Save Preset</strong>.</div>';
+    return;
+  }
+  const tmplNames={
+    'classic-left':'Classic Left','classic-center':'Classic Centre',
+    'compact-left':'Compact Left','compact-right':'Compact Right',
+    'modern-left':'Modern Left','modern-right':'Modern Right',
+    'banner-top':'Banner Top','banner-bottom':'Banner Bottom',
+    'minimal-left':'Minimal Left','minimal-right':'Minimal Right',
+    'bold-left':'Bold Left','bold-center':'Bold Centre'
+  };
+  cont.innerHTML='<div class="preset-grid">'+arr.map(p=>{
+    const swatchCols=[p.pri,p.acc,p.sec,p.txt].filter(Boolean);
+    const swatches=swatchCols.map(c=>`<div class="preset-swatch" style="background:${c}" title="${c}"></div>`).join('');
+    const date=new Date(p.ts).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+    const tmplLabel=tmplNames[p.template]||p.template||'—';
+    return `<div class="preset-card">
+      <div class="preset-card-name" title="${esc(p.name)}">${esc(p.name)}</div>
+      <div class="preset-swatches">${swatches}</div>
+      <div class="preset-card-meta">${tmplLabel} &middot; ${date}</div>
+      <div class="preset-card-btns">
+        <button class="btn-dl" style="flex:1;" onclick="applyPresetById('${p.id}')">Load</button>
+        <button class="preset-del-btn" onclick="deletePreset('${p.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
 // ── RESET ALL ────────────────────────────────────────────
 function resetAll(){
   if(!confirm('Reset all fields and start over?')) return;
@@ -2523,6 +2666,7 @@ addPhone();
 drawThumbnails();
 render();
 updBadges();
+renderPresetCards();
 </script>
 </body>
 </html>
