@@ -1000,7 +1000,8 @@ function syncP(hid,pid){const v=document.getElementById(hid).value.toUpperCase()
 
 // ── SOCIAL ICONS (canvas) ────────────────────────────────
 function icon(platform,size=20){
-  const k=platform+size; if(iconCache[k]) return iconCache[k];
+  const col=document.getElementById('c_icon')?.value||'#555555';
+  const k=platform+size+col; if(iconCache[k]) return iconCache[k];
   const r=Math.round(size*.18);
   const brands={
     'LinkedIn':  {bg:'#0077B5',b:'<circle cx="4.8" cy="5.2" r="1.5" fill="white"/><rect x="3.3" y="8" width="3" height="8.5" fill="white"/><path d="M9 8h3v1.5c.6-1 1.6-1.8 3-1.8s3 1.3 3 3.9v4.9h-3V12c0-1.2-.5-1.8-1.4-1.8-.9 0-1.5.6-1.5 1.8v4.5H9V8z" fill="white"/>'},
@@ -1011,7 +1012,7 @@ function icon(platform,size=20){
     'TikTok':    {bg:'#010101',b:'<path d="M14.8 5.5c.4 1.7 1.7 3 3.2 3.1v2.5c-1.2 0-2.3-.4-3.2-.9v5.2c0 2.5-2 4.6-4.6 4.6A4.6 4.6 0 015.6 15.4a4.6 4.6 0 014.6-4.6c.2 0 .5 0 .7.1v2.4c-.2 0-.4-.1-.7-.1a2.2 2.2 0 00-2.2 2.2 2.2 2.2 0 002.2 2.2 2.2 2.2 0 002.2-2.2V3h2.4v2.5z" fill="white"/>'}
   };
   const br=brands[platform]||{bg:'#555',b:'<text x="10" y="14" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">'+(platform||'?')[0]+'</text>'};
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 20 20"><rect width="20" height="20" rx="${r}" fill="${br.bg}"/>${br.b}</svg>`;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 20 20"><rect width="20" height="20" rx="${r}" fill="${col}"/>${br.b}</svg>`;
   const url='data:image/svg+xml,'+encodeURIComponent(svg); iconCache[k]=url; return url;
 }
 PLATS.forEach(p=>icon(p,20));
