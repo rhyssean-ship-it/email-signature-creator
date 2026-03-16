@@ -348,6 +348,10 @@ textarea.field-ta::placeholder{color:#7a92a8}
             <input type="range" id="logoW" min="50" max="300" value="150" oninput="document.getElementById('logoWVal').textContent=this.value+'px';dp()">
             <span class="slider-val" id="logoWVal">150px</span>
           </div>
+          <div class="fgrp" style="margin-top:8px;">
+            <label style="font-size:10px;color:#6b8090;">Hyperlink URL <span style="font-weight:400;">(optional)</span></label>
+            <input type="url" id="logoUrl" placeholder="https://example.com" oninput="dp()" style="margin-top:3px;">
+          </div>
         </div>
       </div>
       <div>
@@ -371,6 +375,10 @@ textarea.field-ta::placeholder{color:#7a92a8}
             <input type="range" id="bannerW" min="400" max="700" value="600" oninput="document.getElementById('bannerWVal').textContent=this.value+'px';dp()">
             <span class="slider-val" id="bannerWVal">600px</span>
           </div>
+          <div class="fgrp" style="margin-top:8px;">
+            <label style="font-size:10px;color:#6b8090;">Hyperlink URL <span style="font-weight:400;">(optional)</span></label>
+            <input type="url" id="bannerUrl" placeholder="https://example.com" oninput="dp()" style="margin-top:3px;">
+          </div>
         </div>
       </div>
     </div>
@@ -390,6 +398,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div id="accResult0" style="display:none;" class="acc-result-card">
           <img id="accThumb0" style="max-height:48px;max-width:100%;object-fit:contain;" src="" alt="Accreditation 1">
           <button class="btn-sm" onclick="resetAccLogo(0)">Remove</button>
+          <input type="url" id="accUrl0" placeholder="https://example.com" oninput="dp()" style="width:100%;box-sizing:border-box;font-size:10px;margin-top:2px;">
         </div>
       </div>
       <div>
@@ -401,6 +410,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div id="accResult1" style="display:none;" class="acc-result-card">
           <img id="accThumb1" style="max-height:48px;max-width:100%;object-fit:contain;" src="" alt="Accreditation 2">
           <button class="btn-sm" onclick="resetAccLogo(1)">Remove</button>
+          <input type="url" id="accUrl1" placeholder="https://example.com" oninput="dp()" style="width:100%;box-sizing:border-box;font-size:10px;margin-top:2px;">
         </div>
       </div>
       <div>
@@ -412,6 +422,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div id="accResult2" style="display:none;" class="acc-result-card">
           <img id="accThumb2" style="max-height:48px;max-width:100%;object-fit:contain;" src="" alt="Accreditation 3">
           <button class="btn-sm" onclick="resetAccLogo(2)">Remove</button>
+          <input type="url" id="accUrl2" placeholder="https://example.com" oninput="dp()" style="width:100%;box-sizing:border-box;font-size:10px;margin-top:2px;">
         </div>
       </div>
       <div>
@@ -423,6 +434,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div id="accResult3" style="display:none;" class="acc-result-card">
           <img id="accThumb3" style="max-height:48px;max-width:100%;object-fit:contain;" src="" alt="Accreditation 4">
           <button class="btn-sm" onclick="resetAccLogo(3)">Remove</button>
+          <input type="url" id="accUrl3" placeholder="https://example.com" oninput="dp()" style="width:100%;box-sizing:border-box;font-size:10px;margin-top:2px;">
         </div>
       </div>
     </div>
@@ -1041,7 +1053,10 @@ function gd(){
     disc:document.getElementById('c_disc').value,
     icon_col:document.getElementById('c_icon')?.value||'#555555',
     disclaimer:document.getElementById('f_disclaimer').value.trim(),
+    logoUrl:document.getElementById('logoUrl')?.value.trim()||'',
+    bannerUrl:document.getElementById('bannerUrl')?.value.trim()||'',
     accLogos:accLogos.slice(),
+    accUrls:[0,1,2,3].map(i=>document.getElementById('accUrl'+i)?.value.trim()||''),
     accH:parseInt(document.getElementById('accH')?.value)||40,
   };
 }
@@ -1068,7 +1083,7 @@ function render(){
   });
   const acc=accreditationsHtml(d);
   const disc=disclaimerHtml(d);
-  const dh=genDesk(d)+acc+disc, mh=genMob(d)+acc+disc, uh=genUni(dh,mh);
+  const dh=applyImageLinks(genDesk(d),d)+acc+disc, mh=applyImageLinks(genMob(d),d)+acc+disc, uh=genUni(dh,mh);
   document.getElementById('deskPrev').innerHTML=dh;
   document.getElementById('mobPrev').innerHTML=mh;
   document.getElementById('deskCode').value=dh;
@@ -1999,11 +2014,31 @@ function disclaimerHtml(d){
 }
 
 function accreditationsHtml(d){
-  const logos=(d.accLogos||[]).filter(Boolean);
-  if(!logos.length) return '';
   const h=d.accH||40;
-  const imgs=logos.map(src=>`<td style="padding-right:12px;vertical-align:middle;"><img src="${src}" height="${h}" border="0" alt="Accreditation" style="display:inline-block;height:${h}px;width:auto;"></td>`).join('');
-  return `\n<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:10px;"><tr>${imgs}</tr></table>`;
+  const urls=d.accUrls||[];
+  let cells='';
+  (d.accLogos||[]).forEach((src,i)=>{
+    if(!src) return;
+    const img=`<img src="${src}" height="${h}" border="0" alt="Accreditation" style="display:inline-block;height:${h}px;width:auto;">`;
+    const rawUrl=urls[i];
+    const url=rawUrl?(rawUrl.startsWith('http')?rawUrl:'https://'+rawUrl):null;
+    const content=url?`<a href="${esc(url)}" target="_blank" style="text-decoration:none;">${img}</a>`:img;
+    cells+=`<td style="padding-right:12px;vertical-align:middle;">${content}</td>`;
+  });
+  if(!cells) return '';
+  return `\n<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:10px;"><tr>${cells}</tr></table>`;
+}
+
+function applyImageLinks(html,d){
+  if(d.logoUrl){
+    const href=esc(d.logoUrl.startsWith('http')?d.logoUrl:'https://'+d.logoUrl);
+    html=html.replace(/(<img\s[^>]*alt="[^"]*\blogo"[^>]*>)/gi,`<a href="${href}" target="_blank" style="text-decoration:none;">$1</a>`);
+  }
+  if(d.bannerUrl){
+    const href=esc(d.bannerUrl.startsWith('http')?d.bannerUrl:'https://'+d.bannerUrl);
+    html=html.replace(/(<img\s[^>]*alt="Banner"[^>]*>)/g,`<a href="${href}" target="_blank" style="text-decoration:none;">$1</a>`);
+  }
+  return html;
 }
 
 // ── UNIVERSAL HTML ───────────────────────────────────────
@@ -2724,7 +2759,8 @@ function captureState(){
     pri:el('c_pri')?.value||'',acc:el('c_acc')?.value||'',sec:el('c_sec')?.value||'',
     txt:el('c_txt')?.value||'',line:el('c_line')?.value||'',disc:el('c_disc')?.value||'',
     icon_col:el('c_icon')?.value||'#555555',
-    accLogos:accLogos.slice(),accH:parseInt(el('accH')?.value)||40
+    logoUrl:el('logoUrl')?.value||'',bannerUrl:el('bannerUrl')?.value||'',
+    accLogos:accLogos.slice(),accUrls:[0,1,2,3].map(i=>el('accUrl'+i)?.value||''),accH:parseInt(el('accH')?.value)||40
   };
 }
 
@@ -2773,12 +2809,15 @@ function applyState(state){
     const he=el('h_'+k);if(he)he.value=state[k]||'';
   });
   if(state.icon_col){const ce=el('c_icon');if(ce)ce.value=state.icon_col;const he=el('h_icon');if(he)he.value=state.icon_col;}
+  const luEl=el('logoUrl');if(luEl)luEl.value=state.logoUrl||'';
+  const buEl=el('bannerUrl');if(buEl)buEl.value=state.bannerUrl||'';
   if(state.accLogos){
     (state.accLogos).forEach((src,i)=>{
       accLogos[i]=src||null;
       const thumb=document.getElementById('accThumb'+i);if(thumb)thumb.src=src||'';
       const zone=document.getElementById('accZone'+i);if(zone)zone.style.display=src?'none':'block';
       const res=document.getElementById('accResult'+i);if(res)res.style.display=src?'flex':'none';
+      const urlIn=el('accUrl'+i);if(urlIn)urlIn.value=(state.accUrls&&state.accUrls[i])||'';
     });
     updAccHeightSlider();
     if(state.accH!=null){const ah=el('accH');if(ah){ah.value=state.accH;const v=document.getElementById('accHVal');if(v)v.textContent=state.accH+'px';}}
@@ -2884,7 +2923,8 @@ function savePreset(){
     // Styling
     font:d.font,
     pri:d.pri,acc:d.acc,sec:d.sec,txt:d.txt,line:d.line,disc:d.disc,icon_col:d.icon_col,
-    accLogos:accLogos.slice(),accH:d.accH,
+    logoUrl:d.logoUrl,bannerUrl:d.bannerUrl,
+    accLogos:accLogos.slice(),accUrls:d.accUrls,accH:d.accH,
     // Multiple tab batch data
     batchRows:[...batchRows],
     batchHeaders:[...batchHeaders],
@@ -2960,6 +3000,8 @@ function applyPreset(preset){
   if(preset.font){const fs=el('f_font');if(fs){fs.value=preset.font;}}
   // Colours
   // Accreditation logos
+  const plu=el('logoUrl');if(plu)plu.value=preset.logoUrl||'';
+  const pbu=el('bannerUrl');if(pbu)pbu.value=preset.bannerUrl||'';
   if(preset.accLogos){
     preset.accLogos.forEach((src,i)=>{
       if(src){
@@ -2973,6 +3015,7 @@ function applyPreset(preset){
         document.getElementById('accZone'+i).style.display='block';
         document.getElementById('accResult'+i).style.display='none';
       }
+      const urlIn=el('accUrl'+i);if(urlIn)urlIn.value=(preset.accUrls&&preset.accUrls[i])||'';
     });
     updAccHeightSlider();
     if(preset.accH!=null){const ah=el('accH');if(ah){ah.value=preset.accH;document.getElementById('accHVal').textContent=preset.accH+'px';}}
@@ -3043,7 +3086,9 @@ function resetAll(){
   el('socialList').innerHTML='';
   updSocBtn();
   resetLogo(); resetBanner();
-  [0,1,2,3].forEach(i=>resetAccLogo(i));
+  const rlu=el('logoUrl');if(rlu)rlu.value='';
+  const rbu=el('bannerUrl');if(rbu)rbu.value='';
+  [0,1,2,3].forEach(i=>{resetAccLogo(i);const u=el('accUrl'+i);if(u)u.value='';});
   const logoW=el('logoW'); logoW.value=150; logoW.dispatchEvent(new Event('input'));
   const bannerW=el('bannerW'); bannerW.value=600; bannerW.dispatchEvent(new Event('input'));
   const defs={c_pri:'#204456',h_pri:'#204456',c_acc:'#00AEEF',h_acc:'#00AEEF',c_sec:'#1179A3',h_sec:'#1179A3',c_txt:'#1A2A3A',h_txt:'#1A2A3A',c_line:'#DDE4EC',h_line:'#DDE4EC',c_disc:'#6B7F94',h_disc:'#6B7F94'};
