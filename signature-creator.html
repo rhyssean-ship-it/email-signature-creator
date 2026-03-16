@@ -453,6 +453,11 @@ textarea.field-ta::placeholder{color:#7a92a8}
             <input type="color" id="c_disc" value="#6B7F94" oninput="syncH('c_disc','h_disc');dp()">
             <input type="text" class="hex-in" id="h_disc" value="#6B7F94" oninput="syncP('h_disc','c_disc')">
           </div>
+          <div class="fgrp color-card">
+            <label>Icons <span style="font-weight:400;color:#6b8090;">social icons</span></label>
+            <input type="color" id="c_icon" value="#555555" oninput="syncH('c_icon','h_icon');dp()">
+            <input type="text" class="hex-in" id="h_icon" value="#555555" oninput="syncP('h_icon','c_icon')">
+          </div>
         </div>
       </div>
 
@@ -882,7 +887,8 @@ function syncP(hid,pid){const v=document.getElementById(hid).value.toUpperCase()
 
 // ── SOCIAL ICONS (canvas) ────────────────────────────────
 function icon(platform,size=20){
-  const k=platform+size; if(iconCache[k]) return iconCache[k];
+  const col=document.getElementById('c_icon')?.value||'#555555';
+  const k=platform+size+col; if(iconCache[k]) return iconCache[k];
   const cv=document.createElement('canvas'); cv.width=size; cv.height=size;
   const ctx=cv.getContext('2d');
   const r=Math.round(size*.18);
@@ -891,12 +897,7 @@ function icon(platform,size=20){
   ctx.lineTo(size,size-r);ctx.quadraticCurveTo(size,size,size-r,size);
   ctx.lineTo(r,size);ctx.quadraticCurveTo(0,size,0,size-r);
   ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();
-  if(platform==='Instagram'){
-    const g=ctx.createLinearGradient(0,size,size,0);
-    g.addColorStop(0,'#FFDC80');g.addColorStop(.3,'#FCAF45');g.addColorStop(.5,'#F77737');
-    g.addColorStop(.7,'#F56040');g.addColorStop(.85,'#FD1D1D');g.addColorStop(1,'#833AB4');
-    ctx.fillStyle=g;
-  }else{ctx.fillStyle=PCOLS[platform]||'#555';}
+  ctx.fillStyle=col;
   ctx.fill();
   ctx.fillStyle='#fff'; ctx.strokeStyle='#fff';
   if(platform==='Instagram'){
@@ -948,6 +949,7 @@ function gd(){
     line:document.getElementById('c_line').value,
     sep:document.getElementById('c_line').value,
     disc:document.getElementById('c_disc').value,
+    icon_col:document.getElementById('c_icon')?.value||'#555555',
     disclaimer:document.getElementById('f_disclaimer').value.trim(),
   };
 }
@@ -2618,7 +2620,8 @@ function captureState(){
     bannerDataUrl,bannerW:parseInt(el('bannerW')?.value)||600,
     font:el('f_font')?.value||'',template:currentTemplate,
     pri:el('c_pri')?.value||'',acc:el('c_acc')?.value||'',sec:el('c_sec')?.value||'',
-    txt:el('c_txt')?.value||'',line:el('c_line')?.value||'',disc:el('c_disc')?.value||''
+    txt:el('c_txt')?.value||'',line:el('c_line')?.value||'',disc:el('c_disc')?.value||'',
+    icon_col:el('c_icon')?.value||'#555555'
   };
 }
 
@@ -2666,6 +2669,7 @@ function applyState(state){
     const ce=el('c_'+k);if(ce)ce.value=state[k]||'';
     const he=el('h_'+k);if(he)he.value=state[k]||'';
   });
+  if(state.icon_col){const ce=el('c_icon');if(ce)ce.value=state.icon_col;const he=el('h_icon');if(he)he.value=state.icon_col;}
   suppressHistory=false;
   render();
   updBadges();
@@ -2766,7 +2770,7 @@ function savePreset(){
     banner:bannerDataUrl,bannerW:d.bannerW,
     // Styling
     font:d.font,
-    pri:d.pri,acc:d.acc,sec:d.sec,txt:d.txt,line:d.line,disc:d.disc,
+    pri:d.pri,acc:d.acc,sec:d.sec,txt:d.txt,line:d.line,disc:d.disc,icon_col:d.icon_col,
     // Multiple tab batch data
     batchRows:[...batchRows],
     batchHeaders:[...batchHeaders],
@@ -2841,7 +2845,7 @@ function applyPreset(preset){
   // Font
   if(preset.font){const fs=el('f_font');if(fs){fs.value=preset.font;}}
   // Colours
-  const colMap={pri:'c_pri',acc:'c_acc',sec:'c_sec',txt:'c_txt',line:'c_line',disc:'c_disc'};
+  const colMap={pri:'c_pri',acc:'c_acc',sec:'c_sec',txt:'c_txt',line:'c_line',disc:'c_disc',icon_col:'c_icon'};
   Object.entries(colMap).forEach(([key,id])=>{
     if(preset[key]){
       const ce=el(id); if(ce) ce.value=preset[key];
