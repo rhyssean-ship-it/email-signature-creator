@@ -319,6 +319,13 @@ textarea.field-ta::placeholder{color:#7a92a8}
             <textarea class="field-ta" id="f_disclaimer" placeholder="Company Reg No: 12345678&#10;Registered Address: 123 Example Street, City, AB1 2CD.&#10;&#10;This email and any attachments are confidential…" oninput="dp();updBadges()"></textarea>
           </div>
         </div>
+        <!-- Contact icons toggle -->
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid #edf1f5;">
+          <label class="show-chk" style="font-size:12px;color:#3a5268;font-weight:600;">
+            <input type="checkbox" id="f_showIcons" onchange="dp()">
+            Show icons next to contact details
+          </label>
+        </div>
       </div>
     </div>
   </div>
@@ -529,7 +536,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
             <input type="text" class="hex-in" id="h_disc" value="#6B7F94" oninput="syncP('h_disc','c_disc')">
           </div>
           <div class="fgrp color-card">
-            <label>Icons <span style="font-weight:400;color:#6b8090;">social icons</span></label>
+            <label>Icons <span style="font-weight:400;color:#6b8090;">social &amp; contact</span></label>
             <input type="color" id="c_icon" value="#555555" oninput="syncH('c_icon','h_icon');dp()">
             <input type="text" class="hex-in" id="h_icon" value="#555555" oninput="syncP('h_icon','c_icon')">
           </div>
@@ -1052,6 +1059,7 @@ function gd(){
     sep:document.getElementById('c_line').value,
     disc:document.getElementById('c_disc').value,
     icon_col:document.getElementById('c_icon')?.value||'#555555',
+    showIcons:document.getElementById('f_showIcons')?.checked||false,
     disclaimer:document.getElementById('f_disclaimer').value.trim(),
     logoUrl:document.getElementById('logoUrl')?.value.trim()||'',
     bannerUrl:document.getElementById('bannerUrl')?.value.trim()||'',
@@ -1113,6 +1121,19 @@ function socIcons(socials,size=20){
     const href=s.url.startsWith('http')?s.url:'https://'+s.url;
     return `<a href="${esc(href)}" target="_blank" style="display:inline-block;margin-right:5px;text-decoration:none;"><img src="${icon(s.platform,size)}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:inline-block;width:${size}px;height:${size}px;"></a>`;
   }).join('');
+}
+
+// Contact detail icons (inline SVG data URIs)
+function contactIcon(type,color,size=14){
+  let body='';
+  switch(type){
+    case 'phone': body=`<path d="M3 2.5h2l1.5 3-1.5 1C5.8 8.2 7.8 10.2 9.5 11l1-1.5 3 1.5v1.5c0 .3-.2.5-.5.5C5.5 14 2 10.5 2 3c0-.3.2-.5.5-.5z" fill="none" stroke="${color}" stroke-width="1.3" stroke-linejoin="round"/>`; break;
+    case 'email': body=`<rect x="1.5" y="3.5" width="13" height="9" rx="1.5" fill="none" stroke="${color}" stroke-width="1.3"/><path d="M1.5 5.5 8 9.5l6.5-4" fill="none" stroke="${color}" stroke-width="1.3" stroke-linecap="round"/>`; break;
+    case 'website': body=`<circle cx="8" cy="8" r="5.5" fill="none" stroke="${color}" stroke-width="1.3"/><ellipse cx="8" cy="8" rx="2.5" ry="5.5" fill="none" stroke="${color}" stroke-width="1.3"/><path d="M2.5 8h11" stroke="${color}" stroke-width="1.3" stroke-linecap="round" fill="none"/>`; break;
+    case 'address': body=`<path d="M8 1.5C5.8 1.5 4 3.3 4 5.5c0 3.5 4 9 4 9s4-5.5 4-9c0-2.2-1.8-4-4-4z" fill="none" stroke="${color}" stroke-width="1.3"/><circle cx="8" cy="5.5" r="1.5" fill="none" stroke="${color}" stroke-width="1.3"/>`; break;
+  }
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 16 16">${body}</svg>`;
+  return `<img src="data:image/svg+xml,${encodeURIComponent(svg)}" width="${size}" height="${size}" border="0" alt="" style="display:inline-block;vertical-align:middle;width:${size}px;height:${size}px;">`;
 }
 
 function contactCells(d,fs=12){
@@ -1913,6 +1934,7 @@ function tmplBannerRuled(d){
 
 // ── TEMPLATE: Banner Bottom ───────────────────────────────
 // Name + title inline, stacked contact info, banner at bottom.
+// Supports optional contact icons via d.showIcons + d.icon_col.
 function tmplBannerBottom(d){
   const soc=socIcons(d.socials,20);
   const bw=d.bannerW, bhv=bh(bw);
@@ -1932,12 +1954,14 @@ function tmplBannerBottom(d){
   }
   // Company row
   if(d.company) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:8px;">${esc(d.company)}</td></tr>`);
-  // Stacked contact rows
+  // Stacked contact rows (with optional icons)
+  function iconTd(type){return d.showIcons?`<td width="22" valign="middle" style="padding-right:6px;padding-bottom:4px;">${contactIcon(type,d.icon_col,14)}</td>`:'';};
+  const ts=`font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:4px;`;
   const contactRows=[];
-  d.phones.forEach(p=>contactRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:4px;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
-  if(d.email) contactRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;padding-bottom:4px;"><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;padding-bottom:4px;"><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
-  if(d.address) contactRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};padding-bottom:4px;">${esc(d.address)}</td></tr>`);
+  d.phones.forEach(p=>contactRows.push(`<tr>${iconTd('phone')}<td style="${ts}"><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr>${iconTd('email')}<td style="${ts}"><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr>${iconTd('website')}<td style="${ts}"><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
+  if(d.address) contactRows.push(`<tr>${iconTd('address')}<td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};padding-bottom:4px;">${esc(d.address)}</td></tr>`);
   if(contactRows.length) rows.push(`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0">${contactRows.join('')}</table></td></tr>`);
   // Social icons
   if(soc) rows.push(`<tr><td style="padding-top:8px;padding-bottom:12px;">${soc}</td></tr>`);
@@ -2798,6 +2822,7 @@ function captureState(){
     pri:el('c_pri')?.value||'',acc:el('c_acc')?.value||'',sec:el('c_sec')?.value||'',
     txt:el('c_txt')?.value||'',line:el('c_line')?.value||'',disc:el('c_disc')?.value||'',
     icon_col:el('c_icon')?.value||'#555555',
+    showIcons:el('f_showIcons')?.checked||false,
     logoUrl:el('logoUrl')?.value||'',bannerUrl:el('bannerUrl')?.value||'',
     accLogos:accLogos.slice(),accUrls:[0,1,2,3].map(i=>el('accUrl'+i)?.value||''),accH:parseInt(el('accH')?.value)||40
   };
@@ -2848,6 +2873,7 @@ function applyState(state){
     const he=el('h_'+k);if(he)he.value=state[k]||'';
   });
   if(state.icon_col){const ce=el('c_icon');if(ce)ce.value=state.icon_col;const he=el('h_icon');if(he)he.value=state.icon_col;}
+  const siEl=el('f_showIcons');if(siEl)siEl.checked=!!state.showIcons;
   const luEl=el('logoUrl');if(luEl)luEl.value=state.logoUrl||'';
   const buEl=el('bannerUrl');if(buEl)buEl.value=state.bannerUrl||'';
   if(state.accLogos){
@@ -2954,7 +2980,8 @@ function savePreset(){
     // Single tab user details
     userDetails:{
       name:d.name,title:d.title,company:d.company,email:d.email,
-      website:d.website,address:d.address,disclaimer:d.disclaimer,phones:d.phones,socials:d.socials
+      website:d.website,address:d.address,disclaimer:d.disclaimer,phones:d.phones,socials:d.socials,
+      showIcons:d.showIcons
     },
     // Logo & banner
     logo:logoDataUrl,logoW:d.logoW,
@@ -2983,6 +3010,7 @@ function applyPreset(preset){
     ['name','title','company','email','website','address','disclaimer'].forEach(k=>{
       const e=el('f_'+k);if(e&&u[k]!=null)e.value=u[k];
     });
+    const siEl=el('f_showIcons');if(siEl)siEl.checked=!!u.showIcons;
     el('phoneList').innerHTML='';
     (u.phones||[]).forEach(v=>addPhone(v));
     el('socialList').innerHTML='';
