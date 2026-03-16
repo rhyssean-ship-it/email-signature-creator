@@ -704,10 +704,10 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div class="tw" id="tw-banner-stacked"></div>
         <div class="tmpl-name">Banner Stacked</div>
       </label>
-      <label class="tmpl-card" onclick="selTmpl('banner-ruled')">
-        <input type="radio" name="tmpl" value="banner-ruled">
-        <div class="tw" id="tw-banner-ruled"></div>
-        <div class="tmpl-name">Banner Ruled</div>
+      <label class="tmpl-card" onclick="selTmpl('banner-bottom')">
+        <input type="radio" name="tmpl" value="banner-bottom">
+        <div class="tw" id="tw-banner-bottom"></div>
+        <div class="tmpl-name">Banner Bottom</div>
       </label>
       <label class="tmpl-card" onclick="selTmpl('banner-sidebar')">
         <input type="radio" name="tmpl" value="banner-sidebar">
@@ -1911,6 +1911,47 @@ function tmplBannerRuled(d){
   ${soc?`<tr><td style="padding-top:8px;">${soc}</td></tr>`:''}
 </table>`;}
 
+// ── TEMPLATE: Banner Bottom ───────────────────────────────
+// Name + title inline, stacked contact info, banner at bottom.
+function tmplBannerBottom(d){
+  const soc=socIcons(d.socials,20);
+  const bw=d.bannerW, bhv=bh(bw);
+  const ls='text-decoration:none;';
+  const rows=[];
+  // Name + title inline
+  if(d.name||d.title){
+    let nameHtml='';
+    if(d.name&&d.title){
+      nameHtml=`<span style="color:${d.pri};">${esc(d.name)}</span><span style="color:${d.sep};padding:0 6px;">|</span><span style="color:${d.sec};">${esc(d.title)}</span>`;
+    } else if(d.name){
+      nameHtml=`<span style="color:${d.pri};">${esc(d.name)}</span>`;
+    } else {
+      nameHtml=`<span style="color:${d.sec};">${esc(d.title)}</span>`;
+    }
+    rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:700;line-height:24px;padding-bottom:10px;">${nameHtml}</td></tr>`);
+  }
+  // Company row
+  if(d.company) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:8px;">${esc(d.company)}</td></tr>`);
+  // Stacked contact rows
+  const contactRows=[];
+  d.phones.forEach(p=>contactRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:4px;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;padding-bottom:4px;"><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;padding-bottom:4px;"><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
+  if(d.address) contactRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};padding-bottom:4px;">${esc(d.address)}</td></tr>`);
+  if(contactRows.length) rows.push(`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0">${contactRows.join('')}</table></td></tr>`);
+  // Social icons
+  if(soc) rows.push(`<tr><td style="padding-top:8px;padding-bottom:12px;">${soc}</td></tr>`);
+  else rows.push(`<tr><td height="14"></td></tr>`);
+  // Banner at bottom
+  if(d.banner){
+    rows.push(`<tr><td><img src="${d.banner}" width="${bw}" height="${bhv}" border="0" alt="Banner" style="display:block;width:${bw}px;height:${bhv}px;"></td></tr>`);
+  } else {
+    rows.push(`<tr><td style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr>`);
+  }
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  ${rows.join('\n  ')}
+</table>`;}
+
 // ── TEMPLATE: Banner Sidebar ──────────────────────────────
 // Banner image as a tall left column; logo + name/title/contacts
 // stacked in the right column. Portrait banner orientation.
@@ -1971,7 +2012,7 @@ function genDesk(d){
     case 'banner-accent-block':  return tmplBannerAccentBlock(d);
     case 'banner-logo-left':     return tmplBannerLogoLeft(d);
     case 'banner-stacked':       return tmplBannerStacked(d);
-    case 'banner-ruled':         return tmplBannerRuled(d);
+    case 'banner-bottom':        return tmplBannerBottom(d);
     case 'banner-sidebar':       return tmplBannerSidebar(d);
     default:                     return tmplClassicLeft(d);
   }
@@ -2445,16 +2486,14 @@ function drawThumbnails(){
       d(`left:5px;right:5px;top:41px;height:2px;background:${A}`)+
       d(`left:18px;top:48px;width:42px;height:6px;background:${N};border-radius:1px`)+
       d(`left:22px;top:58px;width:34px;height:4px;background:${L};border-radius:1px`),
-    'banner-ruled':
-      d(`left:5px;right:5px;top:5px;height:13px;background:${A};border-radius:2px;opacity:.85`)+
-      d(`left:5px;top:23px;width:50px;height:7px;background:${N};border-radius:1px`)+
-      d(`left:5px;right:5px;top:34px;height:2px;background:${A}`)+
-      d(`left:5px;top:40px;width:44px;height:4px;background:${L};border-radius:1px`)+
-      d(`left:5px;top:46px;right:5px;height:1px;background:${D}`)+
-      d(`left:5px;top:52px;width:38px;height:4px;background:${T};border-radius:1px`)+
-      d(`left:5px;top:58px;right:5px;height:1px;background:${D}`)+
-      d(`left:5px;top:64px;width:6px;height:5px;background:${A};border-radius:1px`)+
-      d(`left:14px;top:64px;width:6px;height:5px;background:${A};border-radius:1px`),
+    'banner-bottom':
+      d(`left:5px;top:7px;width:48px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:56px;top:7px;width:3px;height:6px;background:${D}`)+
+      d(`left:62px;top:7px;width:30px;height:6px;background:${L};border-radius:1px`)+
+      d(`left:5px;top:20px;width:44px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;top:28px;width:36px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;top:36px;width:52px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;right:5px;bottom:5px;height:16px;background:${A};border-radius:2px;opacity:.85`),
     'banner-sidebar':
       d(`left:5px;top:5px;width:28px;bottom:5px;background:${A};border-radius:2px;opacity:.75`)+
       d(`left:38px;top:5px;width:22px;height:14px;background:${A};border-radius:2px;opacity:.6`)+
