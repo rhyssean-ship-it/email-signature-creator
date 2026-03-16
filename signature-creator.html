@@ -2756,10 +2756,21 @@ function savePreset(){
     name,
     ts:Date.now(),
     template:currentTemplate,
+    // Single tab user details
+    userDetails:{
+      name:d.name,title:d.title,company:d.company,email:d.email,
+      website:d.website,disclaimer:d.disclaimer,phones:d.phones,socials:d.socials
+    },
+    // Logo & banner
     logo:logoDataUrl,logoW:d.logoW,
     banner:bannerDataUrl,bannerW:d.bannerW,
+    // Styling
     font:d.font,
-    pri:d.pri,acc:d.acc,sec:d.sec,txt:d.txt,line:d.line,disc:d.disc
+    pri:d.pri,acc:d.acc,sec:d.sec,txt:d.txt,line:d.line,disc:d.disc,
+    // Multiple tab batch data
+    batchRows:[...batchRows],
+    batchHeaders:[...batchHeaders],
+    batchColMap:Object.assign({},batchColMap)
   };
   const arr=getPresets();
   arr.unshift(preset);
@@ -2769,6 +2780,37 @@ function savePreset(){
 }
 
 function applyPreset(preset){
+  // Single tab user details
+  if(preset.userDetails){
+    const u=preset.userDetails;
+    ['name','title','company','email','website','disclaimer'].forEach(k=>{
+      const e=el('f_'+k);if(e&&u[k]!=null)e.value=u[k];
+    });
+    el('phoneList').innerHTML='';
+    (u.phones||[]).forEach(v=>addPhone(v));
+    el('socialList').innerHTML='';
+    (u.socials||[]).forEach(s=>{
+      addSocial(s.platform,s.url);
+      const rows=el('socialList').querySelectorAll('.social-row');
+      const last=rows[rows.length-1];
+      if(last)last.querySelector('input[type=checkbox]').checked=s.show;
+    });
+    updSocBtn();
+  }
+  // Multiple tab batch data
+  if(preset.batchRows&&preset.batchRows.length){
+    batchRows=preset.batchRows;
+    batchHeaders=preset.batchHeaders||[];
+    batchColMap=Object.assign({name:'',title:'',company:'',email:'',website:'',phone:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''},preset.batchColMap);
+    document.getElementById('batchUploadGrid').style.display='none';
+    document.getElementById('batchResult').style.display='block';
+    document.getElementById('stepBatchDlEmpty').style.display='none';
+    document.getElementById('stepBatchDlBtns').style.display='block';
+    document.getElementById('batchInfo').textContent=`${batchRows.length} row${batchRows.length!==1?'s':''} loaded \u00b7 ${batchHeaders.length} column${batchHeaders.length!==1?'s':''}`;
+    document.getElementById('batchRowCount').textContent=`(showing first 5 of ${batchRows.length})`;
+    renderBatchMap();
+    renderBatchTable();
+  }
   // Logo
   if(preset.logo){
     logoDataUrl=preset.logo;
