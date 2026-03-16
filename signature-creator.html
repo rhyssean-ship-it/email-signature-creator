@@ -1842,9 +1842,10 @@ function tmplGrant(d){
   if(d.email) rRows.push(`<tr><td style="padding-bottom:4px;"><a href="mailto:${esc(d.email)}" style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
   if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;rRows.push(`<tr><td style="padding-bottom:4px;"><a href="${esc(href)}" style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
   if(soc) rRows.push(`<tr><td style="padding-top:4px;">${soc}</td></tr>`);
+  const lgap=Math.round(lw*0.75);
   const logoTd=d.logo
-    ?`<td valign="top" style="padding-right:12px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td>`
-    :`<td valign="top" style="padding-right:12px;font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:700;color:${d.pri};white-space:nowrap;">${esc(d.company)}</td>`;
+    ?`<td valign="top" style="padding-right:${lgap}px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td>`
+    :`<td valign="top" style="padding-right:40px;font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:700;color:${d.pri};white-space:nowrap;">${esc(d.company)}</td>`;
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
     ${logoTd}
