@@ -176,6 +176,9 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .s2-result-dim{font-size:11px;color:#8a9baa;font-weight:500;}
 .s2-sub-group{background:#fff;border:1px solid #edf1f5;border-radius:8px;padding:12px 14px;}
 .s2-sub-lbl{font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+/* Accreditation slots */
+.acc-zone{padding:14px 8px;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin-bottom:0;}
+.acc-result-card{display:flex;flex-direction:column;align-items:center;gap:6px;background:#fff;border:1px solid #dde4ec;border-radius:8px;padding:8px;min-height:80px;justify-content:center;}
 /* Colour cards */
 .color-card{background:#fff;border:1px solid #edf1f5;border-radius:8px;padding:10px 10px 8px;}
 .color-card input[type=color]{width:100%;height:48px;border-radius:5px;padding:2px;border:1px solid #dde4ec;cursor:pointer;background:#f8fafc;margin-top:6px;}
@@ -367,6 +370,63 @@ textarea.field-ta::placeholder{color:#7a92a8}
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- STEP 2c: Accreditations -->
+  <div class="step" id="step2c">
+    <div class="step-hd"><div class="step-t">Add Your Accreditations</div></div>
+    <div class="s2-field-lbl" style="margin-bottom:12px;">Up to 4 accreditation logos &mdash; all scaled to the same height</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;">
+      <div>
+        <div class="scan-zone acc-zone" id="accZone0">
+          <input type="file" accept="image/*" onchange="handleAccLogo(0,this)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="opacity:.4;"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#1179A3" stroke-width="1.5"/><path d="M12 8v8M8 12h8" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <div style="font-size:11px;font-weight:600;color:#3a5268;">Add logo</div>
+        </div>
+        <div id="accResult0" style="display:none;" class="acc-result-card">
+          <img id="accThumb0" style="max-height:48px;max-width:100%;object-fit:contain;" src="" alt="Accreditation 1">
+          <button class="btn-sm" onclick="resetAccLogo(0)">Remove</button>
+        </div>
+      </div>
+      <div>
+        <div class="scan-zone acc-zone" id="accZone1">
+          <input type="file" accept="image/*" onchange="handleAccLogo(1,this)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="opacity:.4;"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#1179A3" stroke-width="1.5"/><path d="M12 8v8M8 12h8" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <div style="font-size:11px;font-weight:600;color:#3a5268;">Add logo</div>
+        </div>
+        <div id="accResult1" style="display:none;" class="acc-result-card">
+          <img id="accThumb1" style="max-height:48px;max-width:100%;object-fit:contain;" src="" alt="Accreditation 2">
+          <button class="btn-sm" onclick="resetAccLogo(1)">Remove</button>
+        </div>
+      </div>
+      <div>
+        <div class="scan-zone acc-zone" id="accZone2">
+          <input type="file" accept="image/*" onchange="handleAccLogo(2,this)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="opacity:.4;"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#1179A3" stroke-width="1.5"/><path d="M12 8v8M8 12h8" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <div style="font-size:11px;font-weight:600;color:#3a5268;">Add logo</div>
+        </div>
+        <div id="accResult2" style="display:none;" class="acc-result-card">
+          <img id="accThumb2" style="max-height:48px;max-width:100%;object-fit:contain;" src="" alt="Accreditation 3">
+          <button class="btn-sm" onclick="resetAccLogo(2)">Remove</button>
+        </div>
+      </div>
+      <div>
+        <div class="scan-zone acc-zone" id="accZone3">
+          <input type="file" accept="image/*" onchange="handleAccLogo(3,this)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="opacity:.4;"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#1179A3" stroke-width="1.5"/><path d="M12 8v8M8 12h8" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <div style="font-size:11px;font-weight:600;color:#3a5268;">Add logo</div>
+        </div>
+        <div id="accResult3" style="display:none;" class="acc-result-card">
+          <img id="accThumb3" style="max-height:48px;max-width:100%;object-fit:contain;" src="" alt="Accreditation 4">
+          <button class="btn-sm" onclick="resetAccLogo(3)">Remove</button>
+        </div>
+      </div>
+    </div>
+    <div class="slider-row" id="accHRow" style="display:none;">
+      <label style="min-width:72px;">Logo height</label>
+      <input type="range" id="accH" min="20" max="80" value="40" oninput="document.getElementById('accHVal').textContent=this.value+'px';dp()">
+      <span class="slider-val" id="accHVal">40px</span>
     </div>
   </div>
 
@@ -786,6 +846,7 @@ const iconCache={};
 // Batch export state
 let batchRows=[], batchHeaders=[];
 let batchColMap={name:'',title:'',company:'',email:'',website:'',phone:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
+let accLogos=[null,null,null,null];
 
 // ── PHONE ROWS ───────────────────────────────────────────
 function addPhone(val=''){
@@ -871,6 +932,31 @@ function resetBanner(){
 }
 function bh(w){return imgH(w,bannerNatW,bannerNatH,1/6);}
 
+// ── ACCREDITATION LOGOS ───────────────────────────────────
+function handleAccLogo(i,input){const f=input.files[0];if(f)loadAccLogoFile(i,f);}
+function loadAccLogoFile(i,file){
+  if(!file.type.match(/image\//)) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    accLogos[i]=e.target.result;
+    document.getElementById('accThumb'+i).src=accLogos[i];
+    document.getElementById('accZone'+i).style.display='none';
+    document.getElementById('accResult'+i).style.display='flex';
+    updAccHeightSlider();dp();
+  };
+  r.readAsDataURL(file);
+}
+function resetAccLogo(i){
+  accLogos[i]=null;
+  document.getElementById('accThumb'+i).src='';
+  document.getElementById('accZone'+i).style.display='block';
+  document.getElementById('accResult'+i).style.display='none';
+  updAccHeightSlider();dp();
+}
+function updAccHeightSlider(){
+  document.getElementById('accHRow').style.display=accLogos.some(Boolean)?'flex':'none';
+}
+
 // ── TEMPLATE SELECTION ───────────────────────────────────
 function selTmpl(id){
   currentTemplate=id;
@@ -951,6 +1037,8 @@ function gd(){
     disc:document.getElementById('c_disc').value,
     icon_col:document.getElementById('c_icon')?.value||'#555555',
     disclaimer:document.getElementById('f_disclaimer').value.trim(),
+    accLogos:accLogos.slice(),
+    accH:parseInt(document.getElementById('accH')?.value)||40,
   };
 }
 
@@ -974,8 +1062,9 @@ function render(){
   ['cpDesk','dlDesk','cpMob','dlMob','cpUni','dlUni'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.disabled=disabled;
   });
+  const acc=accreditationsHtml(d);
   const disc=disclaimerHtml(d);
-  const dh=genDesk(d)+disc, mh=genMob(d)+disc, uh=genUni(dh,mh);
+  const dh=genDesk(d)+acc+disc, mh=genMob(d)+acc+disc, uh=genUni(dh,mh);
   document.getElementById('deskPrev').innerHTML=dh;
   document.getElementById('mobPrev').innerHTML=mh;
   document.getElementById('deskCode').value=dh;
@@ -1904,6 +1993,14 @@ function disclaimerHtml(d){
   return `\n<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="border-collapse:collapse;"><tr><td style="padding-top:10px;border-top:1px solid ${d.line};font-family:Arial,sans-serif;font-size:10px;color:${d.disc};line-height:1.6;max-width:600px;">${text}</td></tr></table>`;
 }
 
+function accreditationsHtml(d){
+  const logos=(d.accLogos||[]).filter(Boolean);
+  if(!logos.length) return '';
+  const h=d.accH||40;
+  const imgs=logos.map(src=>`<td style="padding-right:12px;vertical-align:middle;"><img src="${src}" height="${h}" border="0" alt="Accreditation" style="display:inline-block;height:${h}px;width:auto;"></td>`).join('');
+  return `\n<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:10px;"><tr>${imgs}</tr></table>`;
+}
+
 // ── UNIVERSAL HTML ───────────────────────────────────────
 function genUni(dh,mh){
   return `<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600"><tr><td><![endif]-->
@@ -2621,7 +2718,8 @@ function captureState(){
     font:el('f_font')?.value||'',template:currentTemplate,
     pri:el('c_pri')?.value||'',acc:el('c_acc')?.value||'',sec:el('c_sec')?.value||'',
     txt:el('c_txt')?.value||'',line:el('c_line')?.value||'',disc:el('c_disc')?.value||'',
-    icon_col:el('c_icon')?.value||'#555555'
+    icon_col:el('c_icon')?.value||'#555555',
+    accLogos:accLogos.slice(),accH:parseInt(el('accH')?.value)||40
   };
 }
 
@@ -2670,6 +2768,16 @@ function applyState(state){
     const he=el('h_'+k);if(he)he.value=state[k]||'';
   });
   if(state.icon_col){const ce=el('c_icon');if(ce)ce.value=state.icon_col;const he=el('h_icon');if(he)he.value=state.icon_col;}
+  if(state.accLogos){
+    (state.accLogos).forEach((src,i)=>{
+      accLogos[i]=src||null;
+      const thumb=document.getElementById('accThumb'+i);if(thumb)thumb.src=src||'';
+      const zone=document.getElementById('accZone'+i);if(zone)zone.style.display=src?'none':'block';
+      const res=document.getElementById('accResult'+i);if(res)res.style.display=src?'flex':'none';
+    });
+    updAccHeightSlider();
+    if(state.accH!=null){const ah=el('accH');if(ah){ah.value=state.accH;const v=document.getElementById('accHVal');if(v)v.textContent=state.accH+'px';}}
+  }
   suppressHistory=false;
   render();
   updBadges();
@@ -2771,6 +2879,7 @@ function savePreset(){
     // Styling
     font:d.font,
     pri:d.pri,acc:d.acc,sec:d.sec,txt:d.txt,line:d.line,disc:d.disc,icon_col:d.icon_col,
+    accLogos:accLogos.slice(),accH:d.accH,
     // Multiple tab batch data
     batchRows:[...batchRows],
     batchHeaders:[...batchHeaders],
@@ -2845,6 +2954,24 @@ function applyPreset(preset){
   // Font
   if(preset.font){const fs=el('f_font');if(fs){fs.value=preset.font;}}
   // Colours
+  // Accreditation logos
+  if(preset.accLogos){
+    preset.accLogos.forEach((src,i)=>{
+      if(src){
+        accLogos[i]=src;
+        document.getElementById('accThumb'+i).src=src;
+        document.getElementById('accZone'+i).style.display='none';
+        document.getElementById('accResult'+i).style.display='flex';
+      } else {
+        accLogos[i]=null;
+        document.getElementById('accThumb'+i).src='';
+        document.getElementById('accZone'+i).style.display='block';
+        document.getElementById('accResult'+i).style.display='none';
+      }
+    });
+    updAccHeightSlider();
+    if(preset.accH!=null){const ah=el('accH');if(ah){ah.value=preset.accH;document.getElementById('accHVal').textContent=preset.accH+'px';}}
+  }
   const colMap={pri:'c_pri',acc:'c_acc',sec:'c_sec',txt:'c_txt',line:'c_line',disc:'c_disc',icon_col:'c_icon'};
   Object.entries(colMap).forEach(([key,id])=>{
     if(preset[key]){
@@ -2911,6 +3038,7 @@ function resetAll(){
   el('socialList').innerHTML='';
   updSocBtn();
   resetLogo(); resetBanner();
+  [0,1,2,3].forEach(i=>resetAccLogo(i));
   const logoW=el('logoW'); logoW.value=150; logoW.dispatchEvent(new Event('input'));
   const bannerW=el('bannerW'); bannerW.value=600; bannerW.dispatchEvent(new Event('input'));
   const defs={c_pri:'#204456',h_pri:'#204456',c_acc:'#00AEEF',h_acc:'#00AEEF',c_sec:'#1179A3',h_sec:'#1179A3',c_txt:'#1A2A3A',h_txt:'#1A2A3A',c_line:'#DDE4EC',h_line:'#DDE4EC',c_disc:'#6B7F94',h_disc:'#6B7F94'};
