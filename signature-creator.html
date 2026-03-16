@@ -516,6 +516,11 @@ textarea.field-ta::placeholder{color:#7a92a8}
             <input type="text" class="hex-in" id="h_acc" value="#00AEEF" oninput="syncP('h_acc','c_acc')">
           </div>
           <div class="fgrp color-card">
+            <label>Accent 2 <span style="font-weight:400;color:#6b8090;">second rule</span></label>
+            <input type="color" id="c_acc2" value="#1f5f3a" oninput="syncH('c_acc2','h_acc2');dp()">
+            <input type="text" class="hex-in" id="h_acc2" value="#1f5f3a" oninput="syncP('h_acc2','c_acc2')">
+          </div>
+          <div class="fgrp color-card">
             <label>Secondary <span style="font-weight:400;color:#6b8090;">job title</span></label>
             <input type="color" id="c_sec" value="#1179A3" oninput="syncH('c_sec','h_sec');dp()">
             <input type="text" class="hex-in" id="h_sec" value="#1179A3" oninput="syncP('h_sec','c_sec')">
@@ -1053,6 +1058,7 @@ function gd(){
     font:document.getElementById('f_font').value,
     pri:document.getElementById('c_pri').value,
     acc:document.getElementById('c_acc').value,
+    acc2:document.getElementById('c_acc2')?.value||'#1f5f3a',
     sec:document.getElementById('c_sec').value,
     txt:document.getElementById('c_txt').value,
     line:document.getElementById('c_line').value,
@@ -1864,7 +1870,7 @@ function tmplGrant(d){
     <td colspan="3" style="padding-top:10px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr><td style="height:3px;background:${d.acc};font-size:0;line-height:0;"></td></tr>
-        <tr><td style="height:2px;background:${d.pri};font-size:0;line-height:0;"></td></tr>
+        <tr><td style="height:2px;background:${d.acc2};font-size:0;line-height:0;"></td></tr>
       </table>
     </td>
   </tr>
@@ -2834,7 +2840,7 @@ function captureState(){
     logoDataUrl,logoW:parseInt(el('logoW')?.value)||150,
     bannerDataUrl,bannerW:parseInt(el('bannerW')?.value)||600,
     font:el('f_font')?.value||'',template:currentTemplate,
-    pri:el('c_pri')?.value||'',acc:el('c_acc')?.value||'',sec:el('c_sec')?.value||'',
+    pri:el('c_pri')?.value||'',acc:el('c_acc')?.value||'',acc2:el('c_acc2')?.value||'#1f5f3a',sec:el('c_sec')?.value||'',
     txt:el('c_txt')?.value||'',line:el('c_line')?.value||'',disc:el('c_disc')?.value||'',
     icon_col:el('c_icon')?.value||'#555555',
     showIcons:el('f_showIcons')?.checked||false,
@@ -2888,6 +2894,7 @@ function applyState(state){
     const he=el('h_'+k);if(he)he.value=state[k]||'';
   });
   if(state.icon_col){const ce=el('c_icon');if(ce)ce.value=state.icon_col;const he=el('h_icon');if(he)he.value=state.icon_col;}
+  if(state.acc2){const ce=el('c_acc2');if(ce)ce.value=state.acc2;const he=el('h_acc2');if(he)he.value=state.acc2;}
   const siEl=el('f_showIcons');if(siEl)siEl.checked=!!state.showIcons;
   const luEl=el('logoUrl');if(luEl)luEl.value=state.logoUrl||'';
   const buEl=el('bannerUrl');if(buEl)buEl.value=state.bannerUrl||'';
@@ -3003,7 +3010,7 @@ function savePreset(){
     banner:bannerDataUrl,bannerW:d.bannerW,
     // Styling
     font:d.font,
-    pri:d.pri,acc:d.acc,sec:d.sec,txt:d.txt,line:d.line,disc:d.disc,icon_col:d.icon_col,
+    pri:d.pri,acc:d.acc,acc2:d.acc2,sec:d.sec,txt:d.txt,line:d.line,disc:d.disc,icon_col:d.icon_col,
     logoUrl:d.logoUrl,bannerUrl:d.bannerUrl,
     accLogos:accLogos.slice(),accUrls:d.accUrls,accH:d.accH,
     // Multiple tab batch data
@@ -3102,7 +3109,7 @@ function applyPreset(preset){
     updAccHeightSlider();
     if(preset.accH!=null){const ah=el('accH');if(ah){ah.value=preset.accH;document.getElementById('accHVal').textContent=preset.accH+'px';}}
   }
-  const colMap={pri:'c_pri',acc:'c_acc',sec:'c_sec',txt:'c_txt',line:'c_line',disc:'c_disc',icon_col:'c_icon'};
+  const colMap={pri:'c_pri',acc:'c_acc',acc2:'c_acc2',sec:'c_sec',txt:'c_txt',line:'c_line',disc:'c_disc',icon_col:'c_icon'};
   Object.entries(colMap).forEach(([key,id])=>{
     if(preset[key]){
       const ce=el(id); if(ce) ce.value=preset[key];
