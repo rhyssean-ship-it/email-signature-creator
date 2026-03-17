@@ -871,21 +871,34 @@ let prevTimer=null;
 let currentTemplate='classic-left';
 const iconCache={};
 const iconPngCache={};
-function iconPng(platform,size=20){
+let exportMode=false;
+async function preloadIconPngs(){
   const col=document.getElementById('c_icon')?.value||'#555555';
-  const k=platform+size+col;
-  if(iconPngCache[k]) return iconPngCache[k];
-  const svgUrl=icon(platform,size);
-  try{
-    const canvas=document.createElement('canvas');
-    canvas.width=size; canvas.height=size;
-    const ctx=canvas.getContext('2d');
-    const img=new Image();
-    img.src=svgUrl;
-    ctx.drawImage(img,0,0,size,size);
-    const url=canvas.toDataURL('image/png');
-    iconPngCache[k]=url; return url;
-  }catch(e){ return svgUrl; }
+  const tasks=[];
+  for(const p of PLATS){for(const s of [18,20]){
+    const k=p+s+col;
+    if(!iconPngCache[k]) tasks.push(new Promise(resolve=>{
+      const canvas=document.createElement('canvas');
+      canvas.width=s;canvas.height=s;
+      const ctx=canvas.getContext('2d');
+      const img=new Image();
+      img.onload=()=>{ctx.drawImage(img,0,0,s,s);iconPngCache[k]=canvas.toDataURL('image/png');resolve();};
+      img.onerror=()=>resolve();
+      img.src=icon(p,s);
+    }));
+  }}
+  await Promise.all(tasks);
+}
+async function renderExportIcons(d,acc,disc){
+  await preloadIconPngs();
+  const col=document.getElementById('c_icon')?.value||'#555555';
+  exportMode=true;
+  const dhE=applyImageLinks(genDesk(d),d)+acc+disc;
+  const mhE=applyImageLinks(genMob(d),d)+acc+disc;
+  exportMode=false;
+  document.getElementById('deskCode').value=dhE;
+  document.getElementById('mobCode').value=mhE;
+  document.getElementById('uniCode').value=genUni(dhE,mhE);
 }
 // Batch export state
 let batchRows=[], batchHeaders=[];
@@ -1102,6 +1115,7 @@ function render(){
   document.getElementById('deskCode').value=dh;
   document.getElementById('mobCode').value=mh;
   document.getElementById('uniCode').value=uh;
+  renderExportIcons(d,acc,disc);
   // Update size indicator
   const sizeEl=document.getElementById('sigSizeInfo');
   if(sizeEl){
@@ -1122,9 +1136,10 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 
 function socIcons(socials,size=20){
   if(!socials.length) return '';
+  const col=document.getElementById('c_icon')?.value||'#555555';
   return socials.map(s=>{
     const href=s.url.startsWith('http')?s.url:'https://'+s.url;
-    return `<a href="${esc(href)}" target="_blank" style="display:inline-block;margin-right:5px;text-decoration:none;"><img src="${iconPng(s.platform,size)}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:inline-block;width:${size}px;height:${size}px;"></a>`;
+    return `<a href="${esc(href)}" target="_blank" style="display:inline-block;margin-right:5px;text-decoration:none;"><img src="${exportMode?(iconPngCache[s.platform+size+col]||icon(s.platform,size)):icon(s.platform,size)}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:inline-block;width:${size}px;height:${size}px;"></a>`;
   }).join('');
 }
 
