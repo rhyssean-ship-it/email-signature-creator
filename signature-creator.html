@@ -879,10 +879,10 @@ async function preloadIconPngs(){
     const k=p+s+col;
     if(!iconPngCache[k]) tasks.push(new Promise(resolve=>{
       const canvas=document.createElement('canvas');
-      canvas.width=s;canvas.height=s;
+      canvas.width=s*2;canvas.height=s*2;
       const ctx=canvas.getContext('2d');
       const img=new Image();
-      img.onload=()=>{ctx.drawImage(img,0,0,s,s);iconPngCache[k]=canvas.toDataURL('image/png');resolve();};
+      img.onload=()=>{ctx.drawImage(img,0,0,s*2,s*2);iconPngCache[k]=canvas.toDataURL('image/png');resolve();};
       img.onerror=()=>resolve();
       img.src=icon(p,s);
     }));
@@ -1137,11 +1137,12 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function socIcons(socials,size=20){
   if(!socials.length) return '';
   const col=document.getElementById('c_icon')?.value||'#555555';
-  return socials.map(s=>{
+  const cells=socials.map(s=>{
     const href=s.url.startsWith('http')?s.url:'https://'+s.url;
     const src=exportMode?(iconPngCache[s.platform+size+col]||icon(s.platform,size)):icon(s.platform,size);
-    return `<a href="${esc(href)}" target="_blank" style="display:inline-block;margin-right:4px;text-decoration:none;font-size:0;line-height:0;vertical-align:top;"><img src="${src}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:block;width:${size}px;height:${size}px;vertical-align:top;"></a>`;
+    return `<td width="${size}" height="${size}" style="padding-right:4px;" valign="top"><a href="${esc(href)}" target="_blank" style="text-decoration:none;"><img src="${src}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:block;width:${size}px;height:${size}px;"></a></td>`;
   }).join('');
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;"><tr valign="top">${cells}</tr></table>`;
 }
 
 // Contact detail icons (inline SVG data URIs)
