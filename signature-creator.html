@@ -1814,7 +1814,7 @@ function tmplGrant(d){
   const lw=d.logoW, lhv=lh(lw);
   const soc=socIcons(d.socials,20);
   const ls='text-decoration:none;';
-  const divH=Math.max(lhv+20,80);
+  const divH=Math.max(lhv+8,60);
   const rRows=[];
   if(d.name) rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.pri};padding-bottom:4px;line-height:1.4;">${esc(d.name)}</td></tr>`);
   if(d.title) rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:4px;line-height:1.4;">${esc(d.title)}</td></tr>`);
@@ -1843,7 +1843,7 @@ function tmplGrant(d){
     </td>
   </tr>
   <tr>
-    <td colspan="3" style="padding-top:4px;">
+    <td colspan="3" style="padding-top:0;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr><td style="height:3px;background:${d.acc};font-size:0;line-height:0;"></td></tr>
         <tr><td style="height:2px;background:${d.acc2};font-size:0;line-height:0;"></td></tr>
