@@ -870,6 +870,23 @@ let bannerDataUrl=null, bannerNatW=null, bannerNatH=null;
 let prevTimer=null;
 let currentTemplate='classic-left';
 const iconCache={};
+const iconPngCache={};
+function iconPng(platform,size=20){
+  const col=document.getElementById('c_icon')?.value||'#555555';
+  const k=platform+size+col;
+  if(iconPngCache[k]) return iconPngCache[k];
+  const svgUrl=icon(platform,size);
+  try{
+    const canvas=document.createElement('canvas');
+    canvas.width=size; canvas.height=size;
+    const ctx=canvas.getContext('2d');
+    const img=new Image();
+    img.src=svgUrl;
+    ctx.drawImage(img,0,0,size,size);
+    const url=canvas.toDataURL('image/png');
+    iconPngCache[k]=url; return url;
+  }catch(e){ return svgUrl; }
+}
 // Batch export state
 let batchRows=[], batchHeaders=[];
 let batchColMap={name:'',title:'',company:'',email:'',website:'',phone:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
@@ -1107,7 +1124,7 @@ function socIcons(socials,size=20){
   if(!socials.length) return '';
   return socials.map(s=>{
     const href=s.url.startsWith('http')?s.url:'https://'+s.url;
-    return `<a href="${esc(href)}" target="_blank" style="display:inline-block;margin-right:5px;text-decoration:none;"><img src="${icon(s.platform,size)}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:inline-block;width:${size}px;height:${size}px;"></a>`;
+    return `<a href="${esc(href)}" target="_blank" style="display:inline-block;margin-right:5px;text-decoration:none;"><img src="${iconPng(s.platform,size)}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:inline-block;width:${size}px;height:${size}px;"></a>`;
   }).join('');
 }
 
