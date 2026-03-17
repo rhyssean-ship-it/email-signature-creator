@@ -1178,7 +1178,7 @@ function contactCells(d,fs=12){
 function bannerRow(d){
   const bw=d.bannerW, bhv=bh(bw);
   if(!d.banner){
-    return `<tr><td style="padding-bottom:16px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr></table></td></tr>`;
+    return `<tr><td style="padding-bottom:16px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr></table></td></tr>`;
   }
   return `<tr><td style="padding-bottom:16px;"><img src="${d.banner}" width="${bw}" height="${bhv}" border="0" alt="Banner" style="display:block;width:${bw}px;height:${bhv}px;"></td></tr>`;
 }
@@ -1304,7 +1304,7 @@ function tmplBannerCentred(d){
   if(d.banner){
     rows.push(`<tr><td style="padding-bottom:16px;text-align:center;"><img src="${d.banner}" width="${bw}" height="${bhv}" border="0" alt="Banner" style="display:block;margin:0 auto;width:${bw}px;height:${bhv}px;"></td></tr>`);
   }else{
-    rows.push(`<tr><td style="padding-bottom:16px;text-align:center;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr><td style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr></table></td></tr>`);
+    rows.push(`<tr><td style="padding-bottom:16px;text-align:center;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr><td valign="middle" style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr></table></td></tr>`);
   }
   if(d.name) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:2px;text-align:center;line-height:1.2;">${esc(d.name)}</td></tr>`);
   if(d.title) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:10px;text-align:center;">${esc(d.title)}</td></tr>`);
@@ -1420,7 +1420,7 @@ function tmplTwoColumn(d){
       </table>
     </td>
     <td style="padding:0 16px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:1px solid ${d.line};line-height:52px;font-size:52px;">&nbsp;</td></tr></table>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td height="52" style="border-left:1px solid ${d.line};height:52px;font-size:0;line-height:0;">&nbsp;</td></tr></table>
     </td>
     <td style="vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
@@ -1442,8 +1442,8 @@ function tmplAccentBar(d){
   <tr>
     <td style="background:${d.acc};width:4px;padding:0;">&nbsp;</td>
     <td style="padding:0 16px 0 14px;vertical-align:middle;">
-      ${d.logo?`<img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;margin-bottom:10px;">`:''}
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${d.logo?`<tr><td style="padding-bottom:10px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>`:''}
         ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:2px;line-height:1.2;">${esc(d.name)}</td></tr>`:''}
         ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
         ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:8px;">${esc(d.company)}</td></tr>`:''}
@@ -1609,7 +1609,7 @@ function tmplBannerSplit(d){
       </table>
     </td>
     <td style="padding:0 16px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:1px solid ${d.line};line-height:50px;font-size:50px;">&nbsp;</td></tr></table>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td height="50" style="border-left:1px solid ${d.line};height:50px;font-size:0;line-height:0;">&nbsp;</td></tr></table>
     </td>
     <td style="vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
@@ -1631,7 +1631,7 @@ function tmplBannerMinimal(d){
   if(d.banner){
     rows.push(`<tr><td style="padding-bottom:14px;"><img src="${d.banner}" width="${bw}" height="${bhv}" border="0" alt="Banner" style="display:block;width:${bw}px;height:${bhv}px;"></td></tr>`);
   }else{
-    rows.push(`<tr><td style="padding-bottom:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr></table></td></tr>`);
+    rows.push(`<tr><td style="padding-bottom:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr></table></td></tr>`);
   }
   if(d.name) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:20px;font-weight:700;color:${d.pri};padding-bottom:5px;line-height:1.2;">${esc(d.name)}</td></tr>`);
   rows.push(`<tr><td style="border-top:2px solid ${d.acc};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>`);
@@ -1757,7 +1757,7 @@ function tmplRuled(d){
     </table></td>
     ${d.logo?`<td width="${lw}" style="vertical-align:bottom;padding-bottom:10px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>`:''}
   </tr>
-  ${ruledRows?`<tr><td colspan="2"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-top:2px solid ${d.acc};">${ruledRows}</table></td></tr>`:''}
+  ${ruledRows?`<tr><td colspan="2"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;border-top:2px solid ${d.acc};">${ruledRows}</table></td></tr>`:''}
   ${soc?`<tr><td colspan="2" style="padding-top:8px;">${soc}</td></tr>`:''}
 </table>`;}
 
@@ -1772,8 +1772,8 @@ function tmplNameRow(d){
   const logoTd=d.logo?`<td width="${lw}" style="padding-left:20px;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>`:'';
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
-    <td style="vertical-align:middle;">
-      ${d.name?`<div style="font-family:${d.font},Arial,sans-serif;font-size:22px;font-weight:700;color:${d.pri};line-height:1.1;white-space:nowrap;">${esc(d.name)}</div>`:''}
+    <td style="vertical-align:middle;font-family:${d.font},Arial,sans-serif;font-size:22px;font-weight:700;color:${d.pri};line-height:1.1;white-space:nowrap;">
+      ${d.name?esc(d.name):''}
     </td>
     ${logoTd}
   </tr>
@@ -1864,16 +1864,16 @@ function tmplGrant(d){
   if(soc) rRows.push(`<tr><td style="padding-top:4px;">${soc}</td></tr>`);
   const lgap=Math.round(lw*0.75);
   const logoTd=d.logo
-    ?`<td valign="top" style="padding-right:${lgap}px;border-right:1px solid ${d.line};">
+    ?`<td valign="top" style="padding-right:${lgap}px;border-right:1px solid ${d.line};vertical-align:top;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;">
           <tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>
         </table>
       </td>`
-    :`<td valign="top" style="padding-right:40px;border-right:1px solid ${d.line};font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:700;color:${d.pri};white-space:nowrap;">${esc(d.company)}</td>`;
+    :`<td valign="top" style="padding-right:40px;border-right:1px solid ${d.line};font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:700;color:${d.pri};white-space:nowrap;vertical-align:top;">${esc(d.company)}</td>`;
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
     ${logoTd}
-    <td valign="top" style="padding-left:14px;padding-top:4px;">
+    <td valign="top" style="padding-left:14px;padding-top:4px;vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
         ${rRows.join('\n        ')}
       </table>
@@ -1900,7 +1900,7 @@ function tmplBannerLogoLeft(d){
   const hasI=d.name||d.title||d.company;
   const logoTd=d.logo?`<td width="${lw}" style="padding-right:0;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>
     <td style="padding:0 18px;vertical-align:middle;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:1px solid ${d.line};line-height:50px;font-size:50px;">&nbsp;</td></tr></table>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td height="50" style="border-left:1px solid ${d.line};height:50px;font-size:0;line-height:0;">&nbsp;</td></tr></table>
     </td>`:'';
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${bannerRow(d)}
@@ -1929,7 +1929,7 @@ function tmplBannerStacked(d){
   const rows=[];
   const bw=d.bannerW, bhv=bh(bw);
   if(d.banner) rows.push(`<tr><td style="padding-bottom:14px;text-align:center;"><img src="${d.banner}" width="${bw}" height="${bhv}" border="0" alt="Banner" style="display:inline-block;width:${bw}px;height:${bhv}px;"></td></tr>`);
-  else rows.push(`<tr><td style="padding-bottom:14px;text-align:center;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr><td style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr></table></td></tr>`);
+  else rows.push(`<tr><td style="padding-bottom:14px;text-align:center;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr><td valign="middle" style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr></table></td></tr>`);
   if(d.logo) rows.push(`<tr><td style="padding-bottom:10px;text-align:center;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:inline-block;width:${lw}px;height:${lhv}px;"></td></tr>`);
   rows.push(`<tr><td style="border-top:2px solid ${d.acc};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>`);
   if(d.name) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:20px;font-weight:700;color:${d.pri};padding-top:10px;padding-bottom:3px;text-align:center;line-height:1.2;">${esc(d.name)}</td></tr>`);
@@ -1937,7 +1937,7 @@ function tmplBannerStacked(d){
   if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
   if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
   if(meta.length) rows.push(`<tr><td style="padding-bottom:8px;text-align:center;">${meta.join(`<span style="color:${d.sep};padding:0 6px;">·</span>`)}</td></tr>`);
-  if(hasC) rows.push(`<tr><td style="padding-bottom:4px;text-align:center;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr>${contactCells(d,11)}</tr></table></td></tr>`);
+  if(hasC) rows.push(`<tr><td style="padding-bottom:4px;text-align:center;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>${contactCells(d,11)}</tr></table></td></tr>`);
   if(soc) rows.push(`<tr><td style="padding-top:6px;text-align:center;">${soc}</td></tr>`);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;}
 
@@ -2000,7 +2000,7 @@ function tmplBannerBottom(d){
   if(d.banner){
     rows.push(`<tr><td><img src="${d.banner}" width="${bw}" height="${bhv}" border="0" alt="Banner" style="display:block;width:${bw}px;height:${bhv}px;"></td></tr>`);
   } else {
-    rows.push(`<tr><td style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr>`);
+    rows.push(`<tr><td valign="middle" style="background:#e0e0e0;width:${bw}px;height:80px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:13px;color:#999;">Upload a banner image in Step 2</td></tr>`);
   }
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${rows.join('\n  ')}
@@ -2017,7 +2017,7 @@ function tmplBannerSidebar(d){
   const bsw=160, bsh=Math.max(120,bh(d.bannerW));
   const bannerTd=d.banner
     ?`<td style="padding-right:0;vertical-align:top;"><img src="${d.banner}" width="${bsw}" height="${bsh}" border="0" alt="Banner" style="display:block;width:${bsw}px;height:${bsh}px;"></td>`
-    :`<td style="padding-right:0;vertical-align:top;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#e0e0e0;width:${bsw}px;height:${bsh}px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:11px;color:#999;line-height:1.4;">Upload a<br>banner image</td></tr></table></td>`;
+    :`<td style="padding-right:0;vertical-align:top;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" style="background:#e0e0e0;width:${bsw}px;height:${bsh}px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:11px;color:#999;line-height:1.4;">Upload a<br>banner image</td></tr></table></td>`;
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
     ${bannerTd}
@@ -2089,7 +2089,7 @@ function genMob(d){
   const isBanner=currentTemplate.startsWith('banner-');
   if(isBanner){
     if(d.banner) rows.push(`<tr><td style="padding-bottom:12px;text-align:center;"><img src="${d.banner}" width="${tbw}" height="${bhv}" border="0" alt="Banner" style="display:inline-block;width:${tbw}px;height:${bhv}px;"></td></tr>`);
-    else rows.push(`<tr><td style="padding-bottom:12px;background:#e0e0e0;height:60px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:12px;color:#999;">Upload a banner image</td></tr>`);
+    else rows.push(`<tr><td valign="middle" style="padding-bottom:12px;background:#e0e0e0;height:60px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:12px;color:#999;">Upload a banner image</td></tr>`);
   }
   if(d.logo) rows.push(`<tr><td style="padding-bottom:12px;text-align:center;"><img src="${d.logo}" width="${tw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:inline-block;width:${tw}px;height:${lhv}px;"></td></tr>`);
   if(d.name) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:16px;font-weight:bold;color:${d.pri};padding-bottom:3px;text-align:center;line-height:1.2;">${esc(d.name)}</td></tr>`);
