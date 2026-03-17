@@ -1140,7 +1140,7 @@ function socIcons(socials,size=20){
   const cells=socials.map(s=>{
     const href=s.url.startsWith('http')?s.url:'https://'+s.url;
     const src=exportMode?(iconPngCache[s.platform+size+col]||icon(s.platform,size)):icon(s.platform,size);
-    return `<td width="${size}" style="padding-right:5px;font-size:0;line-height:0;"><a href="${esc(href)}" target="_blank" style="text-decoration:none;"><img src="${src}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:block;width:${size}px;height:${size}px;"></a></td>`;
+    return `<td width="${size}" style="padding-right:5px;font-size:0;line-height:0;vertical-align:top;"><a href="${esc(href)}" target="_blank" style="text-decoration:none;display:block;font-size:0;line-height:0;"><img src="${src}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:block;width:${size}px;height:${size}px;"></a></td>`;
   }).join('');
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>${cells}</tr></table>`;
 }
