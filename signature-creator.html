@@ -1159,8 +1159,8 @@ function contactIcon(type,color,size=14){
 }
 
 function contactCells(d,fs=12){
-  const ls=`font-family:${d.font},Arial,sans-serif;font-size:${fs}px;color:${d.txt};text-decoration:none !important;white-space:nowrap;`;
-  const sp=`text-decoration:none !important;color:${d.txt};`;
+  const ls=`font-family:${d.font},Arial,sans-serif;font-size:${fs}px;color:${d.txt};text-decoration:none !important;-webkit-text-decoration:none;white-space:nowrap;`;
+  const sp=`text-decoration:none !important;-webkit-text-decoration:none;color:${d.txt};`;
   const sep=`<td style="padding:0 8px;color:${d.sep};font-size:${fs}px;font-family:${d.font},Arial,sans-serif;">|</td>`;
   const items=[];
   d.phones.forEach(p=>items.push(`<td><a href="tel:${esc(p.replace(/\s/g,''))}" x-apple-data-detectors="false" style="${ls}"><span style="${sp}">${esc(p)}</span></a></td>`));
@@ -1853,14 +1853,14 @@ function tmplGrant(d){
   if(d.name) rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.pri};padding-bottom:4px;line-height:1.4;">${esc(d.name)}</td></tr>`);
   if(d.title) rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:4px;line-height:1.4;">${esc(d.title)}</td></tr>`);
   if(d.company&&!d.logo) rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:4px;">${esc(d.company)}</td></tr>`);
-  d.phones.forEach(p=>rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};padding-bottom:4px;line-height:1.4;text-decoration:none;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};text-decoration:none;border-bottom:0;" x-apple-data-detectors="false"><span style="color:${d.txt};text-decoration:none;border-bottom:0;">${esc(p)}</span></a></td></tr>`));
+  d.phones.forEach(p=>rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};padding-bottom:4px;line-height:1.4;text-decoration:none;-webkit-text-decoration:none;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};text-decoration:none;-webkit-text-decoration:none;border-bottom:none;" x-apple-data-detectors="false"><span style="color:${d.txt};text-decoration:none;-webkit-text-decoration:none;border-bottom:none;">${esc(p)}</span></a></td></tr>`));
   if(d.address){
     const addrParts=d.address.split(',');
     const addrFmt=addrParts.length>2?esc(addrParts.slice(0,2).join(','))+',<br>'+esc(addrParts.slice(2).join(',')):esc(d.address);
     rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};padding-bottom:4px;line-height:1.5;">${addrFmt}</td></tr>`);
   }
-  if(d.email) rRows.push(`<tr><td style="padding-bottom:4px;"><a href="mailto:${esc(d.email)}" x-apple-data-detectors="false" style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};${ls}"><span style="text-decoration:none !important;color:${d.txt};">${esc(d.email)}</span></a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};padding-bottom:4px;line-height:1.4;text-decoration:none;"><a href="${esc(href)}" style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};text-decoration:none;border-bottom:0;" x-apple-data-detectors="false"><span style="color:${d.txt};text-decoration:none;border-bottom:0;">${esc(disp)}</span></a></td></tr>`);}
+  if(d.email) rRows.push(`<tr><td style="padding-bottom:4px;"><a href="mailto:${esc(d.email)}" x-apple-data-detectors="false" style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};${ls}"><span style="text-decoration:none !important;-webkit-text-decoration:none;color:${d.txt};">${esc(d.email)}</span></a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};padding-bottom:4px;line-height:1.4;text-decoration:none;-webkit-text-decoration:none;"><a href="${esc(href)}" style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};text-decoration:none;-webkit-text-decoration:none;border-bottom:none;" x-apple-data-detectors="false"><span style="color:${d.txt};text-decoration:none;-webkit-text-decoration:none;border-bottom:none;">${esc(disp)}</span></a></td></tr>`);}
   if(soc) rRows.push(`<tr><td style="padding-top:4px;">${soc}</td></tr>`);
   const lgap=Math.round(lw*0.75);
   const logoTd=d.logo
