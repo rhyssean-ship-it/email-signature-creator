@@ -1137,12 +1137,11 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function socIcons(socials,size=20){
   if(!socials.length) return '';
   const col=document.getElementById('c_icon')?.value||'#555555';
-  const cells=socials.map(s=>{
+  return socials.map(s=>{
     const href=s.url.startsWith('http')?s.url:'https://'+s.url;
     const src=exportMode?(iconPngCache[s.platform+size+col]||icon(s.platform,size)):icon(s.platform,size);
-    return `<td width="${size}" style="padding-right:5px;font-size:0;line-height:0;vertical-align:top;"><a href="${esc(href)}" target="_blank" style="text-decoration:none;display:block;font-size:0;line-height:0;"><img src="${src}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:block;width:${size}px;height:${size}px;"></a></td>`;
+    return `<a href="${esc(href)}" target="_blank" style="display:inline-block;margin-right:4px;text-decoration:none;font-size:0;line-height:0;vertical-align:top;"><img src="${src}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:block;width:${size}px;height:${size}px;vertical-align:top;"></a>`;
   }).join('');
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>${cells}</tr></table>`;
 }
 
 // Contact detail icons (inline SVG data URIs)
