@@ -896,8 +896,9 @@ async function renderExportIcons(d,acc,disc){
   await preloadIconPngs();
   const col=document.getElementById('c_icon')?.value||'#555555';
   exportMode=true;
-  const dhE=fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc);
-  const mhE=fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc);
+  const gfont=googleFontStyle(d.font);
+  const dhE=gfont+fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc);
+  const mhE=gfont+fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc);
   exportMode=false;
   document.getElementById('deskCode').value=dhE;
   document.getElementById('mobCode').value=mhE;
@@ -1112,7 +1113,8 @@ function render(){
   });
   const acc=accreditationsHtml(d);
   const disc=disclaimerHtml(d);
-  const dh=fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc), mh=fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc), uh=genUni(dh,mh);
+  const gfont=googleFontStyle(d.font);
+  const dh=gfont+fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc), mh=gfont+fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc), uh=genUni(dh,mh);
   document.getElementById('deskPrev').innerHTML=dh;
   document.getElementById('mobPrev').innerHTML=mh;
   document.getElementById('deskCode').value=dh;
@@ -1135,6 +1137,12 @@ function render(){
 
 // ── HELPERS ──────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+const GOOGLE_FONTS={'Lexend Zetta':'Lexend+Zetta:wght@400;500;600;700'};
+function googleFontStyle(font){
+  if(!GOOGLE_FONTS[font]) return '';
+  return `<style>@import url('https://fonts.googleapis.com/css2?family=${GOOGLE_FONTS[font]}&display=swap');</style>`;
+}
 
 
 function socIcons(socials,size=20){
@@ -2804,7 +2812,8 @@ async function downloadBatchAll(fmt){
   for(let i=0;i<batchRows.length;i++){
     const d=batchMerge(base,batchRows[i]);
     const disc=disclaimerHtml(d);
-    const dh=fixMsoTables(genDesk(d)+disc), mh=fixMsoTables(genMob(d)+disc);
+    const gfont=googleFontStyle(d.font);
+    const dh=gfont+fixMsoTables(genDesk(d)+disc), mh=gfont+fixMsoTables(genMob(d)+disc);
     const html=fmt==='desk'?dh:fmt==='mob'?mh:genUni(dh,mh);
     const slug=batchSlug(batchRows[i]);
     zip.file(`${slug}-${i+1}.html`,html);
