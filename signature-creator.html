@@ -203,6 +203,19 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .preset-empty{font-size:13px;color:#8a9baa;padding:20px;text-align:center;background:#f8fafc;border-radius:8px;border:1px dashed #dde4ec;}
 .preset-del-btn{padding:5px 10px;border-radius:6px;border:1px solid #fbb;background:#fff5f5;cursor:pointer;font-size:12px;font-weight:500;color:#c00;transition:.15s;font-family:'Montserrat','Segoe UI',sans-serif;}
 .preset-del-btn:hover{background:#ffe0e0;}
+.del-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.del-modal{background:#fff;border-radius:14px;padding:28px 28px 22px;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);font-family:'Montserrat','Segoe UI',sans-serif;}
+.del-modal h3{margin:0 0 8px;font-size:16px;font-weight:700;color:#1a2a3a;}
+.del-modal p{margin:0 0 16px;font-size:13px;color:#4a5e70;line-height:1.5;}
+.del-modal input{width:100%;box-sizing:border-box;padding:8px 11px;border:1px solid #dde4ec;border-radius:7px;font-size:13px;font-family:'Montserrat','Segoe UI',sans-serif;color:#1a2a3a;margin-bottom:16px;outline:none;transition:.15s;}
+.del-modal input:focus{border-color:#00aeef;}
+.del-modal input.invalid{border-color:#f0b0b0;background:#fff5f5;}
+.del-modal-btns{display:flex;gap:8px;justify-content:flex-end;}
+.del-cancel-btn{padding:7px 16px;border-radius:7px;border:1px solid #dde4ec;background:#f8fafc;cursor:pointer;font-size:13px;font-weight:500;color:#4a5e70;font-family:'Montserrat','Segoe UI',sans-serif;}
+.del-cancel-btn:hover{background:#edf1f5;}
+.del-confirm-btn{padding:7px 16px;border-radius:7px;border:1px solid #fbb;background:#fff5f5;cursor:pointer;font-size:13px;font-weight:600;color:#c00;font-family:'Montserrat','Segoe UI',sans-serif;transition:.15s;}
+.del-confirm-btn:hover:not(:disabled){background:#ffe0e0;}
+.del-confirm-btn:disabled{opacity:.4;cursor:not-allowed;}
 
 @media(max-width:740px){
   .fg{grid-template-columns:1fr}
@@ -3156,9 +3169,39 @@ function applyPresetById(id){
 }
 
 function deletePreset(id){
-  if(!confirm('Delete this preset?')) return;
-  setPresets(getPresets().filter(p=>p.id!==id));
-  renderPresetCards();
+  const overlay=document.createElement('div');
+  overlay.className='del-overlay';
+  overlay.innerHTML=`<div class="del-modal">
+    <h3>Delete preset?</h3>
+    <p>This cannot be undone. Type <strong>remove</strong> to confirm.</p>
+    <input id="delConfirmIn" type="text" placeholder="Type &quot;remove&quot; to confirm" autocomplete="off">
+    <div class="del-modal-btns">
+      <button class="del-cancel-btn" id="delCancelBtn">Cancel</button>
+      <button class="del-confirm-btn" id="delConfirmBtn" disabled>Delete</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  const inp=overlay.querySelector('#delConfirmIn');
+  const confirmBtn=overlay.querySelector('#delConfirmBtn');
+  const cancelBtn=overlay.querySelector('#delCancelBtn');
+  inp.focus();
+  inp.addEventListener('input',()=>{
+    const ok=inp.value.trim().toLowerCase()==='remove';
+    confirmBtn.disabled=!ok;
+    inp.classList.toggle('invalid', inp.value.length>0 && !ok);
+  });
+  const close=()=>overlay.remove();
+  cancelBtn.addEventListener('click',close);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+  confirmBtn.addEventListener('click',()=>{
+    setPresets(getPresets().filter(p=>p.id!==id));
+    renderPresetCards();
+    close();
+  });
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&!confirmBtn.disabled)confirmBtn.click();
+    if(e.key==='Escape')close();
+  });
 }
 
 function renderPresetCards(){
