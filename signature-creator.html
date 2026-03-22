@@ -3173,8 +3173,8 @@ function deletePreset(id){
   overlay.className='del-overlay';
   overlay.innerHTML=`<div class="del-modal">
     <h3>Delete preset?</h3>
-    <p>This cannot be undone. Type <strong>remove</strong> to confirm.</p>
-    <input id="delConfirmIn" type="text" placeholder="Type &quot;remove&quot; to confirm" autocomplete="off">
+    <p>This cannot be undone. Enter the confirmation code to proceed.</p>
+    <input id="delConfirmIn" type="text" placeholder="Confirmation code" autocomplete="off">
     <div class="del-modal-btns">
       <button class="del-cancel-btn" id="delCancelBtn">Cancel</button>
       <button class="del-confirm-btn" id="delConfirmBtn" disabled>Delete</button>
