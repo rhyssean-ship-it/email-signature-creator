@@ -1183,20 +1183,20 @@ function contactIcon(type,color,size=14){
 }
 
 function contactCells(d,fs=12){
-  const ls=`font-family:${d.font},Arial,sans-serif;font-size:${fs}px;color:${d.txt};text-decoration:none !important;-webkit-text-decoration:none;white-space:nowrap;`;
-  const sp=`text-decoration:none !important;-webkit-text-decoration:none;color:${d.txt};white-space:nowrap;`;
-  const tdNoWrap=`white-space:nowrap;`;
-  const sep=`<td style="padding:0 8px;color:${d.sep};font-size:${fs}px;font-family:${d.font},Arial,sans-serif;white-space:nowrap;">|</td>`;
-  const items=[];
-  d.phones.forEach(p=>items.push(`<td style="${tdNoWrap}" nowrap><a href="tel:${esc(p.replace(/\s/g,''))}" x-apple-data-detectors="false" style="${ls}"><span style="${sp}">${esc(p).replace(/ /g,'&nbsp;')}</span></a></td>`));
-  if(d.email) items.push(`<td style="${tdNoWrap}" nowrap><a href="mailto:${esc(d.email)}" x-apple-data-detectors="false" style="${ls}"><span style="${sp}">${esc(d.email)}</span></a></td>`);
+  const tdStyle=`font-family:${d.font},Arial,sans-serif;font-size:${fs}px;color:${d.txt};line-height:1.4;`;
+  const linkStyle=`font-family:${d.font},Arial,sans-serif;font-size:${fs}px;color:${d.txt};text-decoration:none !important;-webkit-text-decoration:none;white-space:nowrap;`;
+  const spanStyle=`text-decoration:none !important;-webkit-text-decoration:none;color:${d.txt};white-space:nowrap;`;
+  const sep=`<span style="color:${d.sep};padding:0 8px;">|</span>`;
+  const parts=[];
+  d.phones.forEach(p=>parts.push(`<a href="tel:${esc(p.replace(/\s/g,''))}" x-apple-data-detectors="false" style="${linkStyle}"><span style="${spanStyle}">${esc(p).replace(/ /g,'&nbsp;')}</span></a>`));
+  if(d.email) parts.push(`<a href="mailto:${esc(d.email)}" x-apple-data-detectors="false" style="${linkStyle}"><span style="${spanStyle}">${esc(d.email)}</span></a>`);
   if(d.website){
     const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');
     const href=d.website.startsWith('http')?d.website:'https://'+d.website;
-    items.push(`<td style="${tdNoWrap}" nowrap><a href="${esc(href)}" x-apple-data-detectors="false" style="${ls}"><span style="${sp}">${esc(disp)}</span></a></td>`);
+    parts.push(`<a href="${esc(href)}" x-apple-data-detectors="false" style="${linkStyle}"><span style="${spanStyle}">${esc(disp)}</span></a>`);
   }
-  if(d.address) items.push(`<td style="${ls}">${esc(d.address)}</td>`);
-  return items.join(sep);
+  if(d.address) parts.push(`<span style="${spanStyle}">${esc(d.address)}</span>`);
+  return `<td style="${tdStyle}">${parts.join(sep)}</td>`;
 }
 
 // Shared banner row (for left-aligned banner templates)
