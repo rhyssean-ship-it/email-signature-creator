@@ -392,8 +392,9 @@ textarea.field-ta::placeholder{color:#7a92a8}
           </div>
           <div class="slider-row" style="margin-top:10px;">
             <label style="min-width:72px;">Banner width</label>
-            <input type="range" id="bannerW" min="400" max="700" value="600" oninput="document.getElementById('bannerWVal').textContent=this.value+'px';dp()">
-            <span class="slider-val" id="bannerWVal">600px</span>
+            <input type="range" id="bannerW" min="200" max="1000" value="600" oninput="bWSync(this.value)">
+            <input type="number" id="bannerWNum" min="200" max="1000" value="600" oninput="bWSync(this.value,true)" onchange="bWClamp()" style="width:64px;padding:5px 7px;border:1px solid #dde4ec;border-radius:6px;font-size:12px;background:#f8fafc;color:#1a2a3a;font-family:'Montserrat','Segoe UI',sans-serif;text-align:right;">
+            <span style="font-size:11px;color:#6b7f94;font-weight:500;">px</span>
           </div>
           <div class="fgrp" style="margin-top:8px;">
             <label style="font-size:10px;color:#6b8090;">Hyperlink URL <span style="font-weight:400;">(optional)</span></label>
@@ -1005,6 +1006,21 @@ function resetBanner(){
   dp();
 }
 function bh(w){return imgH(w,bannerNatW,bannerNatH,1/6);}
+function bWSync(v,fromNum){
+  const s=document.getElementById('bannerW');
+  const n=document.getElementById('bannerWNum');
+  s.value=parseInt(v)||600;
+  if(!fromNum) n.value=s.value;
+  dp();
+}
+function bWClamp(){
+  const n=document.getElementById('bannerWNum');
+  let v=parseInt(n.value)||600;
+  v=Math.max(200,Math.min(1000,v));
+  n.value=v;
+  document.getElementById('bannerW').value=v;
+  dp();
+}
 
 // ── ACCREDITATION LOGOS ───────────────────────────────────
 function handleAccLogo(i,input){const f=input.files[0];if(f)loadAccLogoFile(i,f);}
