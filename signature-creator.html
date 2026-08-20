@@ -203,6 +203,12 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .preset-empty{font-size:13px;color:#8a9baa;padding:20px;text-align:center;background:#f8fafc;border-radius:8px;border:1px dashed #dde4ec;}
 .preset-del-btn{padding:5px 10px;border-radius:6px;border:1px solid #fbb;background:#fff5f5;cursor:pointer;font-size:12px;font-weight:500;color:#c00;transition:.15s;font-family:'Montserrat','Segoe UI',sans-serif;}
 .preset-del-btn:hover{background:#ffe0e0;}
+.preset-exp-btn{padding:5px 10px;border-radius:6px;border:1px solid #dde4ec;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:#3a4a5a;transition:.15s;font-family:'Montserrat','Segoe UI',sans-serif;}
+.preset-exp-btn:hover{border-color:#00aeef;color:#00aeef;}
+.preset-io-row{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;}
+.preset-msg{font-size:12px;margin-top:8px;padding:8px 11px;border-radius:7px;display:none;}
+.preset-msg.ok{display:block;background:#eefaf3;border:1px solid #bfe6d2;color:#1a6b45;}
+.preset-msg.err{display:block;background:#fff5f5;border:1px solid #fbb;color:#c00;}
 .del-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;}
 .del-modal{background:#fff;border-radius:14px;padding:28px 28px 22px;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);font-family:'Montserrat','Segoe UI',sans-serif;}
 .del-modal h3{margin:0 0 8px;font-size:16px;font-weight:700;color:#1a2a3a;}
@@ -827,6 +833,12 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <input type="text" class="preset-name-in" id="presetNameIn" placeholder="e.g. Acme Corp, Client A…" maxlength="60">
       <button class="btn-dl" onclick="savePreset()">Save Preset</button>
     </div>
+    <div class="preset-io-row">
+      <button class="preset-exp-btn" onclick="document.getElementById('presetImportIn').click()">Upload Preset File</button>
+      <button class="preset-exp-btn" onclick="exportAllPresets()">Download All Presets</button>
+      <input type="file" id="presetImportIn" accept=".json,application/json" style="display:none" onchange="handlePresetImport(this)">
+    </div>
+    <div class="preset-msg" id="presetMsg"></div>
     <div id="presetCards" style="margin-top:16px;"></div>
   </div>
 
@@ -3046,7 +3058,7 @@ async function downloadPng(fmt){
 // ── PRESETS ──────────────────────────────────────────────
 const PRESET_KEY='sig_presets';
 function getPresets(){try{return JSON.parse(localStorage.getItem(PRESET_KEY)||'[]');}catch(e){return[];}}
-function setPresets(arr){localStorage.setItem(PRESET_KEY,JSON.stringify(arr));}
+function setPresets(arr){try{localStorage.setItem(PRESET_KEY,JSON.stringify(arr));return true;}catch(e){if(typeof presetMsg==='function')presetMsg('Not enough browser storage to save that — try deleting an old preset first.','err');return false;}}
 
 function savePreset(){
   const nameIn=document.getElementById('presetNameIn');
@@ -3221,6 +3233,95 @@ function deletePreset(id){
   });
 }
 
+// ── PRESET DOWNLOAD / UPLOAD ─────────────────────────────
+const PRESET_FORMAT='brace-signature-preset';
+const PRESET_FORMAT_VERSION=1;
+
+function presetMsg(text,kind){
+  const el=document.getElementById('presetMsg');
+  if(!el) return;
+  el.className='preset-msg '+(kind||'ok');
+  el.textContent=text;
+  clearTimeout(presetMsg._t);
+  presetMsg._t=setTimeout(()=>{el.className='preset-msg';el.textContent='';},6000);
+}
+
+function presetSlug(name){
+  return (name||'preset').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,50)||'preset';
+}
+
+function downloadPresetFile(payload,filename){
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function exportPreset(id){
+  const p=getPresets().find(x=>x.id===id);
+  if(!p){presetMsg('That preset could no longer be found.','err');return;}
+  downloadPresetFile({format:PRESET_FORMAT,version:PRESET_FORMAT_VERSION,preset:p},presetSlug(p.name)+'.sigpreset.json');
+  presetMsg('Downloaded "'+p.name+'". Send that file to anyone and they can upload it here.','ok');
+}
+
+function exportAllPresets(){
+  const arr=getPresets();
+  if(!arr.length){presetMsg('There are no presets to download yet.','err');return;}
+  downloadPresetFile({format:PRESET_FORMAT,version:PRESET_FORMAT_VERSION,presets:arr},'all-presets.sigpreset.json');
+  presetMsg('Downloaded '+arr.length+' preset'+(arr.length===1?'':'s')+'.','ok');
+}
+
+// Only allow inline image data URLs through — never javascript:/other schemes.
+function sanitisePresetImages(p){
+  ['logo','banner'].forEach(k=>{
+    if(p[k]&&!/^data:image\//i.test(p[k])) p[k]='';
+  });
+  if(Array.isArray(p.accLogos)) p.accLogos=p.accLogos.map(v=>(v&&/^data:image\//i.test(v))?v:'');
+  return p;
+}
+
+function normaliseImportedPreset(p,existingNames){
+  if(!p||typeof p!=='object'||typeof p.name!=='string'||!p.name.trim()) return null;
+  const out=Object.assign({},p);
+  out.id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  out.ts=Date.now();
+  out.name=out.name.trim().slice(0,60);
+  if(existingNames.has(out.name.toLowerCase())) out.name=(out.name+' (imported)').slice(0,60);
+  existingNames.add(out.name.toLowerCase());
+  return sanitisePresetImages(out);
+}
+
+function handlePresetImport(input){
+  const file=input.files&&input.files[0];
+  input.value='';
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onerror=()=>presetMsg('That file could not be read.','err');
+  reader.onload=()=>{
+    let data;
+    try{data=JSON.parse(reader.result);}
+    catch(e){presetMsg('That file is not valid JSON — make sure it is a downloaded preset file.','err');return;}
+    if(!data||data.format!==PRESET_FORMAT){
+      presetMsg('That does not look like a signature preset file.','err');return;
+    }
+    if(typeof data.version==='number'&&data.version>PRESET_FORMAT_VERSION){
+      presetMsg('That preset was made with a newer version of this tool. Please refresh and try again.','err');return;
+    }
+    const incoming=Array.isArray(data.presets)?data.presets:(data.preset?[data.preset]:[]);
+    if(!incoming.length){presetMsg('That file contains no presets.','err');return;}
+    const arr=getPresets();
+    const names=new Set(arr.map(p=>(p.name||'').toLowerCase()));
+    const added=incoming.map(p=>normaliseImportedPreset(p,names)).filter(Boolean);
+    if(!added.length){presetMsg('No usable presets were found in that file.','err');return;}
+    if(!setPresets(added.concat(arr))) return;
+    renderPresetCards();
+    presetMsg('Imported '+added.length+' preset'+(added.length===1?'':'s')+'. Click Load to apply.','ok');
+  };
+  reader.readAsText(file);
+}
+
 function renderPresetCards(){
   const cont=document.getElementById('presetCards');
   if(!cont) return;
@@ -3248,6 +3349,7 @@ function renderPresetCards(){
       <div class="preset-card-meta">${tmplLabel} &middot; ${date}</div>
       <div class="preset-card-btns">
         <button class="btn-dl" style="flex:1;" onclick="applyPresetById('${p.id}')">Load</button>
+        <button class="preset-exp-btn" onclick="exportPreset('${p.id}')">Download</button>
         <button class="preset-del-btn" onclick="deletePreset('${p.id}')">Delete</button>
       </div>
     </div>`;
