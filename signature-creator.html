@@ -2854,8 +2854,9 @@ async function downloadBatchAll(fmt){
   for(let i=0;i<batchRows.length;i++){
     const d=batchMerge(base,batchRows[i]);
     const disc=disclaimerHtml(d);
+    const acc=accreditationsHtml(d);
     const gfont=googleFontStyle(d.font);
-    const dh=gfont+fixMsoTables(genDesk(d)+disc), mh=gfont+fixMsoTables(genMob(d)+disc);
+    const dh=gfont+fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc), mh=gfont+fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc);
     const html=fmt==='desk'?dh:fmt==='mob'?mh:genUni(dh,mh);
     const slug=batchSlug(batchRows[i]);
     zip.file(`${slug}-${i+1}.html`,html);
