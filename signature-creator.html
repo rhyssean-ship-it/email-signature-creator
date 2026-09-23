@@ -1007,32 +1007,42 @@ let bannerDataUrl=null, bannerNatW=null, bannerNatH=null;
 let prevTimer=null;
 let currentTemplate='classic-left';
 const iconCache={};
-const iconPngCache={};
-let exportMode=false;
-async function preloadIconPngs(){
-  const col=document.getElementById('c_icon')?.value||'#555555';
-  const tasks=[];
-  for(const p of PLATS){for(const s of [18,20]){
-    const k=p+s+col;
-    if(!iconPngCache[k]) tasks.push(new Promise(resolve=>{
+// Outlook for Windows can't draw SVG, so every exported signature has its SVG
+// images (social icons, contact icons, SVG logos) swapped for 2x PNGs first.
+const svgPngCache={};
+function svgToPng(src,w,h){
+  const k=src+'|'+w+'x'+h;
+  if(!svgPngCache[k]) svgPngCache[k]=new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>{
+      const cw=w||img.naturalWidth||20, ch=h||img.naturalHeight||cw;
       const canvas=document.createElement('canvas');
-      canvas.width=s*2;canvas.height=s*2;
-      const ctx=canvas.getContext('2d');
-      const img=new Image();
-      img.onload=()=>{ctx.drawImage(img,0,0,s*2,s*2);iconPngCache[k]=canvas.toDataURL('image/png');resolve();};
-      img.onerror=()=>resolve();
-      img.src=icon(p,s);
-    }));
-  }}
-  await Promise.all(tasks);
+      canvas.width=cw*2;canvas.height=ch*2;
+      canvas.getContext('2d').drawImage(img,0,0,cw*2,ch*2);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror=()=>resolve(src);
+    img.src=src;
+  });
+  return svgPngCache[k];
 }
-async function renderExportIcons(d,acc,disc){
-  await preloadIconPngs();
-  const col=document.getElementById('c_icon')?.value||'#555555';
-  exportMode=true;
-  const dhE=withFont(d,fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc));
-  const mhE=withFont(d,fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc));
-  exportMode=false;
+async function rasterSvgs(html){
+  const tags=[...new Set(html.match(/<img\b[^>]*\bsrc="data:image\/svg\+xml[^"]*"[^>]*>/g)||[])];
+  const out=await Promise.all(tags.map(async t=>{
+    const src=t.match(/\bsrc="([^"]*)"/)[1];
+    const w=parseInt((t.match(/\bwidth="(\d+)"/)||[])[1])||0, h=parseInt((t.match(/\bheight="(\d+)"/)||[])[1])||0;
+    return t.replace(src,await svgToPng(src,w,h));
+  }));
+  tags.forEach((t,i)=>{html=html.split(t).join(out[i]);});
+  return html;
+}
+let exportSeq=0, exportReady=Promise.resolve();
+async function renderExportIcons(dh,mh){
+  const seq=++exportSeq;
+  const [dhE,mhE]=await Promise.all([rasterSvgs(dh),rasterSvgs(mh)]);
+  if(seq!==exportSeq) return; // a newer render has started
+  document.getElementById('deskPrev').innerHTML=dhE;
+  document.getElementById('mobPrev').innerHTML=mhE;
   document.getElementById('deskCode').value=dhE;
   document.getElementById('mobCode').value=mhE;
   document.getElementById('uniCode').value=genUni(dhE,mhE);
@@ -1267,7 +1277,7 @@ function render(){
   document.getElementById('deskCode').value=dh;
   document.getElementById('mobCode').value=mh;
   document.getElementById('uniCode').value=uh;
-  renderExportIcons(d,acc,disc);
+  exportReady=renderExportIcons(dh,mh);
   // Update size indicator
   const sizeEl=document.getElementById('sigSizeInfo');
   if(sizeEl){
@@ -1302,10 +1312,9 @@ function withFont(d,html){
 
 function socIcons(socials,size=20){
   if(!socials.length) return '';
-  const col=document.getElementById('c_icon')?.value||'#555555';
   const cells=socials.map(s=>{
     const href=s.url.startsWith('http')?s.url:'https://'+s.url;
-    const src=exportMode?(iconPngCache[s.platform+size+col]||icon(s.platform,size)):icon(s.platform,size);
+    const src=icon(s.platform,size);
     return `<td width="${size}" height="${size}" style="padding-right:4px;" valign="top"><a href="${esc(href)}" target="_blank" style="text-decoration:none;"><img src="${src}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:block;width:${size}px;height:${size}px;"></a></td>`;
   }).join('');
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;"><tr valign="top">${cells}</tr></table>`;
@@ -2687,7 +2696,8 @@ function genUni(dh,mh){
 }
 
 // ── COPY ─────────────────────────────────────────────────
-function cp(id,btn){
+async function cp(id,btn){
+  await exportReady;
   navigator.clipboard.writeText(document.getElementById(id).value).then(()=>{
     btn.textContent='Copied!';btn.classList.add('ok');
     setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);
@@ -2695,7 +2705,8 @@ function cp(id,btn){
 }
 
 // ── DOWNLOAD ─────────────────────────────────────────────
-function dl(id,filename){
+async function dl(id,filename){
+  await exportReady;
   const html=document.getElementById(id).value;
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const a=document.createElement('a');
@@ -3481,7 +3492,7 @@ async function downloadBatchAll(fmt){
     const d=batchMerge(base,batchRows[i]);
     const disc=disclaimerHtml(d);
     const acc=accreditationsHtml(d);
-    const dh=withFont(d,fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc)), mh=withFont(d,fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc));
+    const dh=await rasterSvgs(withFont(d,fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc))), mh=await rasterSvgs(withFont(d,fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc)));
     const html=fmt==='desk'?dh:fmt==='mob'?mh:genUni(dh,mh);
     const slug=batchSlug(batchRows[i]);
     zip.file(`${slug}-${i+1}.html`,html);
