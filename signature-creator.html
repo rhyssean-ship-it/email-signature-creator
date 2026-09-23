@@ -582,6 +582,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
     <div class="tab-btns">
       <button class="tab-btn active" onclick="switchTab('logo')" id="tab-logo">Logo Templates</button>
       <button class="tab-btn" onclick="switchTab('banner')" id="tab-banner">Banner Templates</button>
+      <button class="tab-btn" onclick="switchTab('both')" id="tab-both">Logo &amp; Banner</button>
     </div>
     <div class="tab-panel active" id="panel-logo">
     <div class="tmpl-section-lbl" style="display:none">Logo Templates</div>
@@ -753,6 +754,111 @@ textarea.field-ta::placeholder{color:#7a92a8}
       </label>
     </div>
     </div><!-- end panel-banner -->
+    <div class="tab-panel" id="panel-both">
+    <div class="tmpl-section-lbl" style="display:none">Logo &amp; Banner Templates</div>
+    <div class="tmpl-grid">
+      <label class="tmpl-card" onclick="selTmpl('lb-banner-top-logo-left')">
+        <input type="radio" name="tmpl" value="lb-banner-top-logo-left">
+        <div class="tw" id="tw-lb-banner-top-logo-left"></div>
+        <div class="tmpl-name">Banner Top, Logo Left</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-banner-top-logo-right')">
+        <input type="radio" name="tmpl" value="lb-banner-top-logo-right">
+        <div class="tw" id="tw-lb-banner-top-logo-right"></div>
+        <div class="tmpl-name">Banner Top, Logo Right</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-logo-top-banner-bottom')">
+        <input type="radio" name="tmpl" value="lb-logo-top-banner-bottom">
+        <div class="tw" id="tw-lb-logo-top-banner-bottom"></div>
+        <div class="tmpl-name">Logo Top, Banner Bottom</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-centre-stack')">
+        <input type="radio" name="tmpl" value="lb-centre-stack">
+        <div class="tw" id="tw-lb-centre-stack"></div>
+        <div class="tmpl-name">Centre Stack</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-banner-first-centre')">
+        <input type="radio" name="tmpl" value="lb-banner-first-centre">
+        <div class="tw" id="tw-lb-banner-first-centre"></div>
+        <div class="tmpl-name">Banner First Centred</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-side-logo')">
+        <input type="radio" name="tmpl" value="lb-side-logo">
+        <div class="tw" id="tw-lb-side-logo"></div>
+        <div class="tmpl-name">Side Logo</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-header-band')">
+        <input type="radio" name="tmpl" value="lb-header-band">
+        <div class="tw" id="tw-lb-header-band"></div>
+        <div class="tmpl-name">Header Band</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-card')">
+        <input type="radio" name="tmpl" value="lb-card">
+        <div class="tw" id="tw-lb-card"></div>
+        <div class="tmpl-name">Card</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-split-panel')">
+        <input type="radio" name="tmpl" value="lb-split-panel">
+        <div class="tw" id="tw-lb-split-panel"></div>
+        <div class="tmpl-name">Split Panel</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-dark-header')">
+        <input type="radio" name="tmpl" value="lb-dark-header">
+        <div class="tw" id="tw-lb-dark-header"></div>
+        <div class="tmpl-name">Dark Header</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-banner-middle')">
+        <input type="radio" name="tmpl" value="lb-banner-middle">
+        <div class="tw" id="tw-lb-banner-middle"></div>
+        <div class="tmpl-name">Banner Middle</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-compact')">
+        <input type="radio" name="tmpl" value="lb-compact">
+        <div class="tw" id="tw-lb-compact"></div>
+        <div class="tmpl-name">Compact</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-editorial')">
+        <input type="radio" name="tmpl" value="lb-editorial">
+        <div class="tw" id="tw-lb-editorial"></div>
+        <div class="tmpl-name">Editorial</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-accent-bar')">
+        <input type="radio" name="tmpl" value="lb-accent-bar">
+        <div class="tw" id="tw-lb-accent-bar"></div>
+        <div class="tmpl-name">Accent Bar</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-monogram')">
+        <input type="radio" name="tmpl" value="lb-monogram">
+        <div class="tw" id="tw-lb-monogram"></div>
+        <div class="tmpl-name">Monogram</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-boxed')">
+        <input type="radio" name="tmpl" value="lb-boxed">
+        <div class="tw" id="tw-lb-boxed"></div>
+        <div class="tmpl-name">Boxed Banner</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-two-row')">
+        <input type="radio" name="tmpl" value="lb-two-row">
+        <div class="tw" id="tw-lb-two-row"></div>
+        <div class="tmpl-name">Logo &amp; Banner Row</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-footer-logo')">
+        <input type="radio" name="tmpl" value="lb-footer-logo">
+        <div class="tw" id="tw-lb-footer-logo"></div>
+        <div class="tmpl-name">Footer Logo</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-full-frame')">
+        <input type="radio" name="tmpl" value="lb-full-frame">
+        <div class="tw" id="tw-lb-full-frame"></div>
+        <div class="tmpl-name">Full Frame</div>
+      </label>
+      <label class="tmpl-card" onclick="selTmpl('lb-ruled')">
+        <input type="radio" name="tmpl" value="lb-ruled">
+        <div class="tw" id="tw-lb-ruled"></div>
+        <div class="tmpl-name">Ruled</div>
+      </label>
+    </div>
+    </div><!-- end panel-both -->
     <div id="tmplWarn"></div>
   </div>
 
@@ -1140,8 +1246,8 @@ function dp(){clearTimeout(prevTimer);prevTimer=setTimeout(render,200);}
 function render(){
   let d=gd();
   if(batchRows.length>0) d=batchMerge(d,batchRows[0]);
-  const isBanner=currentTemplate.startsWith('banner-');
-  const needsBoth=currentTemplate==='banner-plus-logo';
+  const isBanner=isBannerTmpl(currentTemplate);
+  const needsBoth=currentTemplate==='banner-plus-logo'||currentTemplate.startsWith('lb-');
   const warnEl=document.getElementById('tmplWarn');
   let warn='';
   if(isBanner&&!d.banner){
@@ -2094,6 +2200,318 @@ function fixMsoTables(h){
   return h.replace(/style="border-collapse:collapse;(?!mso-)/g,'style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;');
 }
 
+
+// ══ LOGO + BANNER TEMPLATES ══════════════════════════════
+// Every template in this family renders BOTH the logo and the banner.
+function isBannerTmpl(t){return t.startsWith('banner-')||t.startsWith('lb-');}
+function lbW(d){return d.bannerW||520;}
+function lbBannerImg(d,w){
+  if(!d.banner) return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${w}" style="border-collapse:collapse;"><tr><td valign="middle" style="background:#e0e0e0;width:${w}px;height:70px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:12px;color:#999;">Upload a banner image in Step 2</td></tr></table>`;
+  const hv=bh(w);
+  return `<img src="${d.banner}" width="${w}" height="${hv}" border="0" alt="Banner" style="display:block;width:${w}px;height:${hv}px;">`;
+}
+function lbLogoImg(d,w,inline){
+  if(!d.logo) return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${w}" style="border-collapse:collapse;"><tr><td valign="middle" style="background:#eeeeee;width:${w}px;height:${Math.round(w*.4)}px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:11px;color:#999;">Upload a logo</td></tr></table>`;
+  const hv=lh(w);
+  return `<img src="${d.logo}" width="${w}" height="${hv}" border="0" alt="${esc(d.company)} logo" style="display:${inline?'inline-block':'block'};width:${w}px;height:${hv}px;">`;
+}
+// Name / title / company / contacts / socials as <tr> rows.
+function lbInfo(d,o){
+  o=o||{};
+  const al=o.align||'left', ta=`text-align:${al};`;
+  const ns=o.nameSize||18;
+  const nc=o.nameCol||d.pri, tc=o.titleCol||d.sec, cc=o.compCol||d.txt;
+  const rc=o.ruleCol||d.line;
+  const soc=socIcons(d.socials,20);
+  const hasC=d.phones.length||d.email||d.website;
+  const hasI=d.name||d.title||d.company;
+  const ctr=al==='center'?' align="center"':'';
+  const r=[];
+  if(d.name) r.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:${ns}px;font-weight:bold;color:${nc};padding-bottom:3px;line-height:1.2;${ta}">${esc(d.name)}</td></tr>`);
+  if(d.title) r.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${tc};padding-bottom:2px;line-height:1.4;${ta}">${esc(d.title)}</td></tr>`);
+  if(d.company) r.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${cc};padding-bottom:9px;line-height:1.4;${ta}">${esc(d.company)}</td></tr>`);
+  if(o.rule!==false&&hasI&&(hasC||soc)) r.push(`<tr><td style="border-top:1px solid ${rc};font-size:0;line-height:0;">&nbsp;</td></tr><tr><td style="padding-top:8px;font-size:0;line-height:0;">&nbsp;</td></tr>`);
+  if(hasC) r.push(`<tr><td style="padding-bottom:6px;${ta}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"${ctr} style="border-collapse:collapse;"><tr>${contactCells(d)}</tr></table></td></tr>`);
+  if(soc) r.push(`<tr><td style="padding-top:2px;${ta}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"${ctr} style="border-collapse:collapse;"><tr><td>${soc}</td></tr></table></td></tr>`);
+  return r.join('\n        ');
+}
+function lbBlock(d,o){
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+        ${lbInfo(d,o)}
+      </table>`;
+}
+function lbWrap(d,rows,extra){
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lbW(d)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;${extra||''}">
+  ${rows}
+</table>`;
+}
+function lbBannerRow(d,pad){
+  return `<tr><td style="${pad||''}">${lbBannerImg(d,lbW(d))}</td></tr>`;
+}
+function lbSpacer(h){return `<tr><td height="${h}" style="height:${h}px;font-size:0;line-height:0;">&nbsp;</td></tr>`;}
+
+// ── LB 1: Banner Top, Logo Left ───────────────────────────
+function tmplLbBannerTopLogoLeft(d){
+  const lw=Math.min(d.logoW,150), lhv=d.logo?lh(lw):48;
+  return lbWrap(d,`${lbBannerRow(d,'padding-bottom:16px;')}
+  <tr><td>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+      <td width="${lw}" valign="top" style="padding-right:18px;">${lbLogoImg(d,lw)}</td>
+      <td width="2" bgcolor="${d.acc}" height="${lhv}" style="width:2px;height:${lhv}px;background-color:${d.acc};font-size:0;line-height:0;">&nbsp;</td>
+      <td width="18" style="width:18px;font-size:0;line-height:0;">&nbsp;</td>
+      <td valign="top">${lbBlock(d)}</td>
+    </tr></table>
+  </td></tr>`);
+}
+
+// ── LB 2: Banner Top, Logo Right ──────────────────────────
+function tmplLbBannerTopLogoRight(d){
+  const lw=Math.min(d.logoW,150);
+  return lbWrap(d,`${lbBannerRow(d,'padding-bottom:16px;')}
+  <tr><td>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lbW(d)}" style="border-collapse:collapse;"><tr>
+      <td valign="top">${lbBlock(d)}</td>
+      <td width="${lw}" valign="middle" style="padding-left:20px;text-align:right;">${lbLogoImg(d,lw)}</td>
+    </tr></table>
+  </td></tr>`);
+}
+
+// ── LB 3: Logo Top, Banner Bottom ─────────────────────────
+function tmplLbLogoTopBannerBottom(d){
+  const lw=Math.min(d.logoW,160);
+  return lbWrap(d,`<tr><td style="padding-bottom:12px;">${lbLogoImg(d,lw)}</td></tr>
+  <tr><td style="padding-bottom:16px;">${lbBlock(d)}</td></tr>
+  ${lbBannerRow(d,'')}`);
+}
+
+// ── LB 4: Centre Stack ────────────────────────────────────
+function tmplLbCentreStack(d){
+  const lw=Math.min(d.logoW,170);
+  return lbWrap(d,`<tr><td align="center" style="padding-bottom:12px;text-align:center;">${lbLogoImg(d,lw,true)}</td></tr>
+  <tr><td align="center" style="padding-bottom:16px;text-align:center;">${lbBlock(d,{align:'center'})}</td></tr>
+  ${lbBannerRow(d,'')}`);
+}
+
+// ── LB 5: Banner First, Centred ───────────────────────────
+function tmplLbBannerFirstCentre(d){
+  const lw=Math.min(d.logoW,150);
+  return lbWrap(d,`${lbBannerRow(d,'padding-bottom:14px;')}
+  <tr><td align="center" style="padding-bottom:10px;text-align:center;">${lbLogoImg(d,lw,true)}</td></tr>
+  <tr><td align="center" style="text-align:center;">${lbBlock(d,{align:'center'})}</td></tr>`);
+}
+
+// ── LB 6: Side Logo, Banner Below ─────────────────────────
+function tmplLbSideLogo(d){
+  const lw=Math.min(d.logoW,140);
+  return lbWrap(d,`<tr><td style="padding-bottom:16px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+      <td width="${lw}" valign="middle" style="padding-right:22px;">${lbLogoImg(d,lw)}</td>
+      <td valign="middle">${lbBlock(d)}</td>
+    </tr></table>
+  </td></tr>
+  ${lbBannerRow(d,'')}`);
+}
+
+// ── LB 7: Header Band ─────────────────────────────────────
+function tmplLbHeaderBand(d){
+  const lw=Math.min(d.logoW,120);
+  return lbWrap(d,`<tr><td bgcolor="${d.acc}" style="background-color:${d.acc};padding:12px 16px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+      <td width="${lw}" valign="middle" style="padding-right:16px;">${lbLogoImg(d,lw)}</td>
+      <td valign="middle" style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:#ffffff;line-height:1.2;">${esc(d.name)}${d.title?`<br><span style="font-size:12px;font-weight:400;color:#f0f0f0;">${esc(d.title)}</span>`:''}</td>
+    </tr></table>
+  </td></tr>
+  ${lbSpacer(12)}
+  <tr><td style="padding-bottom:14px;">${lbBlock(d,{rule:false})}</td></tr>
+  ${lbBannerRow(d,'')}`);
+}
+
+// ── LB 8: Card ────────────────────────────────────────────
+function tmplLbCard(d){
+  const W=lbW(d), iw=W-32, lw=Math.min(d.logoW,130);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;border:1px solid ${d.line};border-radius:6px;">
+  <tr><td style="padding:0;">${lbBannerImg(d,W)}</td></tr>
+  <tr><td style="padding:16px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${iw}" style="border-collapse:collapse;"><tr>
+      <td width="${lw}" valign="top" style="padding-right:18px;">${lbLogoImg(d,lw)}</td>
+      <td valign="top">${lbBlock(d)}</td>
+    </tr></table>
+  </td></tr>
+</table>`;
+}
+
+// ── LB 9: Split Panel ─────────────────────────────────────
+function tmplLbSplitPanel(d){
+  const lw=Math.min(d.logoW,120), pw=lw+36;
+  return lbWrap(d,`<tr><td style="padding-bottom:16px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+      <td width="${pw}" valign="middle" bgcolor="${d.acc}" style="width:${pw}px;background-color:${d.acc};padding:16px 18px;text-align:center;">${lbLogoImg(d,lw,true)}</td>
+      <td width="20" style="width:20px;font-size:0;line-height:0;">&nbsp;</td>
+      <td valign="middle">${lbBlock(d)}</td>
+    </tr></table>
+  </td></tr>
+  ${lbBannerRow(d,'')}`);
+}
+
+// ── LB 10: Dark Header ────────────────────────────────────
+function tmplLbDarkHeader(d){
+  const lw=Math.min(d.logoW,120);
+  return lbWrap(d,`<tr><td bgcolor="${d.pri}" style="background-color:${d.pri};padding:14px 18px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+      <td valign="middle" style="font-family:${d.font},Arial,sans-serif;font-size:19px;font-weight:bold;color:#ffffff;line-height:1.2;">${esc(d.name)}${d.title?`<br><span style="font-size:12px;font-weight:400;color:#dcdcdc;">${esc(d.title)}</span>`:''}</td>
+      <td width="${lw}" valign="middle" style="padding-left:16px;text-align:right;">${lbLogoImg(d,lw,true)}</td>
+    </tr></table>
+  </td></tr>
+  ${lbSpacer(14)}
+  <tr><td style="padding-bottom:14px;">${lbBlock(d,{rule:false})}</td></tr>
+  ${lbBannerRow(d,'')}`);
+}
+
+// ── LB 11: Banner Middle ──────────────────────────────────
+function tmplLbBannerMiddle(d){
+  const lw=Math.min(d.logoW,130);
+  const soc=socIcons(d.socials,20);
+  const hasC=d.phones.length||d.email||d.website;
+  return lbWrap(d,`<tr><td style="padding-bottom:14px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lbW(d)}" style="border-collapse:collapse;"><tr>
+      <td valign="top"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+        ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:3px;line-height:1.2;">${esc(d.name)}</td></tr>`:''}
+        ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
+        ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};">${esc(d.company)}</td></tr>`:''}
+      </table></td>
+      <td width="${lw}" valign="top" style="padding-left:20px;text-align:right;">${lbLogoImg(d,lw,true)}</td>
+    </tr></table>
+  </td></tr>
+  ${lbBannerRow(d,'padding-bottom:14px;')}
+  ${hasC?`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>${contactCells(d)}</tr></table></td></tr>`:''}
+  ${soc?`<tr><td style="padding-top:2px;">${soc}</td></tr>`:''}`);
+}
+
+// ── LB 12: Compact ────────────────────────────────────────
+function tmplLbCompact(d){
+  const lw=Math.min(d.logoW,90);
+  return lbWrap(d,`<tr><td style="padding-bottom:10px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+      <td width="${lw}" valign="middle" style="padding-right:14px;">${lbLogoImg(d,lw)}</td>
+      <td valign="middle" style="font-family:${d.font},Arial,sans-serif;font-size:15px;font-weight:bold;color:${d.pri};line-height:1.3;white-space:nowrap;">${esc(d.name)}${d.title?`<span style="font-weight:400;color:${d.sec};font-size:12px;"> — ${esc(d.title)}</span>`:''}</td>
+    </tr></table>
+  </td></tr>
+  <tr><td style="border-top:1px solid ${d.line};padding-top:8px;padding-bottom:10px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>${contactCells(d,11)}</tr></table></td></tr>
+  ${lbBannerRow(d,'')}`);
+}
+
+// ── LB 13: Editorial ──────────────────────────────────────
+function tmplLbEditorial(d){
+  const lw=Math.min(d.logoW,110);
+  return lbWrap(d,`<tr><td style="border-top:3px solid ${d.acc};padding-top:12px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lbW(d)}" style="border-collapse:collapse;"><tr>
+      <td valign="top" style="font-family:${d.font},Arial,sans-serif;font-size:22px;font-weight:bold;color:${d.pri};letter-spacing:-.4px;line-height:1.15;">${esc(d.name)}</td>
+      <td width="${lw}" valign="top" style="padding-left:20px;text-align:right;">${lbLogoImg(d,lw,true)}</td>
+    </tr></table>
+  </td></tr>
+  <tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};letter-spacing:.6px;text-transform:uppercase;padding-top:4px;padding-bottom:12px;">${esc(d.title)}${d.title&&d.company?' &middot; ':''}${esc(d.company)}</td></tr>
+  <tr><td style="border-top:1px solid ${d.line};padding-top:10px;padding-bottom:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>${contactCells(d)}</tr></table></td></tr>
+  ${lbBannerRow(d,'')}`);
+}
+
+// ── LB 14: Accent Bar ─────────────────────────────────────
+function tmplLbAccentBar(d){
+  const lw=Math.min(d.logoW,130);
+  return lbWrap(d,`<tr><td style="padding-bottom:16px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+      <td width="4" bgcolor="${d.acc}" style="width:4px;background-color:${d.acc};font-size:0;line-height:0;">&nbsp;</td>
+      <td width="18" style="width:18px;font-size:0;line-height:0;">&nbsp;</td>
+      <td valign="top">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+          <tr><td style="padding-bottom:10px;">${lbLogoImg(d,lw)}</td></tr>
+          <tr><td>${lbBlock(d)}</td></tr>
+        </table>
+      </td>
+    </tr></table>
+  </td></tr>
+  ${lbBannerRow(d,'')}`);
+}
+
+// ── LB 15: Monogram ───────────────────────────────────────
+function tmplLbMonogram(d){
+  const lw=Math.min(d.logoW,100);
+  return lbWrap(d,`${lbBannerRow(d,'padding-bottom:16px;')}
+  <tr><td>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+      <td width="${lw+28}" valign="middle" bgcolor="#f5f7f9" style="width:${lw+28}px;background-color:#f5f7f9;padding:12px 14px;text-align:center;border-radius:6px;">${lbLogoImg(d,lw,true)}</td>
+      <td width="20" style="width:20px;font-size:0;line-height:0;">&nbsp;</td>
+      <td valign="middle">${lbBlock(d)}</td>
+    </tr></table>
+  </td></tr>`);
+}
+
+// ── LB 16: Boxed Banner ───────────────────────────────────
+function tmplLbBoxed(d){
+  const W=lbW(d), lw=Math.min(d.logoW,130);
+  return lbWrap(d,`<tr><td style="padding:6px;border:1px solid ${d.line};border-radius:6px;">${lbBannerImg(d,W-14)}</td></tr>
+  ${lbSpacer(16)}
+  <tr><td>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+      <td valign="top">${lbBlock(d)}</td>
+      <td width="${lw}" valign="top" style="padding-left:20px;text-align:right;">${lbLogoImg(d,lw,true)}</td>
+    </tr></table>
+  </td></tr>`);
+}
+
+// ── LB 17: Logo &amp; Banner Row ──────────────────────────
+function tmplLbTwoRow(d){
+  const lw=Math.min(d.logoW,120), bw=Math.max(140,lbW(d)-lw-24);
+  return lbWrap(d,`<tr><td style="padding-bottom:16px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+      <td width="${lw}" valign="middle" style="padding-right:24px;">${lbLogoImg(d,lw)}</td>
+      <td width="${bw}" valign="middle">${lbBannerImg(d,bw)}</td>
+    </tr></table>
+  </td></tr>
+  <tr><td style="border-top:1px solid ${d.line};padding-top:12px;">${lbBlock(d,{rule:false})}</td></tr>`);
+}
+
+// ── LB 18: Footer Logo ────────────────────────────────────
+function tmplLbFooterLogo(d){
+  const lw=Math.min(d.logoW,110);
+  return lbWrap(d,`${lbBannerRow(d,'padding-bottom:16px;')}
+  <tr><td align="center" style="padding-bottom:14px;text-align:center;">${lbBlock(d,{align:'center'})}</td></tr>
+  <tr><td align="center" style="border-top:1px solid ${d.line};padding-top:12px;text-align:center;">${lbLogoImg(d,lw,true)}</td></tr>`);
+}
+
+// ── LB 19: Full Frame ─────────────────────────────────────
+function tmplLbFullFrame(d){
+  const W=lbW(d), lw=Math.min(d.logoW,130);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;border:1px solid ${d.line};">
+  <tr><td>${lbBannerImg(d,W-2)}</td></tr>
+  <tr><td style="padding:16px 18px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+      <td width="${lw}" valign="top" style="padding-right:18px;">${lbLogoImg(d,lw)}</td>
+      <td valign="top">${lbBlock(d)}</td>
+    </tr></table>
+  </td></tr>
+  <tr><td height="5" bgcolor="${d.acc}" style="height:5px;background-color:${d.acc};font-size:0;line-height:0;">&nbsp;</td></tr>
+</table>`;
+}
+
+// ── LB 20: Ruled ──────────────────────────────────────────
+function tmplLbRuled(d){
+  const lw=Math.min(d.logoW,140);
+  const soc=socIcons(d.socials,20);
+  const hasC=d.phones.length||d.email||d.website;
+  return lbWrap(d,`<tr><td style="padding-bottom:12px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lbW(d)}" style="border-collapse:collapse;"><tr>
+      <td width="${lw}" valign="middle" style="padding-right:20px;">${lbLogoImg(d,lw)}</td>
+      <td valign="middle" style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};line-height:1.25;">${esc(d.name)}${d.title?`<br><span style="font-size:12px;font-weight:400;color:${d.sec};">${esc(d.title)}${d.company?' &middot; '+esc(d.company):''}</span>`:''}</td>
+    </tr></table>
+  </td></tr>
+  <tr><td style="border-top:1px solid ${d.line};border-bottom:1px solid ${d.line};padding:10px 0;">
+    ${hasC?`<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>${contactCells(d)}</tr></table>`:'&nbsp;'}
+  </td></tr>
+  ${soc?`<tr><td style="padding-top:10px;">${soc}</td></tr>`:''}
+  ${lbSpacer(14)}
+  ${lbBannerRow(d,'')}`);
+}
+
 // ── DISPATCH ─────────────────────────────────────────────
 function genDesk(d){
   switch(currentTemplate){
@@ -2128,6 +2546,26 @@ function genDesk(d){
     case 'banner-stacked':       return tmplBannerStacked(d);
     case 'banner-bottom':        return tmplBannerBottom(d);
     case 'banner-sidebar':       return tmplBannerSidebar(d);
+    case 'lb-banner-top-logo-left':    return tmplLbBannerTopLogoLeft(d);
+    case 'lb-banner-top-logo-right':   return tmplLbBannerTopLogoRight(d);
+    case 'lb-logo-top-banner-bottom':  return tmplLbLogoTopBannerBottom(d);
+    case 'lb-centre-stack':            return tmplLbCentreStack(d);
+    case 'lb-banner-first-centre':     return tmplLbBannerFirstCentre(d);
+    case 'lb-side-logo':               return tmplLbSideLogo(d);
+    case 'lb-header-band':             return tmplLbHeaderBand(d);
+    case 'lb-card':                    return tmplLbCard(d);
+    case 'lb-split-panel':             return tmplLbSplitPanel(d);
+    case 'lb-dark-header':             return tmplLbDarkHeader(d);
+    case 'lb-banner-middle':           return tmplLbBannerMiddle(d);
+    case 'lb-compact':                 return tmplLbCompact(d);
+    case 'lb-editorial':               return tmplLbEditorial(d);
+    case 'lb-accent-bar':              return tmplLbAccentBar(d);
+    case 'lb-monogram':                return tmplLbMonogram(d);
+    case 'lb-boxed':                   return tmplLbBoxed(d);
+    case 'lb-two-row':                 return tmplLbTwoRow(d);
+    case 'lb-footer-logo':             return tmplLbFooterLogo(d);
+    case 'lb-full-frame':              return tmplLbFullFrame(d);
+    case 'lb-ruled':                   return tmplLbRuled(d);
     default:                     return tmplClassicLeft(d);
   }
 }
@@ -2140,7 +2578,7 @@ function genMob(d){
   const hasC=d.phones.length||d.email||d.website;
   const ls='text-decoration:none;';
   const rows=[];
-  const isBanner=currentTemplate.startsWith('banner-');
+  const isBanner=isBannerTmpl(currentTemplate);
   if(isBanner){
     if(d.banner) rows.push(`<tr><td style="padding-bottom:12px;text-align:center;"><img src="${d.banner}" width="${tbw}" height="${bhv}" border="0" alt="Banner" style="display:inline-block;width:${tbw}px;height:${bhv}px;"></td></tr>`);
     else rows.push(`<tr><td valign="middle" style="padding-bottom:12px;background:#e0e0e0;height:60px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:12px;color:#999;">Upload a banner image</td></tr>`);
@@ -2618,6 +3056,150 @@ function drawThumbnails(){
       d(`left:38px;top:41px;width:26px;height:4px;background:${T};border-radius:1px`)+
       d(`left:38px;top:52px;width:6px;height:5px;background:${A};border-radius:1px`)+
       d(`left:47px;top:52px;width:6px;height:5px;background:${A};border-radius:1px`),
+    'lb-banner-top-logo-left':
+      d(`left:5px;right:5px;top:5px;height:13px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:5px;top:24px;width:16px;height:16px;background:${A};border-radius:2px`)+
+      d(`left:26px;top:24px;width:2px;height:30px;background:${A}`)+
+      d(`left:33px;top:24px;width:50px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:33px;top:34px;width:36px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:33px;top:45px;width:46px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:33px;top:55px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:42px;top:55px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'lb-banner-top-logo-right':
+      d(`left:5px;right:5px;top:5px;height:13px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:5px;top:24px;width:50px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:5px;top:34px;width:36px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:5px;top:45px;width:46px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;top:55px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:14px;top:55px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`right:5px;top:33px;width:18px;height:18px;background:${A};border-radius:2px`),
+    'lb-logo-top-banner-bottom':
+      d(`left:5px;top:5px;width:18px;height:16px;background:${A};border-radius:2px`)+
+      d(`left:5px;top:26px;width:52px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:5px;top:36px;width:38px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:5px;top:46px;width:46px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;right:5px;bottom:5px;height:14px;background:${A};border-radius:2px;opacity:.85`),
+    'lb-centre-stack':
+      d(`left:50%;top:5px;transform:translateX(-50%);width:20px;height:14px;background:${A};border-radius:2px`)+
+      d(`left:50%;top:24px;transform:translateX(-50%);width:52px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:50%;top:34px;transform:translateX(-50%);width:38px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:20%;top:44px;right:20%;height:1px;background:${D}`)+
+      d(`left:5px;right:5px;bottom:5px;height:14px;background:${A};border-radius:2px;opacity:.85`),
+    'lb-banner-first-centre':
+      d(`left:5px;right:5px;top:5px;height:13px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:50%;top:23px;transform:translateX(-50%);width:18px;height:12px;background:${A};border-radius:2px`)+
+      d(`left:50%;top:39px;transform:translateX(-50%);width:48px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:50%;top:49px;transform:translateX(-50%);width:34px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:50%;top:59px;transform:translateX(-50%);width:52px;height:4px;background:${T};border-radius:1px`),
+    'lb-side-logo':
+      d(`left:5px;top:10px;width:20px;height:18px;background:${A};border-radius:2px`)+
+      d(`left:32px;top:8px;width:50px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:32px;top:18px;width:36px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:32px;top:28px;width:46px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;right:5px;top:42px;height:16px;background:${A};border-radius:2px;opacity:.85`),
+    'lb-header-band':
+      d(`left:5px;right:5px;top:5px;height:20px;background:${A};border-radius:2px`)+
+      d(`left:9px;top:10px;width:12px;height:10px;background:rgba(255,255,255,.9);border-radius:1px`)+
+      d(`left:26px;top:10px;width:40px;height:5px;background:rgba(255,255,255,.9);border-radius:1px`)+
+      d(`left:26px;top:17px;width:28px;height:4px;background:rgba(255,255,255,.6);border-radius:1px`)+
+      d(`left:5px;top:31px;width:48px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;top:39px;width:36px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;right:5px;bottom:5px;height:14px;background:${A};border-radius:2px;opacity:.85`),
+    'lb-card':
+      d(`left:3px;top:3px;right:3px;bottom:3px;border:1px solid ${D};border-radius:3px`)+
+      d(`left:4px;right:4px;top:4px;height:14px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:9px;top:24px;width:15px;height:14px;background:${A};border-radius:2px`)+
+      d(`left:29px;top:24px;width:44px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:29px;top:34px;width:32px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:29px;top:45px;width:42px;height:4px;background:${T};border-radius:1px`),
+    'lb-split-panel':
+      d(`left:5px;top:6px;width:26px;height:30px;background:${A};border-radius:2px`)+
+      d(`left:10px;top:15px;width:16px;height:12px;background:rgba(255,255,255,.9);border-radius:1px`)+
+      d(`left:38px;top:8px;width:46px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:38px;top:18px;width:32px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:38px;top:28px;width:42px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;right:5px;top:44px;height:16px;background:${A};border-radius:2px;opacity:.85`),
+    'lb-dark-header':
+      d(`left:5px;right:5px;top:5px;height:20px;background:#3a4a58;border-radius:2px`)+
+      d(`left:9px;top:10px;width:38px;height:5px;background:rgba(255,255,255,.9);border-radius:1px`)+
+      d(`left:9px;top:17px;width:26px;height:4px;background:rgba(255,255,255,.55);border-radius:1px`)+
+      d(`right:9px;top:10px;width:14px;height:11px;background:rgba(255,255,255,.85);border-radius:1px`)+
+      d(`left:5px;top:31px;width:48px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;top:39px;width:34px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;right:5px;bottom:5px;height:14px;background:${A};border-radius:2px;opacity:.85`),
+    'lb-banner-middle':
+      d(`left:5px;top:6px;width:48px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:5px;top:16px;width:34px;height:5px;background:${L};border-radius:1px`)+
+      d(`right:5px;top:6px;width:16px;height:15px;background:${A};border-radius:2px`)+
+      d(`left:5px;right:5px;top:28px;height:14px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:5px;top:48px;width:50px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;top:58px;width:6px;height:6px;background:${A};border-radius:1px`)+
+      d(`left:14px;top:58px;width:6px;height:6px;background:${A};border-radius:1px`),
+    'lb-compact':
+      d(`left:5px;top:6px;width:14px;height:12px;background:${A};border-radius:2px`)+
+      d(`left:24px;top:8px;width:56px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:5px;top:24px;right:5px;height:1px;background:${D}`)+
+      d(`left:5px;top:30px;width:44px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:53px;top:30px;width:30px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;right:5px;top:42px;height:18px;background:${A};border-radius:2px;opacity:.85`),
+    'lb-editorial':
+      d(`left:5px;right:5px;top:5px;height:2px;background:${A}`)+
+      d(`left:5px;top:12px;width:56px;height:8px;background:${N};border-radius:1px`)+
+      d(`right:5px;top:11px;width:14px;height:11px;background:${A};border-radius:2px`)+
+      d(`left:5px;top:24px;width:40px;height:4px;background:${L};border-radius:1px`)+
+      d(`left:5px;top:34px;right:5px;height:1px;background:${D}`)+
+      d(`left:5px;top:39px;width:48px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;right:5px;bottom:5px;height:14px;background:${A};border-radius:2px;opacity:.85`),
+    'lb-accent-bar':
+      d(`left:5px;top:5px;width:3px;height:38px;background:${A}`)+
+      d(`left:15px;top:5px;width:18px;height:14px;background:${A};border-radius:2px`)+
+      d(`left:15px;top:24px;width:46px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:15px;top:34px;width:34px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:5px;right:5px;bottom:5px;height:16px;background:${A};border-radius:2px;opacity:.85`),
+    'lb-monogram':
+      d(`left:5px;right:5px;top:5px;height:13px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:5px;top:24px;width:26px;height:26px;background:#eef3f7;border-radius:3px`)+
+      d(`left:11px;top:31px;width:14px;height:12px;background:${A};border-radius:1px`)+
+      d(`left:38px;top:26px;width:46px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:38px;top:36px;width:32px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:38px;top:46px;width:42px;height:4px;background:${T};border-radius:1px`),
+    'lb-boxed':
+      d(`left:4px;top:4px;right:4px;height:20px;border:1px solid ${D};border-radius:3px`)+
+      d(`left:7px;top:7px;right:7px;height:14px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:5px;top:32px;width:46px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:5px;top:42px;width:32px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:5px;top:52px;width:42px;height:4px;background:${T};border-radius:1px`)+
+      d(`right:5px;top:36px;width:16px;height:14px;background:${A};border-radius:2px`),
+    'lb-two-row':
+      d(`left:5px;top:6px;width:20px;height:18px;background:${A};border-radius:2px`)+
+      d(`left:32px;top:6px;right:5px;height:18px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:5px;top:32px;right:5px;height:1px;background:${D}`)+
+      d(`left:5px;top:38px;width:48px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:5px;top:48px;width:34px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:5px;top:58px;width:44px;height:4px;background:${T};border-radius:1px`),
+    'lb-footer-logo':
+      d(`left:5px;right:5px;top:5px;height:14px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:50%;top:25px;transform:translateX(-50%);width:50px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:50%;top:35px;transform:translateX(-50%);width:36px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:50%;top:45px;transform:translateX(-50%);width:48px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:22%;top:55px;right:22%;height:1px;background:${D}`)+
+      d(`left:50%;bottom:4px;transform:translateX(-50%);width:16px;height:9px;background:${A};border-radius:2px`),
+    'lb-full-frame':
+      d(`left:3px;top:3px;right:3px;bottom:3px;border:1px solid ${D}`)+
+      d(`left:4px;right:4px;top:4px;height:15px;background:${A};border-radius:2px;opacity:.85`)+
+      d(`left:9px;top:25px;width:15px;height:14px;background:${A};border-radius:2px`)+
+      d(`left:29px;top:25px;width:44px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:29px;top:35px;width:32px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:29px;top:45px;width:42px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:4px;right:4px;bottom:4px;height:4px;background:${A}`),
+    'lb-ruled':
+      d(`left:5px;top:6px;width:20px;height:16px;background:${A};border-radius:2px`)+
+      d(`left:32px;top:7px;width:48px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:32px;top:16px;width:34px;height:5px;background:${L};border-radius:1px`)+
+      d(`left:5px;top:28px;right:5px;height:1px;background:${D}`)+
+      d(`left:5px;top:34px;width:46px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;top:44px;right:5px;height:1px;background:${D}`)+
+      d(`left:5px;right:5px;bottom:5px;height:16px;background:${A};border-radius:2px;opacity:.85`),
   };
   Object.entries(thumbs).forEach(([id,html])=>{
     const el=document.getElementById('tw-'+id);
@@ -2654,7 +3236,7 @@ function toggleColl(id){el('coll-sec-'+id).classList.toggle('open');}
 function switchTabGroup(panels,tabs,active){
   [...panels,...tabs].forEach(id=>el(id).classList.toggle('active',id.endsWith(active)));
 }
-function switchTab(tab){switchTabGroup(['panel-logo','panel-banner'],['tab-logo','tab-banner'],tab);}
+function switchTab(tab){switchTabGroup(['panel-logo','panel-banner','panel-both'],['tab-logo','tab-banner','tab-both'],tab);}
 function switchPrevTab(tab){
   switchTabGroup(['ppanel-desk','ppanel-mob'],['ptab-desk','ptab-mob'],tab);
   ['desk','mob'].forEach(t=>{const hd=el('ptab-'+t+'-hd');if(hd)hd.classList.toggle('active',t===tab);});
