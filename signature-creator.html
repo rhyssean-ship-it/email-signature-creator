@@ -772,10 +772,10 @@ textarea.field-ta::placeholder{color:#7a92a8}
         <div class="tw" id="tw-lb-logo-top-banner-bottom"></div>
         <div class="tmpl-name">Logo Top, Banner Bottom</div>
       </label>
-      <label class="tmpl-card" onclick="selTmpl('lb-centre-stack')">
-        <input type="radio" name="tmpl" value="lb-centre-stack">
-        <div class="tw" id="tw-lb-centre-stack"></div>
-        <div class="tmpl-name">Centre Stack</div>
+      <label class="tmpl-card" onclick="selTmpl('lb-banner-bottom-logo')">
+        <input type="radio" name="tmpl" value="lb-banner-bottom-logo">
+        <div class="tw" id="tw-lb-banner-bottom-logo"></div>
+        <div class="tmpl-name">Banner Bottom + Logo</div>
       </label>
       <label class="tmpl-card" onclick="selTmpl('lb-banner-first-centre')">
         <input type="radio" name="tmpl" value="lb-banner-first-centre">
@@ -2284,12 +2284,43 @@ function tmplLbLogoTopBannerBottom(d){
   ${lbBannerRow(d,'')}`);
 }
 
-// ── LB 4: Centre Stack ────────────────────────────────────
-function tmplLbCentreStack(d){
-  const lw=Math.min(d.logoW,170);
-  return lbWrap(d,`<tr><td align="center" style="padding-bottom:12px;text-align:center;">${lbLogoImg(d,lw,true)}</td></tr>
-  <tr><td align="center" style="padding-bottom:16px;text-align:center;">${lbBlock(d,{align:'center'})}</td></tr>
-  ${lbBannerRow(d,'')}`);
+// ── LB 4: Banner Bottom + Logo ──────────────────
+// The Banner Bottom layout, with the logo in place of the company name.
+function tmplLbBannerBottomLogo(d){
+  const soc=socIcons(d.socials,20);
+  const bw=lbW(d);
+  const lw=Math.min(d.logoW,160);
+  const ls='text-decoration:none;';
+  const rows=[];
+  // Name + title inline
+  if(d.name||d.title){
+    let nameHtml='';
+    if(d.name&&d.title){
+      nameHtml=`<span style="color:${d.pri};">${esc(d.name)}</span><span style="color:${d.sep};padding:0 6px;">|</span><span style="color:${d.sec};">${esc(d.title)}</span>`;
+    } else if(d.name){
+      nameHtml=`<span style="color:${d.pri};">${esc(d.name)}</span>`;
+    } else {
+      nameHtml=`<span style="color:${d.sec};">${esc(d.title)}</span>`;
+    }
+    rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:700;line-height:24px;padding-bottom:10px;">${nameHtml}</td></tr>`);
+  }
+  // Logo in place of the company row
+  rows.push(`<tr><td style="padding-bottom:10px;">${lbLogoImg(d,lw)}</td></tr>`);
+  // Stacked contact rows (with optional icons)
+  function iconTd(type){return d.showIcons?`<td width="22" valign="middle" style="padding-right:6px;padding-bottom:4px;">${contactIcon(type,d.icon_col,14)}</td>`:'';}
+  const ts=`font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:4px;`;
+  const contactRows=[];
+  d.phones.forEach(p=>contactRows.push(`<tr>${iconTd('phone')}<td style="${ts}"><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr>${iconTd('email')}<td style="${ts}"><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr>${iconTd('website')}<td style="${ts}"><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
+  if(d.address) contactRows.push(`<tr>${iconTd('address')}<td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};padding-bottom:4px;">${esc(d.address)}</td></tr>`);
+  if(contactRows.length) rows.push(`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">${contactRows.join('')}</table></td></tr>`);
+  // Social icons
+  if(soc) rows.push(`<tr><td style="padding-top:8px;padding-bottom:12px;">${soc}</td></tr>`);
+  else rows.push(`<tr><td height="14" style="height:14px;font-size:0;line-height:0;">&nbsp;</td></tr>`);
+  // Banner at the bottom
+  rows.push(`<tr><td>${lbBannerImg(d,bw)}</td></tr>`);
+  return lbWrap(d,rows.join('\n  '));
 }
 
 // ── LB 5: Banner First, Centred ───────────────────────────
@@ -2553,7 +2584,7 @@ function genDesk(d){
     case 'lb-banner-top-logo-left':    return tmplLbBannerTopLogoLeft(d);
     case 'lb-banner-top-logo-right':   return tmplLbBannerTopLogoRight(d);
     case 'lb-logo-top-banner-bottom':  return tmplLbLogoTopBannerBottom(d);
-    case 'lb-centre-stack':            return tmplLbCentreStack(d);
+    case 'lb-banner-bottom-logo':      return tmplLbBannerBottomLogo(d);
     case 'lb-banner-first-centre':     return tmplLbBannerFirstCentre(d);
     case 'lb-side-logo':               return tmplLbSideLogo(d);
     case 'lb-logo-below-name':         return tmplLbLogoBelowName(d);
@@ -3083,11 +3114,14 @@ function drawThumbnails(){
       d(`left:5px;top:36px;width:38px;height:5px;background:${L};border-radius:1px`)+
       d(`left:5px;top:46px;width:46px;height:4px;background:${T};border-radius:1px`)+
       d(`left:5px;right:5px;bottom:5px;height:14px;background:${A};border-radius:2px;opacity:.85`),
-    'lb-centre-stack':
-      d(`left:50%;top:5px;transform:translateX(-50%);width:20px;height:14px;background:${A};border-radius:2px`)+
-      d(`left:50%;top:24px;transform:translateX(-50%);width:52px;height:6px;background:${N};border-radius:1px`)+
-      d(`left:50%;top:34px;transform:translateX(-50%);width:38px;height:5px;background:${L};border-radius:1px`)+
-      d(`left:20%;top:44px;right:20%;height:1px;background:${D}`)+
+    'lb-banner-bottom-logo':
+      d(`left:5px;top:6px;width:38px;height:6px;background:${N};border-radius:1px`)+
+      d(`left:46px;top:6px;width:2px;height:6px;background:${D}`)+
+      d(`left:51px;top:6px;width:30px;height:6px;background:${L};border-radius:1px`)+
+      d(`left:5px;top:18px;width:22px;height:14px;background:${A};border-radius:2px`)+
+      d(`left:5px;top:38px;width:42px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;top:46px;width:34px;height:4px;background:${T};border-radius:1px`)+
+      d(`left:5px;top:54px;width:48px;height:4px;background:${T};border-radius:1px`)+
       d(`left:5px;right:5px;bottom:5px;height:14px;background:${A};border-radius:2px;opacity:.85`),
     'lb-banner-first-centre':
       d(`left:5px;right:5px;top:5px;height:13px;background:${A};border-radius:2px;opacity:.85`)+
