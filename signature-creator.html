@@ -1030,9 +1030,8 @@ async function renderExportIcons(d,acc,disc){
   await preloadIconPngs();
   const col=document.getElementById('c_icon')?.value||'#555555';
   exportMode=true;
-  const gfont=googleFontStyle(d.font);
-  const dhE=gfont+fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc);
-  const mhE=gfont+fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc);
+  const dhE=withFont(d,fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc));
+  const mhE=withFont(d,fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc));
   exportMode=false;
   document.getElementById('deskCode').value=dhE;
   document.getElementById('mobCode').value=mhE;
@@ -1262,8 +1261,7 @@ function render(){
   });
   const acc=accreditationsHtml(d);
   const disc=disclaimerHtml(d);
-  const gfont=googleFontStyle(d.font);
-  const dh=gfont+fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc), mh=gfont+fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc), uh=genUni(dh,mh);
+  const dh=withFont(d,fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc)), mh=withFont(d,fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc)), uh=genUni(dh,mh);
   document.getElementById('deskPrev').innerHTML=dh;
   document.getElementById('mobPrev').innerHTML=mh;
   document.getElementById('deskCode').value=dh;
@@ -1287,10 +1285,18 @@ function render(){
 // ── HELPERS ──────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-const GOOGLE_FONTS={'Lexend Zetta':'Lexend+Zetta:wght@400;500;600;700','Manrope':'Manrope:wght@400;500;600;700'};
-function googleFontStyle(font){
-  if(!GOOGLE_FONTS[font]) return '';
-  return `<style>@import url('https://fonts.googleapis.com/css2?family=${GOOGLE_FONTS[font]}&display=swap');</style>`;
+const GOOGLE_FONTS={'Inter':'Inter:wght@400;500;600;700','Lexend Zetta':'Lexend+Zetta:wght@400;500;600;700','Manrope':'Manrope:wght@400;500;600;700'};
+// Fonts Outlook for Windows won't have installed. Its Word engine doesn't walk the
+// font stack for a missing font; it drops straight to a serif. So for these the
+// inline styles get a stack Word has, and the chosen font is applied only from an
+// @media screen rule, which Word ignores and Apple Mail / iOS honour.
+const NON_WIN_FONTS=new Set([...Object.keys(GOOGLE_FONTS),'Gill Sans']);
+const WF_STACK='Arial,Helvetica,sans-serif';
+function withFont(d,html){
+  if(!NON_WIN_FONTS.has(d.font)) return html;
+  html=html.split(`font-family:${d.font},Arial,sans-serif`).join(`font-family:${WF_STACK}`);
+  const imp=GOOGLE_FONTS[d.font]?`@import url('https://fonts.googleapis.com/css2?family=${GOOGLE_FONTS[d.font]}&display=swap');`:'';
+  return `<style>${imp}@media screen{.sig-wf [style*="${WF_STACK}"]{font-family:'${d.font}',${WF_STACK} !important;}}</style><div class="sig-wf">${html}</div>`;
 }
 
 
@@ -1536,7 +1542,7 @@ function tmplMinimal(d){
   const meta=[];
   if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
   if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
-  if(meta.length) rows.push(`<tr><td style="padding-top:6px;padding-bottom:8px;">${meta.join(`<span style="color:${d.sep};padding:0 6px;">·</span>`)}</td></tr>`);
+  if(meta.length) rows.push(`<tr><td style="padding-top:6px;padding-bottom:8px;">${meta.join(`&nbsp;&nbsp;<span style="color:${d.sep};">·</span>&nbsp;&nbsp;`)}</td></tr>`);
   if(hasC) rows.push(`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`);
   if(soc) rows.push(`<tr><td style="padding-top:4px;">${soc}</td></tr>`);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;
@@ -1631,7 +1637,7 @@ function tmplCompact(d){
     ${logoCol}
     <td style="vertical-align:middle;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-        ${meta.length?`<tr><td style="padding-bottom:5px;white-space:nowrap;">${meta.join(`<span style="color:${d.sep};padding:0 5px;">·</span>`)}</td></tr>`:''}
+        ${meta.length?`<tr><td style="padding-bottom:5px;white-space:nowrap;">${meta.join(`&nbsp;&nbsp;<span style="color:${d.sep};">·</span>&nbsp;&nbsp;`)}</td></tr>`:''}
         ${hasC?`<tr><td style="padding-bottom:4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
         ${soc?`<tr><td>${soc}</td></tr>`:''}
       </table>
@@ -1798,7 +1804,7 @@ function tmplBannerMinimal(d){
   const meta=[];
   if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
   if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
-  if(meta.length) rows.push(`<tr><td style="padding-top:6px;padding-bottom:8px;">${meta.join(`<span style="color:${d.sep};padding:0 6px;">·</span>`)}</td></tr>`);
+  if(meta.length) rows.push(`<tr><td style="padding-top:6px;padding-bottom:8px;">${meta.join(`&nbsp;&nbsp;<span style="color:${d.sep};">·</span>&nbsp;&nbsp;`)}</td></tr>`);
   if(hasC) rows.push(`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`);
   if(soc) rows.push(`<tr><td style="padding-top:6px;">${soc}</td></tr>`);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;
@@ -2096,7 +2102,7 @@ function tmplBannerStacked(d){
   const meta=[];
   if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
   if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
-  if(meta.length) rows.push(`<tr><td style="padding-bottom:8px;text-align:center;">${meta.join(`<span style="color:${d.sep};padding:0 6px;">·</span>`)}</td></tr>`);
+  if(meta.length) rows.push(`<tr><td style="padding-bottom:8px;text-align:center;">${meta.join(`&nbsp;&nbsp;<span style="color:${d.sep};">·</span>&nbsp;&nbsp;`)}</td></tr>`);
   if(hasC) rows.push(`<tr><td style="padding-bottom:4px;text-align:center;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>${contactCells(d,11)}</tr></table></td></tr>`);
   if(soc) rows.push(`<tr><td style="padding-top:6px;text-align:center;">${soc}</td></tr>`);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;}
@@ -2108,7 +2114,7 @@ function tmplBannerRuled(d){
   const soc=socIcons(d.socials,20);
   const ls='text-decoration:none;';
   const items=[];
-  if(d.title&&d.company) items.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span> <span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sep};padding:0 4px;">·</span> <span style="font-family:${d.font},Arial,sans-serif;font-size:12px;font-weight:600;color:${d.txt};">${esc(d.company)}</span>`);
+  if(d.title&&d.company) items.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span> &nbsp;<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sep};">·</span>&nbsp; <span style="font-family:${d.font},Arial,sans-serif;font-size:12px;font-weight:600;color:${d.txt};">${esc(d.company)}</span>`);
   else if(d.title) items.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
   else if(d.company) items.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;font-weight:600;color:${d.txt};">${esc(d.company)}</span>`);
   d.phones.forEach(p=>items.push(`<a href="tel:${esc(p.replace(/\s/g,''))}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(p)}</a>`));
@@ -2134,7 +2140,7 @@ function tmplBannerBottom(d){
   if(d.name||d.title){
     let nameHtml='';
     if(d.name&&d.title){
-      nameHtml=`<span style="color:${d.pri};">${esc(d.name)}</span><span style="color:${d.sep};padding:0 6px;">|</span><span style="color:${d.sec};">${esc(d.title)}</span>`;
+      nameHtml=`<span style="color:${d.pri};">${esc(d.name)}</span>&nbsp;&nbsp;<span style="color:${d.sep};">|</span>&nbsp;&nbsp;<span style="color:${d.sec};">${esc(d.title)}</span>`;
     } else if(d.name){
       nameHtml=`<span style="color:${d.pri};">${esc(d.name)}</span>`;
     } else {
@@ -2146,13 +2152,13 @@ function tmplBannerBottom(d){
   if(d.company) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:8px;">${esc(d.company)}</td></tr>`);
   // Stacked contact rows (with optional icons)
   function iconTd(type){return d.showIcons?`<td width="22" valign="middle" style="padding-right:6px;padding-bottom:4px;">${contactIcon(type,d.icon_col,14)}</td>`:'';};
-  const ts=`font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:4px;`;
+  const ts=`font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:4px;white-space:nowrap;`;
   const contactRows=[];
-  d.phones.forEach(p=>contactRows.push(`<tr>${iconTd('phone')}<td style="${ts}"><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
-  if(d.email) contactRows.push(`<tr>${iconTd('email')}<td style="${ts}"><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr>${iconTd('website')}<td style="${ts}"><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
+  d.phones.forEach(p=>contactRows.push(`<tr>${iconTd('phone')}<td style="${ts}" nowrap><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr>${iconTd('email')}<td style="${ts}" nowrap><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr>${iconTd('website')}<td style="${ts}" nowrap><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
   if(d.address) contactRows.push(`<tr>${iconTd('address')}<td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};padding-bottom:4px;">${esc(d.address)}</td></tr>`);
-  if(contactRows.length) rows.push(`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0">${contactRows.join('')}</table></td></tr>`);
+  if(contactRows.length) rows.push(`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">${contactRows.join('')}</table></td></tr>`);
   // Social icons
   if(soc) rows.push(`<tr><td style="padding-top:8px;padding-bottom:12px;">${soc}</td></tr>`);
   else rows.push(`<tr><td height="14"></td></tr>`);
@@ -2296,7 +2302,7 @@ function tmplLbBannerBottomLogo(d){
   if(d.name||d.title){
     let nameHtml='';
     if(d.name&&d.title){
-      nameHtml=`<span style="color:${d.pri};">${esc(d.name)}</span><span style="color:${d.sep};padding:0 6px;">|</span><span style="color:${d.sec};">${esc(d.title)}</span>`;
+      nameHtml=`<span style="color:${d.pri};">${esc(d.name)}</span>&nbsp;&nbsp;<span style="color:${d.sep};">|</span>&nbsp;&nbsp;<span style="color:${d.sec};">${esc(d.title)}</span>`;
     } else if(d.name){
       nameHtml=`<span style="color:${d.pri};">${esc(d.name)}</span>`;
     } else {
@@ -2308,13 +2314,13 @@ function tmplLbBannerBottomLogo(d){
   rows.push(`<tr><td style="padding-bottom:10px;">${lbLogoImg(d,lw)}</td></tr>`);
   // Stacked contact rows (with optional icons)
   function iconTd(type){return d.showIcons?`<td width="22" valign="middle" style="padding-right:6px;padding-bottom:4px;">${contactIcon(type,d.icon_col,14)}</td>`:'';}
-  const ts=`font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:4px;`;
+  const ts=`font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:4px;white-space:nowrap;`;
   const contactRows=[];
-  d.phones.forEach(p=>contactRows.push(`<tr>${iconTd('phone')}<td style="${ts}"><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
-  if(d.email) contactRows.push(`<tr>${iconTd('email')}<td style="${ts}"><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr>${iconTd('website')}<td style="${ts}"><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
+  d.phones.forEach(p=>contactRows.push(`<tr>${iconTd('phone')}<td style="${ts}" nowrap><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr>${iconTd('email')}<td style="${ts}" nowrap><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr>${iconTd('website')}<td style="${ts}" nowrap><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
   if(d.address) contactRows.push(`<tr>${iconTd('address')}<td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};padding-bottom:4px;">${esc(d.address)}</td></tr>`);
-  if(contactRows.length) rows.push(`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">${contactRows.join('')}</table></td></tr>`);
+  if(contactRows.length) rows.push(`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">${contactRows.join('')}</table></td></tr>`);
   // Social icons
   if(soc) rows.push(`<tr><td style="padding-top:8px;padding-bottom:12px;">${soc}</td></tr>`);
   else rows.push(`<tr><td height="14" style="height:14px;font-size:0;line-height:0;">&nbsp;</td></tr>`);
@@ -3475,8 +3481,7 @@ async function downloadBatchAll(fmt){
     const d=batchMerge(base,batchRows[i]);
     const disc=disclaimerHtml(d);
     const acc=accreditationsHtml(d);
-    const gfont=googleFontStyle(d.font);
-    const dh=gfont+fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc), mh=gfont+fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc);
+    const dh=withFont(d,fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc)), mh=withFont(d,fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc));
     const html=fmt==='desk'?dh:fmt==='mob'?mh:genUni(dh,mh);
     const slug=batchSlug(batchRows[i]);
     zip.file(`${slug}-${i+1}.html`,html);
