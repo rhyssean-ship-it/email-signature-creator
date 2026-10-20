@@ -131,6 +131,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .wrap{display:flex;flex-direction:column;}
 .hero{order:0;}
 #step1{order:1;}
+#stepImgMode{order:2;} /* same order as #step2; sits just above it by DOM position */
 #step2{order:2;}
 #step2c{order:3;}
 #step2b{order:4;}
@@ -182,7 +183,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
 .acc-zone{padding:14px 8px;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin-bottom:0;}
 .acc-result-card{display:flex;flex-direction:column;align-items:center;gap:6px;background:#fff;border:1px solid #dde4ec;border-radius:8px;padding:8px;min-height:80px;justify-content:center;}
 /* Image source: embed or host */
-.img-mode-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+.img-mode-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
 .img-mode-row label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#3a5268;cursor:pointer;}
 .img-mode-row input{accent-color:#00aeef;cursor:pointer;}
 .img-mode-hint{font-size:11px;color:#6b8090;}
@@ -357,23 +358,28 @@ textarea.field-ta::placeholder{color:#7a92a8}
     </div>
   </div>
 
-  <!-- STEP 2: Logo & Banner -->
-  <div class="step" id="step2">
-    <div class="step-hd"><div class="step-t">Add Your Logo &amp; Banner</div></div>
+  <!-- IMAGE SOURCE: applies to every image in the signature -->
+  <div class="step" id="stepImgMode">
+    <div class="step-hd"><div class="step-t">Image Source</div></div>
     <div class="img-mode-row">
       <span class="s2-field-lbl" style="margin:0;">Images</span>
       <label><input type="radio" name="imgMode" value="embed" checked onchange="setImgMode(this.value)"> Embed</label>
       <label><input type="radio" name="imgMode" value="host" onchange="setImgMode(this.value)"> Host</label>
-      <span class="img-mode-hint" id="imgModeHint">Images are stored inside the signature.</span>
+      <span class="img-mode-hint" id="imgModeHint">Logo, banner, accreditations and social icons are stored inside the signature.</span>
     </div>
-    <div class="s2-card" id="hostPanel" style="display:none;margin-bottom:20px;">
+    <div class="s2-card" id="hostPanel" style="display:none;margin-top:16px;">
       <div class="fgrp">
         <label style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;">Image folder URL</label>
         <input type="url" id="hostBase" placeholder="https://webdesigndiy.co.uk/brace/new_sig/" oninput="dp()">
       </div>
-      <div style="font-size:11px;color:#6b8090;line-height:1.6;margin:8px 0;">Enter a file name for each image below (e.g. <code>brace-logo.png</code>) or a full image URL. Social icons are loaded from this folder as <code>social-linkedin.png</code>, <code>social-x.png</code>, <code>social-facebook.png</code>, <code>social-instagram.png</code>, <code>social-youtube.png</code> and <code>social-tiktok.png</code>. Contact detail icons stay embedded.</div>
+      <div style="font-size:11px;color:#6b8090;line-height:1.6;margin:8px 0;">Then enter a file name for each image in the Logo &amp; Banner and Accreditations steps below (e.g. <code>brace-logo.png</code>), or a full image URL. Social icons are loaded from this folder as <code>social-linkedin.png</code>, <code>social-x.png</code>, <code>social-facebook.png</code>, <code>social-instagram.png</code>, <code>social-youtube.png</code> and <code>social-tiktok.png</code>. Contact detail icons stay embedded.</div>
       <div id="hostStatus"></div>
     </div>
+  </div>
+
+  <!-- STEP 2: Logo & Banner -->
+  <div class="step" id="step2">
+    <div class="step-hd"><div class="step-t">Add Your Logo &amp; Banner</div></div>
     <div class="img-upload-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
       <div>
         <div class="s2-field-lbl">Company Logo</div>
@@ -1251,7 +1257,7 @@ function setImgMode(m){imgMode=m==='host'?'host':'embed';syncImgUI();dp();}
 function syncImgUI(){
   const host=imgMode==='host';
   document.querySelectorAll('input[name=imgMode]').forEach(r=>r.checked=r.value===imgMode);
-  el('imgModeHint').textContent=host?'Images are linked from your web server, so they survive bounces and forwards.':'Images are stored inside the signature.';
+  el('imgModeHint').textContent=host?'Logo, banner, accreditations and social icons are linked from your web server, so they survive bounces and forwards.':'Logo, banner, accreditations and social icons are stored inside the signature.';
   el('hostPanel').style.display=host?'block':'none';
   document.querySelectorAll('.host-fld').forEach(f=>f.style.display=host?'block':'none');
   document.querySelectorAll('.embed-only').forEach(b=>b.style.display=host?'none':'');
