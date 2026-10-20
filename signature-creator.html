@@ -181,6 +181,14 @@ textarea.field-ta::placeholder{color:#7a92a8}
 /* Accreditation slots */
 .acc-zone{padding:14px 8px;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin-bottom:0;}
 .acc-result-card{display:flex;flex-direction:column;align-items:center;gap:6px;background:#fff;border:1px solid #dde4ec;border-radius:8px;padding:8px;min-height:80px;justify-content:center;}
+/* Image source: embed or host */
+.img-mode-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+.img-mode-row label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#3a5268;cursor:pointer;}
+.img-mode-row input{accent-color:#00aeef;cursor:pointer;}
+.img-mode-hint{font-size:11px;color:#6b8090;}
+.host-fld{display:none;width:100%;box-sizing:border-box;margin-bottom:8px;}
+.host-ok{font-size:12px;color:#1f7a3a;}
+.host-wait{font-size:12px;color:#6b8090;}
 /* Colour cards */
 .color-card{background:#fff;border:1px solid #edf1f5;border-radius:8px;padding:10px 10px 8px;}
 .color-card input[type=color]{width:100%;height:48px;border-radius:5px;padding:2px;border:1px solid #dde4ec;cursor:pointer;background:#f8fafc;margin-top:6px;}
@@ -352,9 +360,24 @@ textarea.field-ta::placeholder{color:#7a92a8}
   <!-- STEP 2: Logo & Banner -->
   <div class="step" id="step2">
     <div class="step-hd"><div class="step-t">Add Your Logo &amp; Banner</div></div>
+    <div class="img-mode-row">
+      <span class="s2-field-lbl" style="margin:0;">Images</span>
+      <label><input type="radio" name="imgMode" value="embed" checked onchange="setImgMode(this.value)"> Embed</label>
+      <label><input type="radio" name="imgMode" value="host" onchange="setImgMode(this.value)"> Host</label>
+      <span class="img-mode-hint" id="imgModeHint">Images are stored inside the signature.</span>
+    </div>
+    <div class="s2-card" id="hostPanel" style="display:none;margin-bottom:20px;">
+      <div class="fgrp">
+        <label style="font-size:11px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;">Image folder URL</label>
+        <input type="url" id="hostBase" placeholder="https://webdesigndiy.co.uk/brace/new_sig/" oninput="dp()">
+      </div>
+      <div style="font-size:11px;color:#6b8090;line-height:1.6;margin:8px 0;">Enter a file name for each image below (e.g. <code>brace-logo.png</code>) or a full image URL. Social icons are loaded from this folder as <code>social-linkedin.png</code>, <code>social-x.png</code>, <code>social-facebook.png</code>, <code>social-instagram.png</code>, <code>social-youtube.png</code> and <code>social-tiktok.png</code>. Contact detail icons stay embedded.</div>
+      <div id="hostStatus"></div>
+    </div>
     <div class="img-upload-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
       <div>
         <div class="s2-field-lbl">Company Logo</div>
+        <input type="text" class="host-fld" id="hostLogo" placeholder="brace-logo.png or full URL" oninput="dp()">
         <div class="scan-zone" id="logoZone">
           <input type="file" id="logoFile" accept="image/*" onchange="handleLogo(this)">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="margin-bottom:8px;opacity:.45;"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#1179A3" stroke-width="1.5"/><circle cx="8.5" cy="8.5" r="1.5" stroke="#1179A3" stroke-width="1.5"/><path d="M21 15l-5-5L5 21" stroke="#1179A3" stroke-width="1.5" stroke-linejoin="round"/></svg>
@@ -366,7 +389,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
             <img id="logoThumb" class="logo-thumb" src="" alt="">
             <div class="s2-result-info">
               <div id="logoMeta" class="s2-result-dim"></div>
-              <button class="btn-sm" onclick="resetLogo()">Replace</button>
+              <button class="btn-sm embed-only" onclick="resetLogo()">Replace</button>
             </div>
           </div>
           <div class="slider-row" style="margin-top:10px;">
@@ -382,6 +405,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
       </div>
       <div>
         <div class="s2-field-lbl">Banner Image <span style="font-weight:400;color:#6b8090;font-size:10px;">Recommended: 600&#215;100px</span></div>
+        <input type="text" class="host-fld" id="hostBanner" placeholder="brace-banner.png or full URL" oninput="dp()">
         <div class="scan-zone" id="bannerZone">
           <input type="file" id="bannerFile" accept="image/*" onchange="handleBanner(this)">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="margin-bottom:8px;opacity:.45;"><rect x="2" y="6" width="20" height="12" rx="2" stroke="#1179A3" stroke-width="1.5"/><path d="M2 11h20" stroke="#1179A3" stroke-width="1.2" stroke-dasharray="3 2" opacity=".5"/><circle cx="7" cy="14.5" r="1.3" fill="#1179A3" opacity=".4"/><path d="M10.5 14.5l2.5-2.5 2.5 2.5 1.5-1.5" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -393,7 +417,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
             <img id="bannerThumb" style="max-height:48px;max-width:240px;border-radius:4px;border:1px solid #edf1f5;" src="" alt="">
             <div class="s2-result-info">
               <div id="bannerMeta" class="s2-result-dim"></div>
-              <button class="btn-sm" onclick="resetBanner()">Replace</button>
+              <button class="btn-sm embed-only" onclick="resetBanner()">Replace</button>
             </div>
           </div>
           <div class="slider-row" style="margin-top:10px;">
@@ -417,6 +441,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
     <div class="s2-field-lbl" style="margin-bottom:12px;">Up to 4 accreditation logos &mdash; all scaled to the same height</div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;">
       <div>
+        <input type="text" class="host-fld" id="hostAcc0" placeholder="file name or URL" oninput="dp()" style="font-size:11px;">
         <div class="scan-zone acc-zone" id="accZone0">
           <input type="file" accept="image/*" onchange="handleAccLogo(0,this)">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="opacity:.4;"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#1179A3" stroke-width="1.5"/><path d="M12 8v8M8 12h8" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -424,11 +449,12 @@ textarea.field-ta::placeholder{color:#7a92a8}
         </div>
         <div id="accResult0" style="display:none;" class="acc-result-card">
           <img id="accThumb0" style="max-height:48px;max-width:100%;object-fit:contain;" src="" alt="Accreditation 1">
-          <button class="btn-sm" onclick="resetAccLogo(0)">Remove</button>
+          <button class="btn-sm embed-only" onclick="resetAccLogo(0)">Remove</button>
           <input type="url" id="accUrl0" placeholder="https://example.com" oninput="dp()" style="width:100%;box-sizing:border-box;font-size:10px;margin-top:2px;">
         </div>
       </div>
       <div>
+        <input type="text" class="host-fld" id="hostAcc1" placeholder="file name or URL" oninput="dp()" style="font-size:11px;">
         <div class="scan-zone acc-zone" id="accZone1">
           <input type="file" accept="image/*" onchange="handleAccLogo(1,this)">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="opacity:.4;"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#1179A3" stroke-width="1.5"/><path d="M12 8v8M8 12h8" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -436,11 +462,12 @@ textarea.field-ta::placeholder{color:#7a92a8}
         </div>
         <div id="accResult1" style="display:none;" class="acc-result-card">
           <img id="accThumb1" style="max-height:48px;max-width:100%;object-fit:contain;" src="" alt="Accreditation 2">
-          <button class="btn-sm" onclick="resetAccLogo(1)">Remove</button>
+          <button class="btn-sm embed-only" onclick="resetAccLogo(1)">Remove</button>
           <input type="url" id="accUrl1" placeholder="https://example.com" oninput="dp()" style="width:100%;box-sizing:border-box;font-size:10px;margin-top:2px;">
         </div>
       </div>
       <div>
+        <input type="text" class="host-fld" id="hostAcc2" placeholder="file name or URL" oninput="dp()" style="font-size:11px;">
         <div class="scan-zone acc-zone" id="accZone2">
           <input type="file" accept="image/*" onchange="handleAccLogo(2,this)">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="opacity:.4;"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#1179A3" stroke-width="1.5"/><path d="M12 8v8M8 12h8" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -448,11 +475,12 @@ textarea.field-ta::placeholder{color:#7a92a8}
         </div>
         <div id="accResult2" style="display:none;" class="acc-result-card">
           <img id="accThumb2" style="max-height:48px;max-width:100%;object-fit:contain;" src="" alt="Accreditation 3">
-          <button class="btn-sm" onclick="resetAccLogo(2)">Remove</button>
+          <button class="btn-sm embed-only" onclick="resetAccLogo(2)">Remove</button>
           <input type="url" id="accUrl2" placeholder="https://example.com" oninput="dp()" style="width:100%;box-sizing:border-box;font-size:10px;margin-top:2px;">
         </div>
       </div>
       <div>
+        <input type="text" class="host-fld" id="hostAcc3" placeholder="file name or URL" oninput="dp()" style="font-size:11px;">
         <div class="scan-zone acc-zone" id="accZone3">
           <input type="file" accept="image/*" onchange="handleAccLogo(3,this)">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="opacity:.4;"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#1179A3" stroke-width="1.5"/><path d="M12 8v8M8 12h8" stroke="#1179A3" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -460,7 +488,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
         </div>
         <div id="accResult3" style="display:none;" class="acc-result-card">
           <img id="accThumb3" style="max-height:48px;max-width:100%;object-fit:contain;" src="" alt="Accreditation 4">
-          <button class="btn-sm" onclick="resetAccLogo(3)">Remove</button>
+          <button class="btn-sm embed-only" onclick="resetAccLogo(3)">Remove</button>
           <input type="url" id="accUrl3" placeholder="https://example.com" oninput="dp()" style="width:100%;box-sizing:border-box;font-size:10px;margin-top:2px;">
         </div>
       </div>
@@ -1103,7 +1131,7 @@ function resetLogo(){
   dp();
 }
 function imgH(w,natW,natH,def){return(!natW||!natH)?Math.round(w*def):Math.round(w*natH/natW);}
-function lh(w){return imgH(w,logoNatW,logoNatH,.4);}
+function lh(w){const [nw,nh]=imgMode==='host'?hostWH(hostUrl(el('hostLogo').value)):[logoNatW,logoNatH];return imgH(w,nw,nh,.4);}
 
 // ── BANNER ───────────────────────────────────────────────
 const bannerZone=document.getElementById('bannerZone');
@@ -1134,7 +1162,7 @@ function resetBanner(){
   document.getElementById('bannerZone').style.display='block';
   dp();
 }
-function bh(w){return imgH(w,bannerNatW,bannerNatH,1/6);}
+function bh(w){const [nw,nh]=imgMode==='host'?hostWH(hostUrl(el('hostBanner').value)):[bannerNatW,bannerNatH];return imgH(w,nw,nh,1/6);}
 function bWSync(v,fromNum){
   const s=document.getElementById('bannerW');
   const n=document.getElementById('bannerWNum');
@@ -1173,7 +1201,114 @@ function resetAccLogo(i){
   updAccHeightSlider();dp();
 }
 function updAccHeightSlider(){
-  document.getElementById('accHRow').style.display=accLogos.some(Boolean)?'flex':'none';
+  const any=imgMode==='host'?[0,1,2,3].some(i=>el('hostAcc'+i).value.trim()):accLogos.some(Boolean);
+  document.getElementById('accHRow').style.display=any?'flex':'none';
+}
+
+// ── IMAGE SOURCE: EMBED OR HOST ──────────────────────────
+// Embed stores images in the signature as data URLs. Outlook sends those as hidden
+// attachments, which get dropped on bounces and some forwards, leaving <img-…png>
+// placeholder text. Host links to images on a web server instead.
+let imgMode='embed';
+const hostProbe={}; // url -> {w,h} once loaded, 'err' if it failed, 'loading' meanwhile
+const SOCIAL_FILE={'LinkedIn':'linkedin','Twitter/X':'x','Facebook':'facebook','Instagram':'instagram','YouTube':'youtube','TikTok':'tiktok'};
+function hostBaseUrl(){
+  let b=(el('hostBase')?.value||'').trim();
+  if(!/^https?:\/\//i.test(b)) return '';
+  return b.endsWith('/')?b:b+'/';
+}
+// A full http(s) URL is used as is; anything else is a file name inside the folder URL.
+function hostUrl(v){
+  v=(v||'').trim(); if(!v) return '';
+  try{
+    const u=/^https?:\/\//i.test(v)?new URL(v):new URL(v.replace(/^\/+/,''),hostBaseUrl());
+    return /^https?:$/.test(u.protocol)?u.href.replace(/"/g,'%22'):'';
+  }catch(e){return '';}
+}
+function socialHostUrl(platform){
+  const b=hostBaseUrl();
+  return b&&SOCIAL_FILE[platform]?hostUrl('social-'+SOCIAL_FILE[platform]+'.png'):'';
+}
+function probe(url){
+  if(!url) return null;
+  if(!(url in hostProbe)){
+    hostProbe[url]='loading';
+    const img=new Image();
+    img.onload=()=>{hostProbe[url]={w:img.naturalWidth,h:img.naturalHeight};dp();};
+    img.onerror=()=>{hostProbe[url]='err';dp();};
+    img.src=url;
+  }
+  return hostProbe[url];
+}
+function hostWH(url){const p=hostProbe[url];return p&&p.w?[p.w,p.h]:[null,null];}
+// "adsmart-from-sky.png" -> "Adsmart From Sky", so blocked images still say what they are.
+function altFromUrl(url){
+  let n=url.split(/[?#]/)[0].split('/').pop()||'';
+  try{n=decodeURIComponent(n);}catch(e){}
+  return n.replace(/\.[a-z0-9]+$/i,'').replace(/[-_]+/g,' ').trim().replace(/\b\w/g,c=>c.toUpperCase())||'Accreditation';
+}
+function setImgMode(m){imgMode=m==='host'?'host':'embed';syncImgUI();dp();}
+function syncImgUI(){
+  const host=imgMode==='host';
+  document.querySelectorAll('input[name=imgMode]').forEach(r=>r.checked=r.value===imgMode);
+  el('imgModeHint').textContent=host?'Images are linked from your web server, so they survive bounces and forwards.':'Images are stored inside the signature.';
+  el('hostPanel').style.display=host?'block':'none';
+  document.querySelectorAll('.host-fld').forEach(f=>f.style.display=host?'block':'none');
+  document.querySelectorAll('.embed-only').forEach(b=>b.style.display=host?'none':'');
+  if(host){renderHostStatus(gd());return;}
+  // Back to embed: show the uploads exactly as they were.
+  el('logoZone').style.display=logoDataUrl?'none':'block';
+  el('logoResult').style.display=logoDataUrl?'block':'none';
+  el('logoThumb').src=logoDataUrl||'';
+  el('logoMeta').textContent=logoNatW?logoNatW+'×'+logoNatH+'px':'';
+  el('bannerZone').style.display=bannerDataUrl?'none':'block';
+  el('bannerResult').style.display=bannerDataUrl?'block':'none';
+  el('bannerThumb').src=bannerDataUrl||'';
+  el('bannerMeta').textContent=bannerNatW?bannerNatW+'×'+bannerNatH+'px':'';
+  [0,1,2,3].forEach(i=>{
+    el('accZone'+i).style.display=accLogos[i]?'none':'block';
+    el('accResult'+i).style.display=accLogos[i]?'flex':'none';
+    el('accThumb'+i).src=accLogos[i]||'';
+  });
+  updAccHeightSlider();
+}
+function renderHostStatus(d){
+  const dim=p=>p==='err'?'⚠ Not found':p&&p.w?p.w+'×'+p.h+'px':'Checking…';
+  const items=[['Logo',d.logo],['Banner',d.banner]];
+  el('logoZone').style.display='none';el('bannerZone').style.display='none';
+  el('logoResult').style.display=d.logo?'block':'none';
+  el('bannerResult').style.display=d.banner?'block':'none';
+  if(d.logo){el('logoThumb').src=d.logo;el('logoMeta').textContent=dim(probe(d.logo));}
+  if(d.banner){el('bannerThumb').src=d.banner;el('bannerMeta').textContent=dim(probe(d.banner));}
+  d.accLogos.forEach((u,i)=>{
+    el('accZone'+i).style.display='none';
+    el('accResult'+i).style.display=u?'flex':'none';
+    if(u){el('accThumb'+i).src=u;items.push(['Accreditation '+(i+1),u]);}
+  });
+  d.socials.forEach(s=>{const u=socialHostUrl(s.platform);if(u)items.push([s.platform+' icon',u]);});
+  updAccHeightSlider();
+  // Typed values that couldn't become a URL, because there's no folder URL yet.
+  const typed=['hostLogo','hostBanner','hostAcc0','hostAcc1','hostAcc2','hostAcc3'].some(id=>el(id).value.trim()&&!hostUrl(el(id).value));
+  const states=items.map(([label,u])=>[label,u,probe(u)]);
+  const bad=states.filter(s=>s[2]==='err');
+  let html='';
+  if(typed) html+='<div class="err">&#9888; Add the image folder URL above, or enter full image URLs (starting https://).</div>';
+  if(bad.length) html+='<div class="err">&#9888; Couldn\'t load: '+bad.map(s=>esc(s[0])+' (<code>'+esc(s[1])+'</code>)').join(', ')+'</div>';
+  else if(states.some(s=>s[2]==='loading')) html+='<div class="host-wait">Checking images…</div>';
+  else if(states.length) html+='<div class="host-ok">&#10003; All '+states.length+' hosted image'+(states.length===1?'':'s')+' found.</div>';
+  el('hostStatus').innerHTML=html;
+}
+function hostState(){
+  return{imgMode,hostBase:el('hostBase').value,hostFiles:{logo:el('hostLogo').value,banner:el('hostBanner').value,acc:[0,1,2,3].map(i=>el('hostAcc'+i).value)}};
+}
+function applyHostState(s){
+  const f=(s&&s.hostFiles)||{};
+  el('hostBase').value=s&&s.hostBase||'';
+  el('hostLogo').value=f.logo||'';
+  el('hostBanner').value=f.banner||'';
+  [0,1,2,3].forEach(i=>{el('hostAcc'+i).value=(f.acc&&f.acc[i])||'';});
+  imgMode=s&&s.imgMode==='host'?'host':'embed';
+  syncImgUI();
 }
 
 // ── TEMPLATE SELECTION ───────────────────────────────────
@@ -1217,6 +1352,7 @@ function gd(){
     url:row.querySelector('input[type=url]').value.trim(),
     show:row.querySelector('input[type=checkbox]').checked
   })).filter(s=>s.url&&s.show);
+  const host=imgMode==='host';
   return{
     name:document.getElementById('f_name').value.trim(),
     title:document.getElementById('f_title').value.trim(),
@@ -1225,9 +1361,10 @@ function gd(){
     website:document.getElementById('f_website').value.trim(),
     address:document.getElementById('f_address').value.trim(),
     phones,socials,
-    logo:logoDataUrl,
+    imgMode,
+    logo:host?hostUrl(el('hostLogo').value)||null:logoDataUrl,
     logoW:parseInt(document.getElementById('logoW').value)||150,
-    banner:bannerDataUrl,
+    banner:host?hostUrl(el('hostBanner').value)||null:bannerDataUrl,
     bannerW:parseInt(document.getElementById('bannerW').value)||600,
     font:document.getElementById('f_font').value,
     pri:document.getElementById('c_pri').value,
@@ -1243,7 +1380,7 @@ function gd(){
     disclaimer:document.getElementById('f_disclaimer').value.trim(),
     logoUrl:document.getElementById('logoUrl')?.value.trim()||'',
     bannerUrl:document.getElementById('bannerUrl')?.value.trim()||'',
-    accLogos:accLogos.slice(),
+    accLogos:host?[0,1,2,3].map(i=>hostUrl(el('hostAcc'+i).value)||null):accLogos.slice(),
     accUrls:[0,1,2,3].map(i=>document.getElementById('accUrl'+i)?.value.trim()||''),
     accH:parseInt(document.getElementById('accH')?.value)||40,
   };
@@ -1260,11 +1397,12 @@ function render(){
   const warnEl=document.getElementById('tmplWarn');
   let warn='';
   if(isBanner&&!d.banner){
-    warn='<div class="err">&#9888; This template requires a banner image. Upload one in Step 2 to enable export.</div>';
+    warn='<div class="err">&#9888; This template requires a banner image. Add one in Step 2 to enable export.</div>';
   }else if(needsBoth&&!d.logo){
-    warn='<div class="err">&#9888; This template uses both a banner and logo. Upload a logo in Step 2 to enable export.</div>';
+    warn='<div class="err">&#9888; This template uses both a banner and logo. Add a logo in Step 2 to enable export.</div>';
   }
   warnEl.innerHTML=warn;
+  if(imgMode==='host') renderHostStatus(d);
   const disabled=!!warn;
   ['cpDesk','dlDesk','cpMob','dlMob','cpUni','dlUni'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.disabled=disabled;
@@ -1314,7 +1452,7 @@ function socIcons(socials,size=20){
   if(!socials.length) return '';
   const cells=socials.map(s=>{
     const href=s.url.startsWith('http')?s.url:'https://'+s.url;
-    const src=icon(s.platform,size);
+    const src=(imgMode==='host'&&socialHostUrl(s.platform))||icon(s.platform,size);
     return `<td width="${size}" height="${size}" style="padding-right:4px;" valign="top"><a href="${esc(href)}" target="_blank" style="text-decoration:none;"><img src="${src}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:block;width:${size}px;height:${size}px;"></a></td>`;
   }).join('');
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;"><tr valign="top">${cells}</tr></table>`;
@@ -2662,7 +2800,12 @@ function accreditationsHtml(d){
   let cells='';
   (d.accLogos||[]).forEach((src,i)=>{
     if(!src) return;
-    const img=`<img src="${src}" height="${h}" border="0" alt="Accreditation" style="display:inline-block;height:${h}px;width:auto;">`;
+    // Hosted badges get a fixed width and a named alt, so the row holds its shape when images are blocked.
+    const [nw,nh]=d.imgMode==='host'?hostWH(src):[null,null];
+    const w=nw?Math.round(h*nw/nh):0;
+    const img=w
+      ?`<img src="${src}" width="${w}" height="${h}" border="0" alt="${esc(altFromUrl(src))}" style="display:inline-block;width:${w}px;height:${h}px;">`
+      :`<img src="${src}" height="${h}" border="0" alt="Accreditation" style="display:inline-block;height:${h}px;width:auto;">`;
     const rawUrl=urls[i];
     const url=rawUrl?(rawUrl.startsWith('http')?rawUrl:'https://'+rawUrl):null;
     const content=url?`<a href="${esc(url)}" target="_blank" style="text-decoration:none;">${img}</a>`:img;
@@ -3553,7 +3696,8 @@ function captureState(){
     icon_col:el('c_icon')?.value||'#555555',
     showIcons:el('f_showIcons')?.checked||false,
     logoUrl:el('logoUrl')?.value||'',bannerUrl:el('bannerUrl')?.value||'',
-    accLogos:accLogos.slice(),accUrls:[0,1,2,3].map(i=>el('accUrl'+i)?.value||''),accH:parseInt(el('accH')?.value)||40
+    accLogos:accLogos.slice(),accUrls:[0,1,2,3].map(i=>el('accUrl'+i)?.value||''),accH:parseInt(el('accH')?.value)||40,
+    ...hostState()
   };
 }
 
@@ -3617,6 +3761,7 @@ function applyState(state){
     updAccHeightSlider();
     if(state.accH!=null){const ah=el('accH');if(ah){ah.value=state.accH;const v=document.getElementById('accHVal');if(v)v.textContent=state.accH+'px';}}
   }
+  applyHostState(state);
   suppressHistory=false;
   render();
   updBadges();
@@ -3721,6 +3866,8 @@ function savePreset(){
     pri:d.pri,acc:d.acc,acc2:d.acc2,sec:d.sec,txt:d.txt,line:d.line,disc:d.disc,icon_col:d.icon_col,
     logoUrl:d.logoUrl,bannerUrl:d.bannerUrl,
     accLogos:accLogos.slice(),accUrls:d.accUrls,accH:d.accH,
+    // Embed or host, and the hosted image locations
+    ...hostState(),
     // Multiple tab batch data
     batchRows:[...batchRows],
     batchHeaders:[...batchHeaders],
@@ -3826,6 +3973,7 @@ function applyPreset(preset){
   });
   // Template
   if(preset.template) selTmpl(preset.template);
+  applyHostState(preset);
   dp();
 }
 
@@ -3916,6 +4064,12 @@ function sanitisePresetImages(p){
     if(p[k]&&!/^data:image\//i.test(p[k])) p[k]='';
   });
   if(Array.isArray(p.accLogos)) p.accLogos=p.accLogos.map(v=>(v&&/^data:image\//i.test(v))?v:'');
+  // Hosted locations are only ever turned into http(s) URLs by hostUrl(), but keep them plain strings.
+  const str=v=>typeof v==='string'?v.slice(0,500):'';
+  p.imgMode=p.imgMode==='host'?'host':'embed';
+  p.hostBase=str(p.hostBase);
+  const f=p.hostFiles&&typeof p.hostFiles==='object'?p.hostFiles:{};
+  p.hostFiles={logo:str(f.logo),banner:str(f.banner),acc:[0,1,2,3].map(i=>str(Array.isArray(f.acc)?f.acc[i]:''))};
   return p;
 }
 
