@@ -1083,7 +1083,7 @@ async function renderExportIcons(dh,mh){
 }
 // Batch export state
 let batchRows=[], batchHeaders=[];
-let batchColMap={name:'',title:'',company:'',email:'',website:'',phone:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
+let batchColMap={name:'',title:'',company:'',email:'',website:'',phone:'',mobile:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
 let accLogos=[null,null,null,null];
 
 // ── PHONE ROWS ───────────────────────────────────────────
@@ -3475,6 +3475,7 @@ const BATCH_FIELDS=[
   {key:'email',      label:'Email'},
   {key:'website',    label:'Website'},
   {key:'phone',      label:'Phone'},
+  {key:'mobile',     label:'Mobile'},
   {key:'linkedin',   label:'LinkedIn'},
   {key:'twitter',    label:'Twitter / X'},
   {key:'facebook',   label:'Facebook'},
@@ -3489,7 +3490,8 @@ const BATCH_ALIASES={
   company:    ['company','organisation','organization','employer','org','business'],
   email:      ['email','e-mail','email address','emailaddress'],
   website:    ['website','url','web','site','web address'],
-  phone:      ['phone','mobile','tel','telephone','cell','contact number'],
+  phone:      ['phone','tel','telephone','landline','office','office phone','work phone','direct dial','ddi','phone number','contact number'],
+  mobile:     ['mobile','mobile phone','mobile number','mob','cell','cell phone','cellphone'],
   linkedin:   ['linkedin','linkedin url','linkedin profile'],
   twitter:    ['twitter','twitter/x','x','twitter url','x url','twitter profile'],
   facebook:   ['facebook','facebook url','facebook profile'],
@@ -3501,7 +3503,7 @@ const BATCH_ALIASES={
 const SOCIAL_KEY_TO_PLAT={linkedin:'LinkedIn',twitter:'Twitter/X',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
 
 function batchAutoMap(headers){
-  const map={name:'',title:'',company:'',email:'',website:'',phone:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
+  const map={name:'',title:'',company:'',email:'',website:'',phone:'',mobile:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
   BATCH_FIELDS.forEach(({key})=>{
     const aliases=BATCH_ALIASES[key];
     const found=headers.find(h=>aliases.includes(h.toLowerCase().trim()));
@@ -3576,7 +3578,7 @@ function loadBatchData({headers,rows}){
 
 function renderBatchMap(){
   const groups=[
-    {label:'Contact details', keys:['name','title','company','email','website','phone','disclaimer']},
+    {label:'Contact details', keys:['name','title','company','email','website','phone','mobile','disclaimer']},
     {label:'Social accounts',  keys:['linkedin','twitter','facebook','instagram','youtube','tiktok']},
   ];
   function sel(key){
@@ -3608,9 +3610,11 @@ function batchMerge(d,row){
     const col=batchColMap[key];
     if(col&&row[col]!==undefined&&row[col]!=='') out[key]=String(row[col]).trim();
   });
-  if(batchColMap.phone&&row[batchColMap.phone]){
-    const ph=String(row[batchColMap.phone]).trim();
-    if(ph) out.phones=[ph,...(out.phones||[]).slice(1)];
+  // Phone columns are per-person: when either is mapped, the row's numbers replace the editor's
+  // entirely, so blanks stay blank and nobody inherits another slot's number.
+  if(batchColMap.phone||batchColMap.mobile){
+    const nums=['phone','mobile'].map(k=>batchColMap[k]?String(row[batchColMap[k]]??'').trim():'').filter(Boolean);
+    out.phones=nums.filter((n,i)=>nums.findIndex(m=>m.replace(/\s/g,'')===n.replace(/\s/g,''))===i);
   }
   const batchSocials=Object.entries(SOCIAL_KEY_TO_PLAT)
     .filter(([key])=>batchColMap[key]&&row[batchColMap[key]]&&String(row[batchColMap[key]]).trim())
@@ -3659,17 +3663,17 @@ async function downloadBatchAll(fmt){
 }
 
 function downloadBatchTemplate(){
-  const headers=['Name','Job Title','Company','Email','Website','Phone','LinkedIn','Twitter','Facebook','Instagram','YouTube','TikTok','Disclaimer'];
-  const example=['Jane Smith','Senior Designer','Acme Corp','jane@acme.com','https://acme.com','+44 20 1234 5678','https://linkedin.com/in/janesmith','https://x.com/janesmith','','','','','Company Reg: 12345678. This email is confidential.'];
+  const headers=['Name','Job Title','Company','Email','Website','Phone','Mobile','LinkedIn','Twitter','Facebook','Instagram','YouTube','TikTok','Disclaimer'];
+  const example=['Jane Smith','Senior Designer','Acme Corp','jane@acme.com','https://acme.com','+44 20 1234 5678','+44 7700 900123','https://linkedin.com/in/janesmith','https://x.com/janesmith','','','','','Company Reg: 12345678. This email is confidential.'];
   const ws=XLSX.utils.aoa_to_sheet([headers,example]);
-  ws['!cols']=headers.map((_,i)=>({wch:i===12?40:22}));
+  ws['!cols']=headers.map((_,i)=>({wch:i===headers.length-1?40:22}));
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Signatures');
   XLSX.writeFile(wb,'signature-template.xlsx');
 }
 
 function clearBatch(){
-  batchRows=[]; batchHeaders=[]; batchColMap={name:'',title:'',company:'',email:'',website:'',phone:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
+  batchRows=[]; batchHeaders=[]; batchColMap={name:'',title:'',company:'',email:'',website:'',phone:'',mobile:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
   document.getElementById('batchFile').value='';
   document.getElementById('batchUploadGrid').style.display='grid';
   document.getElementById('batchResult').style.display='none';
@@ -3909,7 +3913,7 @@ function applyPreset(preset){
   if(preset.batchRows&&preset.batchRows.length){
     batchRows=preset.batchRows;
     batchHeaders=preset.batchHeaders||[];
-    batchColMap=Object.assign({name:'',title:'',company:'',email:'',website:'',phone:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''},preset.batchColMap);
+    batchColMap=Object.assign({name:'',title:'',company:'',email:'',website:'',phone:'',mobile:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''},preset.batchColMap);
     document.getElementById('batchUploadGrid').style.display='none';
     document.getElementById('batchResult').style.display='block';
     document.getElementById('stepBatchDlEmpty').style.display='none';
