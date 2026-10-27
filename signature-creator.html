@@ -558,6 +558,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
             <div>
               <div class="swatches" id="swatchList"></div>
               <button class="apply-btn" onclick="applyExtracted()">Apply colours to signature</button>
+              <button class="btn-sm" onclick="rescanColours()" style="margin-top:6px;">Scan another image</button>
               <div class="scan-hint" id="scanHint"></div>
             </div>
           </div>
@@ -603,6 +604,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
             <label>Icons <span style="font-weight:400;color:#6b8090;">social &amp; contact</span></label>
             <input type="color" id="c_icon" value="#555555" oninput="syncH('c_icon','h_icon');dp()">
             <input type="text" class="hex-in" id="h_icon" value="#555555" oninput="syncP('h_icon','c_icon')">
+            <div class="host-fld" style="display:none;font-size:10px;color:#8a9baa;margin-top:4px;line-height:1.4;">Host mode: hosted icons keep the colour of the uploaded files.</div>
           </div>
         </div>
       </div>
@@ -974,6 +976,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
       <input type="text" class="preset-name-in" id="presetNameIn" placeholder="e.g. Acme Corp, Client A…" maxlength="60">
       <button class="btn-dl" onclick="savePreset()">Save Preset</button>
     </div>
+    <label id="presetBatchRow" style="display:none;align-items:center;gap:6px;font-size:12px;color:#3a5268;margin:-6px 0 12px;cursor:pointer;"><input type="checkbox" id="presetIncludeBatch" style="width:14px;height:14px;accent-color:#00aeef;"> Include the uploaded staff list (names, emails and phone numbers are saved with the preset and go into any downloaded preset file)</label>
     <div class="preset-io-row">
       <button class="preset-exp-btn" onclick="document.getElementById('presetImportIn').click()">Upload Preset File</button>
       <button class="preset-exp-btn" onclick="exportAllPresets()">Download All Presets</button>
@@ -1038,7 +1041,7 @@ textarea.field-ta::placeholder{color:#7a92a8}
 // ── STATE ────────────────────────────────────────────────
 let logoDataUrl=null, logoNatW=null, logoNatH=null;
 let bannerDataUrl=null, bannerNatW=null, bannerNatH=null;
-let prevTimer=null;
+let prevTimer=null, renderPending=false, exportBlocked=false, batchExporting=false;
 let currentTemplate='classic-left';
 const iconCache={};
 // Outlook for Windows can't draw SVG, so every exported signature has its SVG
@@ -1049,13 +1052,17 @@ function svgToPng(src,w,h){
   if(!svgPngCache[k]) svgPngCache[k]=new Promise(resolve=>{
     const img=new Image();
     img.onload=()=>{
-      const cw=w||img.naturalWidth||20, ch=h||img.naturalHeight||cw;
-      const canvas=document.createElement('canvas');
-      canvas.width=cw*2;canvas.height=ch*2;
-      canvas.getContext('2d').drawImage(img,0,0,cw*2,ch*2);
-      resolve(canvas.toDataURL('image/png'));
+      // Fill in a missing dimension from the natural aspect ratio so height-only badges don't stretch
+      const nw=img.naturalWidth||20, nh=img.naturalHeight||nw;
+      const cw=w||(h?Math.round(h*nw/nh):nw), ch=h||(w?Math.round(w*nh/nw):nh);
+      try{
+        const canvas=document.createElement('canvas');
+        canvas.width=cw*2;canvas.height=ch*2;
+        canvas.getContext('2d').drawImage(img,0,0,cw*2,ch*2);
+        resolve(canvas.toDataURL('image/png'));
+      }catch(e){ resolve(null); }
     };
-    img.onerror=()=>resolve(src);
+    img.onerror=()=>resolve(null);
     img.src=src;
   });
   return svgPngCache[k];
@@ -1065,25 +1072,50 @@ async function rasterSvgs(html){
   const out=await Promise.all(tags.map(async t=>{
     const src=t.match(/\bsrc="([^"]*)"/)[1];
     const w=parseInt((t.match(/\bwidth="(\d+)"/)||[])[1])||0, h=parseInt((t.match(/\bheight="(\d+)"/)||[])[1])||0;
-    return t.replace(src,await svgToPng(src,w,h));
+    const png=await svgToPng(src,w,h);
+    // An SVG that can't be converted is dropped rather than shipped as a broken box in Outlook
+    if(!png){ rasterFailed=true; return ''; }
+    return t.replace(src,png);
   }));
   tags.forEach((t,i)=>{html=html.split(t).join(out[i]);});
   return html;
 }
+let rasterFailed=false;
 let exportSeq=0, exportReady=Promise.resolve();
 async function renderExportIcons(dh,mh){
   const seq=++exportSeq;
+  rasterFailed=false;
   const [dhE,mhE]=await Promise.all([rasterSvgs(dh),rasterSvgs(mh)]);
   if(seq!==exportSeq) return; // a newer render has started
+  const uhE=genUni(dhE,mhE);
   document.getElementById('deskPrev').innerHTML=dhE;
   document.getElementById('mobPrev').innerHTML=mhE;
   document.getElementById('deskCode').value=dhE;
   document.getElementById('mobCode').value=mhE;
-  document.getElementById('uniCode').value=genUni(dhE,mhE);
+  document.getElementById('uniCode').value=uhE;
+  updSizeInfo(dhE,mhE,uhE);
+}
+// Sizes of what actually gets exported (after SVG → PNG), not the preview HTML.
+function updSizeInfo(dh,mh,uh){
+  const sizeEl=document.getElementById('sigSizeInfo');
+  if(!sizeEl) return;
+  const kb=h=>(new Blob([h]).size/1024).toFixed(1);
+  const flag=c=>{const n=parseFloat(c);return n>100?' <span style="color:#c00;font-weight:600;" title="Very large — replace base64 images with hosted URLs">&#9888;</span>':n>50?' <span style="color:#e67e22;font-weight:600;" title="Large file — some email clients may block images over 50KB">&#9888;</span>':''};
+  const [dkb,mkb,ukb]=[kb(dh),kb(mh),kb(uh)];
+  sizeEl.innerHTML=`Desktop&nbsp;<strong>${dkb}KB</strong>${flag(dkb)}&ensp;Mobile&nbsp;<strong>${mkb}KB</strong>${flag(mkb)}&ensp;Universal&nbsp;<strong>${ukb}KB</strong>${flag(ukb)}`
+    +(rasterFailed?'<br><span style="color:#c00;">&#9888; An SVG image couldn\'t be converted for Outlook and was left out. Try a PNG or JPG instead.</span>':'');
+  sizeEl.style.display='block';
+}
+// Resolves once the newest render's Outlook-safe HTML is in the code boxes, running any
+// render still waiting on the typing debounce first.
+async function exportSettled(){
+  if(renderPending){clearTimeout(prevTimer);render();}
+  let p;
+  do{p=exportReady;await p;}while(p!==exportReady);
 }
 // Batch export state
 let batchRows=[], batchHeaders=[];
-let batchColMap={name:'',title:'',company:'',email:'',website:'',phone:'',mobile:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
+let batchColMap={}; // filled from BATCH_FIELDS by emptyColMap()
 let accLogos=[null,null,null,null];
 
 // ── PHONE ROWS ───────────────────────────────────────────
@@ -1121,7 +1153,7 @@ function loadLogoFile(file){
     logoDataUrl=e.target.result;
     document.getElementById('logoThumb').src=logoDataUrl;
     const img=new Image();
-    img.onload=()=>{logoNatW=img.naturalWidth;logoNatH=img.naturalHeight;const m=document.getElementById('logoMeta');if(m)m.textContent=logoNatW+'×'+logoNatH+'px';dp();};
+    img.onload=()=>{logoNatW=img.naturalWidth;logoNatH=img.naturalHeight;imgDims[img.src]=[logoNatW,logoNatH];const m=document.getElementById('logoMeta');if(m)m.textContent=logoNatW+'×'+logoNatH+'px';dp();};
     img.src=logoDataUrl;
     document.getElementById('logoZone').style.display='none';
     document.getElementById('logoResult').style.display='block';
@@ -1137,7 +1169,21 @@ function resetLogo(){
   dp();
 }
 function imgH(w,natW,natH,def){return(!natW||!natH)?Math.round(w*def):Math.round(w*natH/natW);}
-function lh(w){const [nw,nh]=imgMode==='host'?hostWH(hostUrl(el('hostLogo').value)):[logoNatW,logoNatH];return imgH(w,nw,nh,.4);}
+// Natural size of an embedded image, keyed by its data URL so images restored by undo or a
+// preset get the right aspect ratio too. Unknown sizes load in the background and re-render.
+const imgDims={};
+function dataDims(src){
+  if(!src) return [null,null];
+  if(!imgDims[src]){
+    imgDims[src]='loading';
+    const img=new Image();
+    img.onload=()=>{imgDims[src]=[img.naturalWidth,img.naturalHeight];dp();};
+    img.onerror=()=>{imgDims[src]=[null,null];};
+    img.src=src;
+  }
+  return Array.isArray(imgDims[src])?imgDims[src]:[null,null];
+}
+function lh(w){const [nw,nh]=imgMode==='host'?hostWH(hostUrl(el('hostLogo').value)):dataDims(logoDataUrl);return imgH(w,nw,nh,.4);}
 
 // ── BANNER ───────────────────────────────────────────────
 const bannerZone=document.getElementById('bannerZone');
@@ -1153,7 +1199,7 @@ function loadBannerFile(file){
     bannerDataUrl=e.target.result;
     document.getElementById('bannerThumb').src=bannerDataUrl;
     const img=new Image();
-    img.onload=()=>{bannerNatW=img.naturalWidth;bannerNatH=img.naturalHeight;const m=document.getElementById('bannerMeta');if(m)m.textContent=bannerNatW+'×'+bannerNatH+'px';dp();};
+    img.onload=()=>{bannerNatW=img.naturalWidth;bannerNatH=img.naturalHeight;imgDims[img.src]=[bannerNatW,bannerNatH];const m=document.getElementById('bannerMeta');if(m)m.textContent=bannerNatW+'×'+bannerNatH+'px';dp();};
     img.src=bannerDataUrl;
     document.getElementById('bannerZone').style.display='none';
     document.getElementById('bannerResult').style.display='block';
@@ -1168,7 +1214,7 @@ function resetBanner(){
   document.getElementById('bannerZone').style.display='block';
   dp();
 }
-function bh(w){const [nw,nh]=imgMode==='host'?hostWH(hostUrl(el('hostBanner').value)):[bannerNatW,bannerNatH];return imgH(w,nw,nh,1/6);}
+function bh(w){const [nw,nh]=imgMode==='host'?hostWH(hostUrl(el('hostBanner').value)):dataDims(bannerDataUrl);return imgH(w,nw,nh,1/6);}
 function bWSync(v,fromNum){
   const s=document.getElementById('bannerW');
   const n=document.getElementById('bannerWNum');
@@ -1235,13 +1281,16 @@ function socialHostUrl(platform){
   const b=hostBaseUrl();
   return b&&SOCIAL_FILE[platform]?hostUrl('social-'+SOCIAL_FILE[platform]+'.png'):'';
 }
+const hostErrAt={};
 function probe(url){
   if(!url) return null;
+  // A failed check is retried after 10s, so an image uploaded after it was typed gets picked up
+  if(hostProbe[url]==='err'&&Date.now()-hostErrAt[url]>10000) delete hostProbe[url];
   if(!(url in hostProbe)){
     hostProbe[url]='loading';
     const img=new Image();
     img.onload=()=>{hostProbe[url]={w:img.naturalWidth,h:img.naturalHeight};dp();};
-    img.onerror=()=>{hostProbe[url]='err';dp();};
+    img.onerror=()=>{hostProbe[url]='err';hostErrAt[url]=Date.now();dp();};
     img.src=url;
   }
   return hostProbe[url];
@@ -1292,6 +1341,9 @@ function renderHostStatus(d){
     if(u){el('accThumb'+i).src=u;items.push(['Accreditation '+(i+1),u]);}
   });
   d.socials.forEach(s=>{const u=socialHostUrl(s.platform);if(u)items.push([s.platform+' icon',u]);});
+  // Contact icons are only looked up when shown, and fall back to embedded ones if missing
+  const used=d.showIcons?Object.keys(CONTACT_TYPES).filter(t=>t==='phone'?d.phones.length:d[t]):[];
+  const iconStates=used.map(t=>[CONTACT_TYPES[t]+' contact icon',contactHostUrl(t),probe(contactHostUrl(t))]).filter(x=>x[1]);
   updAccHeightSlider();
   // Typed values that couldn't become a URL, because there's no folder URL yet.
   const typed=['hostLogo','hostBanner','hostAcc0','hostAcc1','hostAcc2','hostAcc3'].some(id=>el(id).value.trim()&&!hostUrl(el(id).value));
@@ -1302,6 +1354,8 @@ function renderHostStatus(d){
   if(bad.length) html+='<div class="err">&#9888; Couldn\'t load: '+bad.map(s=>esc(s[0])+' (<code>'+esc(s[1])+'</code>)').join(', ')+'</div>';
   else if(states.some(s=>s[2]==='loading')) html+='<div class="host-wait">Checking images…</div>';
   else if(states.length) html+='<div class="host-ok">&#10003; All '+states.length+' hosted image'+(states.length===1?'':'s')+' found.</div>';
+  const missingIcons=iconStates.filter(x=>x[2]==='err');
+  if(missingIcons.length) html+='<div class="err">&#9888; Contact icons are still embedded, so they can still turn into attachments on bounces and forwards. Upload '+missingIcons.map(x=>'<code>'+esc(x[1].split('/').pop())+'</code>').join(', ')+' to the image folder, or turn contact icons off.</div>';
   el('hostStatus').innerHTML=html;
 }
 function hostState(){
@@ -1319,6 +1373,8 @@ function applyHostState(s){
 
 // ── TEMPLATE SELECTION ───────────────────────────────────
 function selTmpl(id){
+  // An unknown id (old preset, typo) falls back to Classic Left so the selected card matches what renders
+  if(!document.querySelector(`.tmpl-card input[type=radio][value="${CSS.escape(String(id))}"]`)) id='classic-left';
   currentTemplate=id;
   document.querySelectorAll('.tmpl-card').forEach(c=>{
     const r=c.querySelector('input[type=radio]');
@@ -1393,9 +1449,10 @@ function gd(){
 }
 
 // ── PREVIEW DEBOUNCE ─────────────────────────────────────
-function dp(){clearTimeout(prevTimer);prevTimer=setTimeout(render,200);}
+function dp(){clearTimeout(prevTimer);renderPending=true;prevTimer=setTimeout(render,200);}
 
 function render(){
+  renderPending=false;
   let d=gd();
   if(batchRows.length>0) d=batchMerge(d,batchRows[0]);
   const isBanner=isBannerTmpl(currentTemplate);
@@ -1409,35 +1466,33 @@ function render(){
   }
   warnEl.innerHTML=warn;
   if(imgMode==='host') renderHostStatus(d);
+  const pbr=el('presetBatchRow');if(pbr)pbr.style.display=batchRows.length?'flex':'none';
   const disabled=!!warn;
+  exportBlocked=disabled;
   ['cpDesk','dlDesk','cpMob','dlMob','cpUni','dlUni'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.disabled=disabled;
   });
-  const acc=accreditationsHtml(d);
-  const disc=disclaimerHtml(d);
-  const dh=withFont(d,fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc)), mh=withFont(d,fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc)), uh=genUni(dh,mh);
+  if(!batchExporting) document.querySelectorAll('.batch-dl-btn').forEach(b=>b.disabled=disabled);
+  const {dh,mh}=buildSigs(d), uh=genUni(dh,mh);
   document.getElementById('deskPrev').innerHTML=dh;
   document.getElementById('mobPrev').innerHTML=mh;
   document.getElementById('deskCode').value=dh;
   document.getElementById('mobCode').value=mh;
   document.getElementById('uniCode').value=uh;
   exportReady=renderExportIcons(dh,mh);
-  // Update size indicator
-  const sizeEl=document.getElementById('sigSizeInfo');
-  if(sizeEl){
-    const dkb=(new Blob([dh]).size/1024).toFixed(1);
-    const mkb=(new Blob([mh]).size/1024).toFixed(1);
-    const ukb=(new Blob([uh]).size/1024).toFixed(1);
-    const flag=c=>{const n=parseFloat(c);return n>50?' <span style="color:#e67e22;font-weight:600;" title="Large file — some email clients may block images over 50KB">&#9888;</span>':n>100?' <span style="color:#c00;font-weight:600;" title="Very large — replace base64 images with hosted URLs">&#9888;</span>':''};
-    sizeEl.innerHTML=`Desktop&nbsp;<strong>${dkb}KB</strong>${flag(dkb)}&ensp;Mobile&nbsp;<strong>${mkb}KB</strong>${flag(mkb)}&ensp;Universal&nbsp;<strong>${ukb}KB</strong>${flag(ukb)}`;
-    sizeEl.style.display='block';
-  }
   // Push to undo history
   if(!suppressHistory) pushHistory(captureState());
 }
 
 // ── HELPERS ──────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// Link targets for typed contact details. Websites get https:// unless they already have a scheme
+// (case-insensitive); phone links keep only digits and +, dropping the UK "(0)" that would misdial.
+function urlHref(u){u=String(u||'').trim();return /^https?:\/\//i.test(u)?u:'https://'+u.replace(/^\/+/,'');}
+function telHref(p){return String(p||'').replace(/\(0\)/g,'').replace(/[^\d+]/g,'');}
+// Logo-only templates use a fixed width; only banner templates follow the banner width slider.
+const SIG_W=600;
+function hasContacts(d){return !!(d.phones.length||d.email||d.website||d.address);}
 
 const GOOGLE_FONTS={'Inter':'Inter:wght@400;500;600;700','Lexend Zetta':'Lexend+Zetta:wght@400;500;600;700','Manrope':'Manrope:wght@400;500;600;700'};
 // Fonts Outlook for Windows won't have installed. Its Word engine doesn't walk the
@@ -1454,18 +1509,25 @@ function withFont(d,html){
 }
 
 
-function socIcons(socials,size=20){
+function socIcons(socials,size=20,align){
   if(!socials.length) return '';
   const cells=socials.map(s=>{
-    const href=s.url.startsWith('http')?s.url:'https://'+s.url;
+    const href=urlHref(s.url);
     const src=(imgMode==='host'&&socialHostUrl(s.platform))||icon(s.platform,size);
     return `<td width="${size}" height="${size}" style="padding-right:4px;" valign="top"><a href="${esc(href)}" target="_blank" style="text-decoration:none;"><img src="${src}" width="${size}" height="${size}" border="0" alt="${esc(s.platform)}" style="display:block;width:${size}px;height:${size}px;"></a></td>`;
   }).join('');
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;"><tr valign="top">${cells}</tr></table>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0"${align?` align="${align}"`:''} style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;"><tr valign="top">${cells}</tr></table>`;
 }
 
-// Contact detail icons (inline SVG data URIs)
+// Contact detail icons: in Host mode, contact-<type>.png from the image folder once it's found there;
+// otherwise an inline SVG data URI (rasterised to PNG on export).
+const CONTACT_TYPES={phone:'Phone',email:'Email',website:'Website',address:'Address'};
+function contactHostUrl(type){return hostBaseUrl()&&CONTACT_TYPES[type]?hostUrl('contact-'+type+'.png'):'';}
 function contactIcon(type,color,size=14){
+  if(imgMode==='host'){
+    const u=contactHostUrl(type), pr=probe(u);
+    if(pr&&pr.w) return `<img src="${u}" width="${size}" height="${size}" border="0" alt="" style="display:inline-block;vertical-align:middle;width:${size}px;height:${size}px;">`;
+  }
   let body='';
   switch(type){
     case 'phone': body=`<path d="M3 2.5h2l1.5 3-1.5 1C5.8 8.2 7.8 10.2 9.5 11l1-1.5 3 1.5v1.5c0 .3-.2.5-.5.5C5.5 14 2 10.5 2 3c0-.3.2-.5.5-.5z" fill="none" stroke="${color}" stroke-width="1.3" stroke-linejoin="round"/>`; break;
@@ -1482,14 +1544,14 @@ function contactCells(d,fs=12){
   const sp=`text-decoration:none !important;-webkit-text-decoration:none;color:${d.txt};white-space:nowrap;`;
   const sep=`<td style="padding:0 8px;color:${d.sep};font-size:${fs}px;font-family:${d.font},Arial,sans-serif;white-space:nowrap;">|</td>`;
   const items=[];
-  d.phones.forEach(p=>items.push(`<td style="white-space:nowrap;" nowrap><a href="tel:${esc(p.replace(/\s/g,''))}" x-apple-data-detectors="false" style="${ls}"><nobr><span style="${sp}">${esc(p).replace(/ /g,'&nbsp;')}</span></nobr></a></td>`));
+  d.phones.forEach(p=>items.push(`<td style="white-space:nowrap;" nowrap><a href="tel:${esc(telHref(p))}" x-apple-data-detectors="false" style="${ls}"><nobr><span style="${sp}">${esc(p).replace(/ /g,'&nbsp;')}</span></nobr></a></td>`));
   if(d.email) items.push(`<td style="white-space:nowrap;" nowrap><a href="mailto:${esc(d.email)}" x-apple-data-detectors="false" style="${ls}"><nobr><span style="${sp}">${esc(d.email)}</span></nobr></a></td>`);
   if(d.website){
-    const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');
-    const href=d.website.startsWith('http')?d.website:'https://'+d.website;
+    const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');
+    const href=urlHref(d.website);
     items.push(`<td style="white-space:nowrap;" nowrap><a href="${esc(href)}" x-apple-data-detectors="false" style="${ls}"><nobr><span style="${sp}">${esc(disp)}</span></nobr></a></td>`);
   }
-  if(d.address) items.push(`<td style="${ls}" nowrap>${esc(d.address)}</td>`);
+  if(d.address) items.push(`<td style="${ls.replace('white-space:nowrap;','')}">${esc(d.address)}</td>`);
   return items.join(sep);
 }
 
@@ -1507,14 +1569,14 @@ function tmplClassicLeft(d){
   const lw=d.logoW, lhv=lh(lw);
   const soc=socIcons(d.socials,20);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const hasI=d.name||d.title||d.company;
   const logoCol=d.logo?`
       <td width="${lw}" style="padding-right:20px;vertical-align:top;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>
       <td width="18" style="width:18px;font-size:0;line-height:0;">&nbsp;</td>
       <td width="2" bgcolor="${d.acc}" height="${lhv}" style="width:2px;height:${lhv}px;background-color:${d.acc};font-size:0;line-height:0;vertical-align:top;">&nbsp;</td>
       <td width="18" style="width:18px;font-size:0;line-height:0;">&nbsp;</td>`:'';
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>${logoCol}
     <td style="vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
@@ -1534,18 +1596,19 @@ function tmplClassicLeft(d){
 function tmplStackedCentre(d){
   const lw=Math.min(d.logoW,180), lhv=d.logo?lh(lw):0;
   const soc=socIcons(d.socials,20);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const rows=[];
   if(d.logo) rows.push(`<tr><td style="padding-bottom:10px;text-align:center;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:inline-block;width:${lw}px;height:${lhv}px;"></td></tr>`);
   if(d.name) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:2px;text-align:center;line-height:1.2;">${esc(d.name)}</td></tr>`);
   if(d.title) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;text-align:center;">${esc(d.title)}</td></tr>`);
   if(d.company) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:9px;text-align:center;">${esc(d.company)}</td></tr>`);
   if((d.name||d.title||d.company)&&hasC) rows.push(`<tr><td style="border-top:1px solid ${d.line};padding-bottom:10px;font-size:0;line-height:0;">&nbsp;</td></tr>`);
-  d.phones.forEach(p=>rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:3px;text-align:center;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};text-decoration:none;">${esc(p)}</a></td></tr>`));
-  if(d.email) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;"><a href="mailto:${esc(d.email)}" style="color:${d.txt};text-decoration:none;">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;"><a href="${esc(href)}" style="color:${d.txt};text-decoration:none;">${esc(disp)}</a></td></tr>`);}
+  d.phones.forEach(p=>rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:3px;text-align:center;white-space:nowrap;" nowrap><a href="tel:${esc(telHref(p))}" style="color:${d.txt};text-decoration:none;">${esc(p)}</a></td></tr>`));
+  if(d.email) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;white-space:nowrap;" nowrap><a href="mailto:${esc(d.email)}" style="color:${d.txt};text-decoration:none;">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;white-space:nowrap;" nowrap><a href="${esc(href)}" style="color:${d.txt};text-decoration:none;">${esc(disp)}</a></td></tr>`);}
+  if(d.address) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;color:${d.txt};">${esc(d.address)}</td></tr>`);
   if(soc) rows.push(`<tr><td style="padding-top:8px;text-align:center;">${soc}</td></tr>`);
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;
 }
 
 // ── TEMPLATE 3: Right Logo ────────────────────────────────
@@ -1553,10 +1616,10 @@ function tmplRightLogo(d){
   const lw=d.logoW, lhv=lh(lw);
   const soc=socIcons(d.socials,20);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const logoCol=d.logo?`
       <td width="${lw}" style="padding-left:20px;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>`:'';
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
     <td style="vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
@@ -1578,13 +1641,13 @@ function tmplBoldBlock(d){
   const lw=d.logoW, lhv=lh(lw);
   const soc=socIcons(d.socials,20);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  const hasC=hasContacts(d);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
     ${d.logo?`<td width="${lw}" style="padding-right:16px;vertical-align:top;padding-top:4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>`:''}
     <td style="vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-        ${(d.name||d.title||d.company)?`<tr><td style="background:${d.acc};padding:10px 16px;border-radius:4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        ${(d.name||d.title||d.company)?`<tr><td bgcolor="${d.acc}" style="background-color:${d.acc};padding:10px 16px;border-radius:4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">
           ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:20px;font-weight:bold;color:#ffffff;line-height:1.2;padding-bottom:2px;">${esc(d.name)}</td></tr>`:''}
           ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:#ffffff;padding-bottom:1px;">${esc(d.title)}</td></tr>`:''}
           ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:#e0e0e0;">${esc(d.company)}</td></tr>`:''}
@@ -1601,7 +1664,7 @@ function tmplBoldBlock(d){
 function tmplBannerClassic(d){
   const soc=socIcons(d.socials,20);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const hasI=d.name||d.title||d.company;
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${bannerRow(d)}
@@ -1617,7 +1680,7 @@ function tmplBannerClassic(d){
 // ── TEMPLATE 6: Banner Centred ────────────────────────────
 function tmplBannerCentred(d){
   const soc=socIcons(d.socials,20);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const bw=d.bannerW, bhv=bh(bw);
   const rows=[];
   if(d.banner){
@@ -1629,9 +1692,10 @@ function tmplBannerCentred(d){
   if(d.title) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:10px;text-align:center;">${esc(d.title)}</td></tr>`);
   if(d.company) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:10px;text-align:center;">${esc(d.company)}</td></tr>`);
   if((d.name||d.title||d.company)&&hasC) rows.push(`<tr><td style="border-top:1px solid ${d.line};padding-bottom:10px;font-size:0;line-height:0;">&nbsp;</td></tr>`);
-  d.phones.forEach(p=>rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:3px;text-align:center;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};text-decoration:none;">${esc(p)}</a></td></tr>`));
-  if(d.email) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;"><a href="mailto:${esc(d.email)}" style="color:${d.txt};text-decoration:none;">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;"><a href="${esc(href)}" style="color:${d.txt};text-decoration:none;">${esc(disp)}</a></td></tr>`);}
+  d.phones.forEach(p=>rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:3px;text-align:center;white-space:nowrap;" nowrap><a href="tel:${esc(telHref(p))}" style="color:${d.txt};text-decoration:none;">${esc(p)}</a></td></tr>`));
+  if(d.email) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;white-space:nowrap;" nowrap><a href="mailto:${esc(d.email)}" style="color:${d.txt};text-decoration:none;">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;white-space:nowrap;" nowrap><a href="${esc(href)}" style="color:${d.txt};text-decoration:none;">${esc(disp)}</a></td></tr>`);}
+  if(d.address) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;color:${d.txt};">${esc(d.address)}</td></tr>`);
   if(soc) rows.push(`<tr><td style="padding-top:8px;text-align:center;">${soc}</td></tr>`);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;
 }
@@ -1641,7 +1705,7 @@ function tmplBannerPlusLogo(d){
   const lw=d.logoW, lhv=lh(lw);
   const soc=socIcons(d.socials,20);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const hasI=d.name||d.title||d.company;
   const logoCol=d.logo?`
       <td width="${lw}" style="padding-right:20px;vertical-align:top;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>
@@ -1669,10 +1733,10 @@ function tmplBannerPlusLogo(d){
 function tmplBannerBold(d){
   const soc=socIcons(d.socials,20);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${bannerRow(d)}
-  ${(d.name||d.title||d.company)?`<tr><td style="background:${d.acc};padding:10px 16px;border-radius:4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">
+  ${(d.name||d.title||d.company)?`<tr><td bgcolor="${d.acc}" style="background-color:${d.acc};padding:10px 16px;border-radius:4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">
     ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:20px;font-weight:bold;color:#ffffff;line-height:1.2;padding-bottom:2px;">${esc(d.name)}</td></tr>`:''}
     ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:#ffffff;padding-bottom:1px;">${esc(d.title)}</td></tr>`:''}
     ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:#e0e0e0;">${esc(d.company)}</td></tr>`:''}
@@ -1686,7 +1750,7 @@ function tmplBannerBold(d){
 function tmplMinimal(d){
   const lw=Math.min(d.logoW,120), lhv=d.logo?lh(lw):0;
   const soc=socIcons(d.socials,18);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const cc=contactCells(d,11);
   const rows=[];
   if(d.logo) rows.push(`<tr><td style="padding-bottom:8px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>`);
@@ -1695,28 +1759,29 @@ function tmplMinimal(d){
   const meta=[];
   if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
   if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
-  if(meta.length) rows.push(`<tr><td style="padding-top:6px;padding-bottom:8px;">${meta.join(`&nbsp;&nbsp;<span style="color:${d.sep};">·</span>&nbsp;&nbsp;`)}</td></tr>`);
+  if(meta.length) rows.push(`<tr><td style="padding-top:6px;padding-bottom:8px;">${meta.join(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sep};">&nbsp;&nbsp;·&nbsp;&nbsp;</span>`)}</td></tr>`);
   if(hasC) rows.push(`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`);
   if(soc) rows.push(`<tr><td style="padding-top:4px;">${soc}</td></tr>`);
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;
 }
 
 // ── TEMPLATE 10: Logo Top ─────────────────────────────────
 function tmplLogoTop(d){
   const lw=Math.min(d.logoW,160), lhv=d.logo?lh(lw):0;
   const soc=socIcons(d.socials,20);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const rows=[];
   if(d.logo) rows.push(`<tr><td style="padding-bottom:10px;text-align:center;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:inline-block;width:${lw}px;height:${lhv}px;"></td></tr>`);
   if(d.name) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:2px;text-align:center;line-height:1.2;">${esc(d.name)}</td></tr>`);
   if(d.title) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;text-align:center;">${esc(d.title)}</td></tr>`);
   if(d.company) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:2px;text-align:center;">${esc(d.company)}</td></tr>`);
   if((d.name||d.title||d.company)&&hasC) rows.push(`<tr><td style="border-top:1px solid ${d.line};padding-bottom:10px;font-size:0;line-height:0;">&nbsp;</td></tr>`);
-  d.phones.forEach(p=>rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:3px;text-align:center;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};text-decoration:none;">${esc(p)}</a></td></tr>`));
-  if(d.email) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;"><a href="mailto:${esc(d.email)}" style="color:${d.txt};text-decoration:none;">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;"><a href="${esc(href)}" style="color:${d.txt};text-decoration:none;">${esc(disp)}</a></td></tr>`);}
+  d.phones.forEach(p=>rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:3px;text-align:center;white-space:nowrap;" nowrap><a href="tel:${esc(telHref(p))}" style="color:${d.txt};text-decoration:none;">${esc(p)}</a></td></tr>`));
+  if(d.email) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;white-space:nowrap;" nowrap><a href="mailto:${esc(d.email)}" style="color:${d.txt};text-decoration:none;">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;white-space:nowrap;" nowrap><a href="${esc(href)}" style="color:${d.txt};text-decoration:none;">${esc(disp)}</a></td></tr>`);}
+  if(d.address) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;text-align:center;color:${d.txt};">${esc(d.address)}</td></tr>`);
   if(soc) rows.push(`<tr><td style="padding-top:8px;text-align:center;">${soc}</td></tr>`);
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;
 }
 
 // ── TEMPLATE 11: Two Column ───────────────────────────────
@@ -1725,10 +1790,11 @@ function tmplTwoColumn(d){
   const soc=socIcons(d.socials,18);
   const ls=`font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};text-decoration:none;`;
   const contactRows=[];
-  d.phones.forEach(p=>contactRows.push(`<tr><td style="${ls}"><a href="tel:${esc(p.replace(/\s/g,''))}" style="${ls}">${esc(p)}</a></td></tr>`));
-  if(d.email) contactRows.push(`<tr><td style="padding-bottom:2px;"><a href="mailto:${esc(d.email)}" style="${ls}">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr><td><a href="${esc(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  d.phones.forEach(p=>contactRows.push(`<tr><td style="${ls}white-space:nowrap;" nowrap><a href="tel:${esc(telHref(p))}" style="${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr><td style="padding-bottom:2px;white-space:nowrap;" nowrap><a href="mailto:${esc(d.email)}" style="${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);contactRows.push(`<tr><td style="white-space:nowrap;" nowrap><a href="${esc(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
+  if(d.address) contactRows.push(`<tr><td style="${ls}">${esc(d.address)}</td></tr>`);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${d.logo?`<tr><td colspan="5" style="padding-bottom:10px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>`:''}
   <tr>
     <td style="vertical-align:top;padding-right:18px;">
@@ -1738,7 +1804,7 @@ function tmplTwoColumn(d){
         ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};">${esc(d.company)}</td></tr>`:''}
       </table>
     </td>
-    <td width="16" style="width:16px;font-size:0;line-height:0;">&nbsp;</td>
+    ${contactRows.length||soc?`<td width="16" style="width:16px;font-size:0;line-height:0;">&nbsp;</td>
       <td width="2" bgcolor="${d.line}" height="52" style="width:2px;height:52px;background-color:${d.line};font-size:0;line-height:0;vertical-align:top;">&nbsp;</td>
       <td width="16" style="width:16px;font-size:0;line-height:0;">&nbsp;</td>
     <td style="vertical-align:top;">
@@ -1746,7 +1812,7 @@ function tmplTwoColumn(d){
         ${contactRows.join('\n        ')}
         ${soc?`<tr><td style="padding-top:8px;">${soc}</td></tr>`:''}
       </table>
-    </td>
+    </td>`:''}
   </tr>
 </table>`;
 }
@@ -1756,10 +1822,10 @@ function tmplAccentBar(d){
   const lw=d.logoW, lhv=lh(lw);
   const soc=socIcons(d.socials,18);
   const cc=contactCells(d,12);
-  const hasC=d.phones.length||d.email||d.website;
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  const hasC=hasContacts(d);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
-    <td style="background:${d.acc};width:4px;padding:0;">&nbsp;</td>
+    <td width="4" bgcolor="${d.acc}" style="background-color:${d.acc};width:4px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
     <td style="padding:0 16px 0 14px;vertical-align:middle;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
         ${d.logo?`<tr><td style="padding-bottom:10px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>`:''}
@@ -1779,18 +1845,18 @@ function tmplCompact(d){
   const lw=Math.min(d.logoW,80), lhv=lh(lw);
   const soc=socIcons(d.socials,18);
   const cc=contactCells(d,11);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const meta=[];
   if(d.name) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:bold;color:${d.pri};">${esc(d.name)}</span>`);
   if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
   if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
   const logoCol=d.logo?`<td width="${lw}" style="padding-right:12px;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>`:'';
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
     ${logoCol}
     <td style="vertical-align:middle;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-        ${meta.length?`<tr><td style="padding-bottom:5px;white-space:nowrap;">${meta.join(`&nbsp;&nbsp;<span style="color:${d.sep};">·</span>&nbsp;&nbsp;`)}</td></tr>`:''}
+        ${meta.length?`<tr><td style="padding-bottom:5px;white-space:nowrap;">${meta.join(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sep};">&nbsp;&nbsp;·&nbsp;&nbsp;</span>`)}</td></tr>`:''}
         ${hasC?`<tr><td style="padding-bottom:4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
         ${soc?`<tr><td>${soc}</td></tr>`:''}
       </table>
@@ -1805,10 +1871,11 @@ function tmplLogoBelow(d){
   const soc=socIcons(d.socials,18);
   const ls=`font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};text-decoration:none;`;
   const contactRows=[];
-  d.phones.forEach(p=>contactRows.push(`<tr><td style="padding-bottom:2px;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="${ls}">${esc(p)}</a></td></tr>`));
-  if(d.email) contactRows.push(`<tr><td style="padding-bottom:2px;"><a href="mailto:${esc(d.email)}" style="${ls}">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr><td><a href="${esc(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  d.phones.forEach(p=>contactRows.push(`<tr><td style="padding-bottom:2px;white-space:nowrap;" nowrap><a href="tel:${esc(telHref(p))}" style="${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr><td style="padding-bottom:2px;white-space:nowrap;" nowrap><a href="mailto:${esc(d.email)}" style="${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);contactRows.push(`<tr><td style="white-space:nowrap;" nowrap><a href="${esc(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
+  if(d.address) contactRows.push(`<tr><td style="${ls}">${esc(d.address)}</td></tr>`);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:3px;line-height:1.2;">${esc(d.name)}</td></tr>`:''}
   ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
   ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:2px;">${esc(d.company)}</td></tr>`:''}
@@ -1819,10 +1886,10 @@ function tmplLogoBelow(d){
         <tr>
           ${d.logo?`<td width="${lw}" style="padding-right:16px;vertical-align:top;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>`:''}
           <td style="vertical-align:top;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+            ${contactRows.length||soc?`<table role="presentation" cellpadding="0" cellspacing="0" border="0">
               ${contactRows.join('\n              ')}
               ${soc?`<tr><td style="padding-top:6px;">${soc}</td></tr>`:''}
-            </table>
+            </table>`:''}
           </td>
         </tr>
       </table>
@@ -1837,12 +1904,13 @@ function tmplSplitPanel(d){
   const soc=socIcons(d.socials,18);
   const ls=`font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};text-decoration:none;`;
   const contactRows=[];
-  d.phones.forEach(p=>contactRows.push(`<tr><td style="padding-bottom:3px;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="${ls}">${esc(p)}</a></td></tr>`));
-  if(d.email) contactRows.push(`<tr><td style="padding-bottom:3px;"><a href="mailto:${esc(d.email)}" style="${ls}">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr><td><a href="${esc(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  d.phones.forEach(p=>contactRows.push(`<tr><td style="padding-bottom:3px;white-space:nowrap;" nowrap><a href="tel:${esc(telHref(p))}" style="${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr><td style="padding-bottom:3px;white-space:nowrap;" nowrap><a href="mailto:${esc(d.email)}" style="${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);contactRows.push(`<tr><td style="white-space:nowrap;" nowrap><a href="${esc(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
+  if(d.address) contactRows.push(`<tr><td style="${ls}">${esc(d.address)}</td></tr>`);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
-    <td style="background:${d.acc};padding:14px 20px;vertical-align:middle;border-radius:4px 0 0 4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">
+    <td bgcolor="${d.acc}" style="background-color:${d.acc};padding:14px 20px;vertical-align:middle;border-radius:4px 0 0 4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">
       ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:17px;font-weight:bold;color:#ffffff;line-height:1.2;padding-bottom:3px;">${esc(d.name)}</td></tr>`:''}
       ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:#ffffff;padding-bottom:2px;">${esc(d.title)}</td></tr>`:''}
       ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:#e0e0e0;">${esc(d.company)}</td></tr>`:''}
@@ -1863,8 +1931,8 @@ function tmplLayered(d){
   const lw=d.logoW, lhv=lh(lw);
   const soc=socIcons(d.socials,20);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  const hasC=hasContacts(d);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
     <td style="vertical-align:bottom;padding-bottom:4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">
       ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:22px;font-weight:700;color:${d.pri};line-height:1.1;">${esc(d.name)}</td></tr>`:''}
@@ -1874,12 +1942,12 @@ function tmplLayered(d){
     ${d.logo?`<td width="${lw}" style="padding-left:24px;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>`:''}
   </tr>
   <tr><td colspan="2" style="border-top:2px solid ${d.acc};padding-top:0;font-size:0;line-height:0;">&nbsp;</td></tr>
-  <tr><td colspan="2" style="padding-top:8px;">
+  ${hasC||soc?`<tr><td colspan="2" style="padding-top:8px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0">
       ${hasC?`<tr><td style="padding-bottom:6px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`:''}
       ${soc?`<tr><td>${soc}</td></tr>`:''}
     </table>
-  </td></tr>
+  </td></tr>`:''}
 </table>`;
 }
 
@@ -1888,7 +1956,7 @@ function tmplBannerRightLogo(d){
   const lw=d.logoW, lhv=lh(lw);
   const soc=socIcons(d.socials,20);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const hasI=d.name||d.title||d.company;
   const logoCol=d.logo?`<td width="${lw}" style="padding-left:20px;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>`:'';
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
@@ -1914,9 +1982,10 @@ function tmplBannerSplit(d){
   const soc=socIcons(d.socials,18);
   const ls=`font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};text-decoration:none;`;
   const contactRows=[];
-  d.phones.forEach(p=>contactRows.push(`<tr><td style="padding-bottom:3px;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="${ls}">${esc(p)}</a></td></tr>`));
-  if(d.email) contactRows.push(`<tr><td style="padding-bottom:3px;"><a href="mailto:${esc(d.email)}" style="${ls}">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr><td><a href="${esc(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
+  d.phones.forEach(p=>contactRows.push(`<tr><td style="padding-bottom:3px;white-space:nowrap;" nowrap><a href="tel:${esc(telHref(p))}" style="${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) contactRows.push(`<tr><td style="padding-bottom:3px;white-space:nowrap;" nowrap><a href="mailto:${esc(d.email)}" style="${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);contactRows.push(`<tr><td style="white-space:nowrap;" nowrap><a href="${esc(href)}" style="${ls}">${esc(disp)}</a></td></tr>`);}
+  if(d.address) contactRows.push(`<tr><td style="${ls}">${esc(d.address)}</td></tr>`);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${bannerRow(d)}
   <tr>
@@ -1927,7 +1996,7 @@ function tmplBannerSplit(d){
         ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};">${esc(d.company)}</td></tr>`:''}
       </table>
     </td>
-    <td width="16" style="width:16px;font-size:0;line-height:0;">&nbsp;</td>
+    ${contactRows.length||soc?`<td width="16" style="width:16px;font-size:0;line-height:0;">&nbsp;</td>
       <td width="2" bgcolor="${d.line}" height="50" style="width:2px;height:50px;background-color:${d.line};font-size:0;line-height:0;vertical-align:top;">&nbsp;</td>
       <td width="16" style="width:16px;font-size:0;line-height:0;">&nbsp;</td>
     <td style="vertical-align:top;">
@@ -1935,7 +2004,7 @@ function tmplBannerSplit(d){
         ${contactRows.join('\n        ')}
         ${soc?`<tr><td style="padding-top:6px;">${soc}</td></tr>`:''}
       </table>
-    </td>
+    </td>`:''}
   </tr>
 </table>`;
 }
@@ -1943,7 +2012,7 @@ function tmplBannerSplit(d){
 // ── TEMPLATE 19: Banner Minimal ───────────────────────────
 function tmplBannerMinimal(d){
   const soc=socIcons(d.socials,18);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const cc=contactCells(d,11);
   const rows=[];
   const bw=d.bannerW, bhv=bh(bw);
@@ -1957,7 +2026,7 @@ function tmplBannerMinimal(d){
   const meta=[];
   if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
   if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
-  if(meta.length) rows.push(`<tr><td style="padding-top:6px;padding-bottom:8px;">${meta.join(`&nbsp;&nbsp;<span style="color:${d.sep};">·</span>&nbsp;&nbsp;`)}</td></tr>`);
+  if(meta.length) rows.push(`<tr><td style="padding-top:6px;padding-bottom:8px;">${meta.join(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sep};">&nbsp;&nbsp;·&nbsp;&nbsp;</span>`)}</td></tr>`);
   if(hasC) rows.push(`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cc}</tr></table></td></tr>`);
   if(soc) rows.push(`<tr><td style="padding-top:6px;">${soc}</td></tr>`);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;
@@ -1967,10 +2036,10 @@ function tmplBannerMinimal(d){
 function tmplBannerAccentBlock(d){
   const soc=socIcons(d.socials,20);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${bannerRow(d)}
-  ${(d.name||d.title||d.company)?`<tr><td style="background:${d.acc};padding:12px 18px;border-radius:4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">
+  ${(d.name||d.title||d.company)?`<tr><td bgcolor="${d.acc}" style="background-color:${d.acc};padding:12px 18px;border-radius:4px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">
     ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:#ffffff;line-height:1.2;padding-bottom:2px;">${esc(d.name)}</td></tr>`:''}
     ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:#ffffff;">${esc(d.title)}</td></tr>`:''}
     ${d.company?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:#e0e0e0;padding-top:1px;">${esc(d.company)}</td></tr>`:''}
@@ -1984,17 +2053,18 @@ function tmplBannerAccentBlock(d){
 function tmplEditorial(d){
   const lw=d.logoW, lhv=lh(lw);
   const soc=socIcons(d.socials,20);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const ls='text-decoration:none !important;';
   const infoRows=[];
   if(d.title) infoRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:4px;">${esc(d.title)}</td></tr>`);
   if(d.company) infoRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;font-weight:600;color:${d.txt};padding-bottom:8px;">${esc(d.company)}</td></tr>`);
-  d.phones.forEach(p=>infoRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:3px;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
-  if(d.email) infoRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;"><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;infoRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;"><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
+  d.phones.forEach(p=>infoRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:3px;white-space:nowrap;" nowrap><a href="tel:${esc(telHref(p))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) infoRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;white-space:nowrap;" nowrap><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);infoRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;white-space:nowrap;" nowrap><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
+  if(d.address) infoRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;color:${d.txt};">${esc(d.address)}</td></tr>`);
   if(soc) infoRows.push(`<tr><td style="padding-top:6px;">${soc}</td></tr>`);
   const logoTd=d.logo?`<td width="${lw}" style="padding-left:28px;vertical-align:top;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>`:'';
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${d.name?`<tr><td colspan="2" style="font-family:${d.font},Arial,sans-serif;font-size:28px;font-weight:700;color:${d.pri};line-height:1.1;padding-bottom:8px;letter-spacing:-0.5px;white-space:nowrap;">${esc(d.name)}</td></tr>`:''}
   <tr><td colspan="2" style="border-top:3px solid ${d.acc};padding-bottom:12px;font-size:0;line-height:0;">&nbsp;</td></tr>
   <tr>
@@ -2008,13 +2078,13 @@ function tmplMonogram(d){
   const lw=Math.min(d.logoW,60), lhv=lh(lw);
   const soc=socIcons(d.socials,20);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const initial=d.name?d.name.trim()[0].toUpperCase():'?';
   const badge=d.logo
     ?`<img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;border-radius:4px;">`
-    :`<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:${d.acc};width:54px;height:54px;text-align:center;vertical-align:middle;border-radius:4px;font-family:${d.font},Arial,sans-serif;font-size:28px;font-weight:700;color:#ffffff;line-height:1;">${esc(initial)}</td></tr></table>`;
+    :`<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="${d.acc}" style="background-color:${d.acc};width:54px;height:54px;text-align:center;vertical-align:middle;border-radius:4px;font-family:${d.font},Arial,sans-serif;font-size:28px;font-weight:700;color:#ffffff;line-height:1;">${esc(initial)}</td></tr></table>`;
   const titleCo=[d.title,d.company].filter(Boolean).map(esc).join(' &nbsp;·&nbsp; ');
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
     <td style="padding-right:18px;vertical-align:top;">${badge}</td>
     <td style="vertical-align:top;">
@@ -2033,17 +2103,18 @@ function tmplMonogram(d){
 function tmplDarkHeader(d){
   const lw=Math.min(d.logoW,110), lhv=lh(lw);
   const soc=socIcons(d.socials,20);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const ls='text-decoration:none;';
   const cRows=[];
   if(d.company) cRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;font-weight:600;color:${d.txt};padding-bottom:5px;">${esc(d.company)}</td></tr>`);
-  d.phones.forEach(p=>cRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:3px;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
-  if(d.email) cRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;"><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;cRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;"><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
+  d.phones.forEach(p=>cRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:3px;white-space:nowrap;" nowrap><a href="tel:${esc(telHref(p))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) cRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;white-space:nowrap;" nowrap><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);cRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;white-space:nowrap;" nowrap><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
+  if(d.address) cRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:3px;color:${d.txt};">${esc(d.address)}</td></tr>`);
   if(soc) cRows.push(`<tr><td style="padding-top:6px;">${soc}</td></tr>`);
   const logoTd=d.logo?`<td width="${lw}" style="padding-right:16px;padding-left:0;vertical-align:middle;border-right:1px solid ${d.line};"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td><td style="padding-right:0;font-size:0;">&nbsp;</td>`:'';
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
-  ${(d.name||d.title)?`<tr><td style="background:${d.acc};padding:12px 18px;border-radius:4px 4px 0 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  ${(d.name||d.title)?`<tr><td bgcolor="${d.acc}" style="background-color:${d.acc};padding:12px 18px;border-radius:4px 4px 0 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">
     ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:19px;font-weight:700;color:#ffffff;line-height:1.2;padding-bottom:2px;">${esc(d.name)}</td></tr>`:''}
     ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:#ffffff;">${esc(d.title)}</td></tr>`:''}
   </table></td></tr>`:''}
@@ -2064,11 +2135,12 @@ function tmplRuled(d){
   const ls='text-decoration:none;';
   const items=[];
   if(d.company) items.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;font-weight:600;color:${d.txt};">${esc(d.company)}</span>`);
-  d.phones.forEach(p=>items.push(`<a href="tel:${esc(p.replace(/\s/g,''))}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(p)}</a>`));
+  d.phones.forEach(p=>items.push(`<a href="tel:${esc(telHref(p))}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(p)}</a>`));
   if(d.email) items.push(`<a href="mailto:${esc(d.email)}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(d.email)}</a>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;items.push(`<a href="${esc(href)}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(disp)}</a>`);}
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);items.push(`<a href="${esc(href)}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(disp)}</a>`);}
+  if(d.address) items.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(d.address)}</span>`);
   const ruledRows=items.map(item=>`<tr><td style="border-top:1px solid #e8e8e8;padding:5px 0;">${item}</td></tr>`).join('');
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
     <td style="vertical-align:bottom;padding-bottom:10px;padding-right:20px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">
       ${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:20px;font-weight:700;color:${d.pri};line-height:1.2;">${esc(d.name)}</td></tr>`:''}
@@ -2087,9 +2159,9 @@ function tmplNameRow(d){
   const lw=d.logoW, lhv=lh(lw);
   const soc=socIcons(d.socials,20);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const logoTd=d.logo?`<td width="${lw}" style="padding-left:20px;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>`:'';
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
     <td style="vertical-align:middle;font-family:${d.font},Arial,sans-serif;font-size:22px;font-weight:700;color:${d.pri};line-height:1.1;white-space:nowrap;">
       ${d.name?esc(d.name):''}
@@ -2114,9 +2186,9 @@ function tmplCard(d){
   const lw=Math.min(d.logoW,100), lhv=lh(lw);
   const soc=socIcons(d.socials,18);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const logoTd=d.logo?`<td width="${lw}" style="padding-right:14px;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>`:'';
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;border:1px solid ${d.line};border-radius:6px;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;border:1px solid ${d.line};border-radius:6px;">
   <tr><td style="padding:16px 20px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;">
       <tr>
@@ -2145,10 +2217,10 @@ function tmplTopBar(d){
   const lw=d.logoW, lhv=lh(lw);
   const soc=socIcons(d.socials,20);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const logoRow=d.logo?`<tr><td style="padding-bottom:10px;"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>`:'';
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
-  <tr><td style="background:${d.acc};height:8px;font-size:0;line-height:0;padding:0;">&nbsp;</td></tr>
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+  <tr><td bgcolor="${d.acc}" style="background-color:${d.acc};height:8px;font-size:0;line-height:0;padding:0;">&nbsp;</td></tr>
   <tr><td style="padding-top:14px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0">
       ${logoRow}
@@ -2172,14 +2244,14 @@ function tmplGrant(d){
   if(d.name) rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.pri};padding-bottom:4px;line-height:1.4;">${esc(d.name)}</td></tr>`);
   if(d.title) rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:4px;line-height:1.4;">${esc(d.title)}</td></tr>`);
   if(d.company&&!d.logo) rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:4px;">${esc(d.company)}</td></tr>`);
-  d.phones.forEach(p=>rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};padding-bottom:4px;line-height:1.4;text-decoration:none;-webkit-text-decoration:none;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};text-decoration:none;-webkit-text-decoration:none;border-bottom:none;" x-apple-data-detectors="false"><span style="color:${d.txt};text-decoration:none;-webkit-text-decoration:none;border-bottom:none;">${esc(p)}</span></a></td></tr>`));
+  d.phones.forEach(p=>rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};padding-bottom:4px;line-height:1.4;text-decoration:none;-webkit-text-decoration:none;white-space:nowrap;" nowrap><a href="tel:${esc(telHref(p))}" style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};text-decoration:none;-webkit-text-decoration:none;border-bottom:none;" x-apple-data-detectors="false"><span style="color:${d.txt};text-decoration:none;-webkit-text-decoration:none;border-bottom:none;">${esc(p)}</span></a></td></tr>`));
   if(d.address){
     const addrParts=d.address.split(',');
     const addrFmt=addrParts.length>2?esc(addrParts.slice(0,2).join(','))+',<br>'+esc(addrParts.slice(2).join(',')):esc(d.address);
     rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};padding-bottom:4px;line-height:1.5;">${addrFmt}</td></tr>`);
   }
-  if(d.email) rRows.push(`<tr><td style="padding-bottom:4px;"><a href="mailto:${esc(d.email)}" x-apple-data-detectors="false" style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};${ls}"><span style="text-decoration:none !important;-webkit-text-decoration:none;color:${d.txt};">${esc(d.email)}</span></a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};padding-bottom:4px;line-height:1.4;text-decoration:none;-webkit-text-decoration:none;"><a href="${esc(href)}" style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};text-decoration:none;-webkit-text-decoration:none;border-bottom:none;" x-apple-data-detectors="false"><span style="color:${d.txt};text-decoration:none;-webkit-text-decoration:none;border-bottom:none;">${esc(disp)}</span></a></td></tr>`);}
+  if(d.email) rRows.push(`<tr><td style="padding-bottom:4px;white-space:nowrap;" nowrap><a href="mailto:${esc(d.email)}" x-apple-data-detectors="false" style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};${ls}"><span style="text-decoration:none !important;-webkit-text-decoration:none;color:${d.txt};">${esc(d.email)}</span></a></td></tr>`);
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);rRows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};padding-bottom:4px;line-height:1.4;text-decoration:none;-webkit-text-decoration:none;white-space:nowrap;" nowrap><a href="${esc(href)}" style="font-family:${d.font},Arial,sans-serif;font-size:14px;font-weight:700;color:${d.txt};text-decoration:none;-webkit-text-decoration:none;border-bottom:none;" x-apple-data-detectors="false"><span style="color:${d.txt};text-decoration:none;-webkit-text-decoration:none;border-bottom:none;">${esc(disp)}</span></a></td></tr>`);}
   if(soc) rRows.push(`<tr><td style="padding-top:4px;">${soc}</td></tr>`);
   const lgap=Math.round(lw*0.75);
   const logoTd=d.logo
@@ -2188,8 +2260,8 @@ function tmplGrant(d){
           <tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr>
         </table>
       </td>`
-    :`<td valign="top" style="padding-right:40px;border-right:1px solid ${d.line};font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:700;color:${d.pri};white-space:nowrap;vertical-align:top;">${esc(d.company)}</td>`;
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
+    :!d.company?'':`<td valign="top" style="padding-right:40px;border-right:1px solid ${d.line};font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:700;color:${d.pri};white-space:nowrap;vertical-align:top;">${esc(d.company)}</td>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${SIG_W}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   <tr>
     ${logoTd}
     <td valign="top" style="padding-left:14px;padding-top:4px;vertical-align:top;">
@@ -2201,8 +2273,8 @@ function tmplGrant(d){
   <tr>
     <td colspan="2" style="padding-top:4px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-        <tr><td style="height:3px;background:${d.acc};font-size:0;line-height:0;"></td></tr>
-        <tr><td style="height:2px;background:${d.acc2};font-size:0;line-height:0;"></td></tr>
+        <tr><td height="3" bgcolor="${d.acc}" style="height:3px;background-color:${d.acc};font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td height="2" bgcolor="${d.acc2}" style="height:2px;background-color:${d.acc2};font-size:0;line-height:0;">&nbsp;</td></tr>
       </table>
     </td>
   </tr>
@@ -2215,7 +2287,7 @@ function tmplBannerLogoLeft(d){
   const lw=Math.min(d.logoW,120), lhv=lh(lw);
   const soc=socIcons(d.socials,20);
   const cc=contactCells(d);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const hasI=d.name||d.title||d.company;
   const logoTd=d.logo?`<td width="${lw}" style="padding-right:0;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lw}" style="border-collapse:collapse;"><tr><td width="${lw}"><img src="${d.logo}" width="${lw}" height="${lhv}" border="0" alt="${esc(d.company)} logo" style="display:block;width:${lw}px;height:${lhv}px;"></td></tr></table></td>
     <td width="18" style="width:18px;font-size:0;line-height:0;">&nbsp;</td>
@@ -2244,7 +2316,7 @@ function tmplBannerLogoLeft(d){
 function tmplBannerStacked(d){
   const lw=Math.min(d.logoW,160), lhv=d.logo?lh(lw):0;
   const soc=socIcons(d.socials,20);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const rows=[];
   const bw=d.bannerW, bhv=bh(bw);
   if(d.banner) rows.push(`<tr><td style="padding-bottom:14px;text-align:center;"><img src="${d.banner}" width="${bw}" height="${bhv}" border="0" alt="Banner" style="display:inline-block;width:${bw}px;height:${bhv}px;"></td></tr>`);
@@ -2255,7 +2327,7 @@ function tmplBannerStacked(d){
   const meta=[];
   if(d.title) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
   if(d.company) meta.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};font-weight:600;">${esc(d.company)}</span>`);
-  if(meta.length) rows.push(`<tr><td style="padding-bottom:8px;text-align:center;">${meta.join(`&nbsp;&nbsp;<span style="color:${d.sep};">·</span>&nbsp;&nbsp;`)}</td></tr>`);
+  if(meta.length) rows.push(`<tr><td style="padding-bottom:8px;text-align:center;">${meta.join(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sep};">&nbsp;&nbsp;·&nbsp;&nbsp;</span>`)}</td></tr>`);
   if(hasC) rows.push(`<tr><td style="padding-bottom:4px;text-align:center;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>${contactCells(d,11)}</tr></table></td></tr>`);
   if(soc) rows.push(`<tr><td style="padding-top:6px;text-align:center;">${soc}</td></tr>`);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">\n  ${rows.join('\n  ')}\n</table>`;}
@@ -2270,9 +2342,10 @@ function tmplBannerRuled(d){
   if(d.title&&d.company) items.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span> &nbsp;<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sep};">·</span>&nbsp; <span style="font-family:${d.font},Arial,sans-serif;font-size:12px;font-weight:600;color:${d.txt};">${esc(d.company)}</span>`);
   else if(d.title) items.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};">${esc(d.title)}</span>`);
   else if(d.company) items.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;font-weight:600;color:${d.txt};">${esc(d.company)}</span>`);
-  d.phones.forEach(p=>items.push(`<a href="tel:${esc(p.replace(/\s/g,''))}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(p)}</a>`));
+  d.phones.forEach(p=>items.push(`<a href="tel:${esc(telHref(p))}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(p)}</a>`));
   if(d.email) items.push(`<a href="mailto:${esc(d.email)}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(d.email)}</a>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;items.push(`<a href="${esc(href)}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(disp)}</a>`);}
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);items.push(`<a href="${esc(href)}" style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(disp)}</a>`);}
+  if(d.address) items.push(`<span style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};${ls}">${esc(d.address)}</span>`);
   const ruledRows=items.map(item=>`<tr><td style="border-top:1px solid ${d.line};padding:5px 0;">${item}</td></tr>`).join('');
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${d.bannerW||(d.logo?d.logoW+300:360)}" style="border-collapse:collapse;font-family:${d.font},Arial,sans-serif;">
   ${bannerRow(d)}
@@ -2307,9 +2380,9 @@ function tmplBannerBottom(d){
   function iconTd(type){return d.showIcons?`<td width="22" valign="middle" style="padding-right:6px;padding-bottom:4px;">${contactIcon(type,d.icon_col,14)}</td>`:'';};
   const ts=`font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:4px;white-space:nowrap;`;
   const contactRows=[];
-  d.phones.forEach(p=>contactRows.push(`<tr>${iconTd('phone')}<td style="${ts}" nowrap><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
+  d.phones.forEach(p=>contactRows.push(`<tr>${iconTd('phone')}<td style="${ts}" nowrap><a href="tel:${esc(telHref(p))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
   if(d.email) contactRows.push(`<tr>${iconTd('email')}<td style="${ts}" nowrap><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr>${iconTd('website')}<td style="${ts}" nowrap><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);contactRows.push(`<tr>${iconTd('website')}<td style="${ts}" nowrap><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
   if(d.address) contactRows.push(`<tr>${iconTd('address')}<td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};padding-bottom:4px;">${esc(d.address)}</td></tr>`);
   if(contactRows.length) rows.push(`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">${contactRows.join('')}</table></td></tr>`);
   // Social icons
@@ -2332,8 +2405,8 @@ function tmplBannerSidebar(d){
   const lw=Math.min(d.logoW,130), lhv=d.logo?lh(lw):0;
   const soc=socIcons(d.socials,18);
   const cc=contactCells(d,11);
-  const hasC=d.phones.length||d.email||d.website;
-  const bsw=160, bsh=Math.max(120,bh(d.bannerW));
+  const hasC=hasContacts(d);
+  const bsw=160, bsh=d.banner?bh(bsw):120;
   const bannerTd=d.banner
     ?`<td style="padding-right:0;vertical-align:top;"><img src="${d.banner}" width="${bsw}" height="${bsh}" border="0" alt="Banner" style="display:block;width:${bsw}px;height:${bsh}px;"></td>`
     :`<td style="padding-right:0;vertical-align:top;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" style="background:#e0e0e0;width:${bsw}px;height:${bsh}px;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:11px;color:#999;line-height:1.4;">Upload a<br>banner image</td></tr></table></td>`;
@@ -2356,7 +2429,13 @@ function tmplBannerSidebar(d){
 // ── MSO TABLE FIX ────────────────────────────────────────
 // Adds mso-table-lspace/rspace to all tables for Windows Outlook spacing fix.
 function fixMsoTables(h){
-  return h.replace(/style="border-collapse:collapse;(?!mso-)/g,'style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;');
+  return h.replace(/<table\b([^>]*)>/g,(t,attrs)=>{
+    if(attrs.includes('mso-table-lspace')) return t;
+    const m=attrs.match(/\sstyle="([^"]*)"/), mso='mso-table-lspace:0pt;mso-table-rspace:0pt;';
+    if(!m) return `<table${attrs} style="${mso}">`;
+    const st=m[1].trim();
+    return `<table${attrs.replace(m[0],` style="${st?st.replace(/;?$/,';'):''}${mso}"`)}>`;
+  });
 }
 
 
@@ -2382,12 +2461,12 @@ function lbInfo(d,o){
   const nc=o.nameCol||d.pri, tc=o.titleCol||d.sec, cc=o.compCol||d.txt;
   const rc=o.ruleCol||d.line;
   const soc=socIcons(d.socials,20);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const hasI=d.name||d.title||d.company;
   const ctr=al==='center'?' align="center"':'';
   const r=[];
-  if(d.name) r.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:${ns}px;font-weight:bold;color:${nc};padding-bottom:3px;line-height:1.2;${ta}">${esc(d.name)}</td></tr>`);
-  if(d.title) r.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${tc};padding-bottom:2px;line-height:1.4;${ta}">${esc(d.title)}</td></tr>`);
+  if(d.name&&!o.skipName) r.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:${ns}px;font-weight:bold;color:${nc};padding-bottom:3px;line-height:1.2;${ta}">${esc(d.name)}</td></tr>`);
+  if(d.title&&!o.skipTitle) r.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${tc};padding-bottom:2px;line-height:1.4;${ta}">${esc(d.title)}</td></tr>`);
   if(d.company) r.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${cc};padding-bottom:9px;line-height:1.4;${ta}">${esc(d.company)}</td></tr>`);
   if(o.rule!==false&&hasI&&(hasC||soc)) r.push(`<tr><td style="border-top:1px solid ${rc};font-size:0;line-height:0;">&nbsp;</td></tr><tr><td style="padding-top:8px;font-size:0;line-height:0;">&nbsp;</td></tr>`);
   if(hasC) r.push(`<tr><td style="padding-bottom:6px;${ta}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"${ctr} style="border-collapse:collapse;"><tr>${contactCells(d)}</tr></table></td></tr>`);
@@ -2469,9 +2548,9 @@ function tmplLbBannerBottomLogo(d){
   function iconTd(type){return d.showIcons?`<td width="22" valign="middle" style="padding-right:6px;padding-bottom:4px;">${contactIcon(type,d.icon_col,14)}</td>`:'';}
   const ts=`font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:4px;white-space:nowrap;`;
   const contactRows=[];
-  d.phones.forEach(p=>contactRows.push(`<tr>${iconTd('phone')}<td style="${ts}" nowrap><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
+  d.phones.forEach(p=>contactRows.push(`<tr>${iconTd('phone')}<td style="${ts}" nowrap><a href="tel:${esc(telHref(p))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
   if(d.email) contactRows.push(`<tr>${iconTd('email')}<td style="${ts}" nowrap><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
-  if(d.website){const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');const href=d.website.startsWith('http')?d.website:'https://'+d.website;contactRows.push(`<tr>${iconTd('website')}<td style="${ts}" nowrap><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
+  if(d.website){const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');const href=urlHref(d.website);contactRows.push(`<tr>${iconTd('website')}<td style="${ts}" nowrap><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);}
   if(d.address) contactRows.push(`<tr>${iconTd('address')}<td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.txt};padding-bottom:4px;">${esc(d.address)}</td></tr>`);
   if(contactRows.length) rows.push(`<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">${contactRows.join('')}</table></td></tr>`);
   // Social icons
@@ -2507,7 +2586,7 @@ function tmplLbSideLogo(d){
 function tmplLbLogoBelowName(d){
   const lw=Math.min(d.logoW,160);
   const soc=socIcons(d.socials,20);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   const hasI=d.name||d.title||d.company;
   return lbWrap(d,`${d.name?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};padding-bottom:3px;line-height:1.2;">${esc(d.name)}</td></tr>`:''}
   ${d.title?`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;line-height:1.4;">${esc(d.title)}</td></tr>`:''}
@@ -2557,7 +2636,7 @@ function tmplLbDarkHeader(d){
     </tr></table>
   </td></tr>
   ${lbSpacer(14)}
-  <tr><td style="padding-bottom:14px;">${lbBlock(d,{rule:false})}</td></tr>
+  <tr><td style="padding-bottom:14px;">${lbBlock(d,{rule:false,skipName:true,skipTitle:true})}</td></tr>
   ${lbBannerRow(d,'')}`);
 }
 
@@ -2565,7 +2644,7 @@ function tmplLbDarkHeader(d){
 function tmplLbBannerMiddle(d){
   const lw=Math.min(d.logoW,130);
   const soc=socIcons(d.socials,20);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   return lbWrap(d,`<tr><td style="padding-bottom:14px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lbW(d)}" style="border-collapse:collapse;"><tr>
       <td valign="top"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
@@ -2584,19 +2663,21 @@ function tmplLbBannerMiddle(d){
 // ── LB 12: Compact ────────────────────────────────────────
 function tmplLbCompact(d){
   const lw=Math.min(d.logoW,90);
+  const soc=socIcons(d.socials,18);
   return lbWrap(d,`<tr><td style="padding-bottom:10px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
       <td width="${lw}" valign="middle" style="padding-right:14px;">${lbLogoImg(d,lw)}</td>
-      <td valign="middle" style="font-family:${d.font},Arial,sans-serif;font-size:15px;font-weight:bold;color:${d.pri};line-height:1.3;white-space:nowrap;">${esc(d.name)}${d.title?`<span style="font-weight:400;color:${d.sec};font-size:12px;"> — ${esc(d.title)}</span>`:''}</td>
+      <td valign="middle" style="font-family:${d.font},Arial,sans-serif;font-size:15px;font-weight:bold;color:${d.pri};line-height:1.3;white-space:nowrap;">${esc(d.name)}${d.title?`<span style="font-weight:400;color:${d.sec};font-size:12px;"> — ${esc(d.title)}</span>`:''}${d.company?`<br><span style="font-weight:600;color:${d.txt};font-size:12px;">${esc(d.company)}</span>`:''}</td>
     </tr></table>
   </td></tr>
-  <tr><td style="border-top:1px solid ${d.line};padding-top:8px;padding-bottom:10px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>${contactCells(d,11)}</tr></table></td></tr>
+  ${hasContacts(d)||soc?`<tr><td style="border-top:1px solid ${d.line};padding-top:8px;padding-bottom:10px;">${hasContacts(d)?`<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>${contactCells(d,11)}</tr></table>`:''}${soc?`<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td style="padding-top:${hasContacts(d)?6:0}px;">${soc}</td></tr></table>`:''}</td></tr>`:''}
   ${lbBannerRow(d,'')}`);
 }
 
 // ── LB 13: Editorial ──────────────────────────────────────
 function tmplLbEditorial(d){
   const lw=Math.min(d.logoW,110);
+  const soc=socIcons(d.socials,20);
   return lbWrap(d,`<tr><td style="border-top:3px solid ${d.acc};padding-top:12px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lbW(d)}" style="border-collapse:collapse;"><tr>
       <td valign="top" style="font-family:${d.font},Arial,sans-serif;font-size:22px;font-weight:bold;color:${d.pri};letter-spacing:-.4px;line-height:1.15;">${esc(d.name)}</td>
@@ -2604,7 +2685,7 @@ function tmplLbEditorial(d){
     </tr></table>
   </td></tr>
   <tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.sec};letter-spacing:.6px;text-transform:uppercase;padding-top:4px;padding-bottom:12px;">${esc(d.title)}${d.title&&d.company?' &middot; ':''}${esc(d.company)}</td></tr>
-  <tr><td style="border-top:1px solid ${d.line};padding-top:10px;padding-bottom:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>${contactCells(d)}</tr></table></td></tr>
+  ${hasContacts(d)||soc?`<tr><td style="border-top:1px solid ${d.line};padding-top:10px;padding-bottom:14px;">${hasContacts(d)?`<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>${contactCells(d)}</tr></table>`:''}${soc?`<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td style="padding-top:${hasContacts(d)?8:0}px;">${soc}</td></tr></table>`:''}</td></tr>`:''}
   ${lbBannerRow(d,'')}`);
 }
 
@@ -2691,23 +2772,30 @@ function tmplLbFullFrame(d){
 function tmplLbRuled(d){
   const lw=Math.min(d.logoW,140);
   const soc=socIcons(d.socials,20);
-  const hasC=d.phones.length||d.email||d.website;
+  const hasC=hasContacts(d);
   return lbWrap(d,`<tr><td style="padding-bottom:12px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${lbW(d)}" style="border-collapse:collapse;"><tr>
       <td width="${lw}" valign="middle" style="padding-right:20px;">${lbLogoImg(d,lw)}</td>
-      <td valign="middle" style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};line-height:1.25;">${esc(d.name)}${d.title?`<br><span style="font-size:12px;font-weight:400;color:${d.sec};">${esc(d.title)}${d.company?' &middot; '+esc(d.company):''}</span>`:''}</td>
+      <td valign="middle" style="font-family:${d.font},Arial,sans-serif;font-size:18px;font-weight:bold;color:${d.pri};line-height:1.25;">${esc(d.name)}${d.title||d.company?`<br><span style="font-size:12px;font-weight:400;color:${d.sec};">${esc(d.title)}${d.title&&d.company?' &middot; ':''}${esc(d.company)}</span>`:''}</td>
     </tr></table>
   </td></tr>
-  <tr><td style="border-top:1px solid ${d.line};border-bottom:1px solid ${d.line};padding:10px 0;">
-    ${hasC?`<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>${contactCells(d)}</tr></table>`:'&nbsp;'}
-  </td></tr>
+  ${hasC?`<tr><td style="border-top:1px solid ${d.line};border-bottom:1px solid ${d.line};padding:10px 0;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>${contactCells(d)}</tr></table>
+  </td></tr>`:''}
   ${soc?`<tr><td style="padding-top:10px;">${soc}</td></tr>`:''}
   ${lbSpacer(14)}
   ${lbBannerRow(d,'')}`);
 }
 
 // ── DISPATCH ─────────────────────────────────────────────
+// Optional fields left blank can leave a template with a table that has no rows. Browsers ignore
+// those, but Word can give them height, so they're stripped from every desktop render.
 function genDesk(d){
+  let h=genDeskTmpl(d), prev;
+  do{prev=h;h=h.replace(/<table\b[^>]*>\s*<\/table>/g,'');}while(h!==prev);
+  return h;
+}
+function genDeskTmpl(d){
   switch(currentTemplate){
     case 'stacked-centre':       return tmplStackedCentre(d);
     case 'right-logo':           return tmplRightLogo(d);
@@ -2760,6 +2848,7 @@ function genDesk(d){
     case 'lb-footer-logo':             return tmplLbFooterLogo(d);
     case 'lb-full-frame':              return tmplLbFullFrame(d);
     case 'lb-ruled':                   return tmplLbRuled(d);
+    case 'classic-left':
     default:                     return tmplClassicLeft(d);
   }
 }
@@ -2768,8 +2857,8 @@ function genDesk(d){
 function genMob(d){
   const tw=Math.min(d.logoW,140), lhv=d.logo?lh(tw):null;
   const tbw=Math.min(d.bannerW,375), bhv=d.banner?bh(tbw):null;
-  const soc=socIcons(d.socials,20);
-  const hasC=d.phones.length||d.email||d.website;
+  const soc=socIcons(d.socials,20,'center');
+  const hasC=hasContacts(d);
   const ls='text-decoration:none;';
   const rows=[];
   const isBanner=isBannerTmpl(currentTemplate);
@@ -2782,55 +2871,66 @@ function genMob(d){
   if(d.title) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;color:${d.sec};padding-bottom:2px;text-align:center;line-height:1.5;">${esc(d.title)}</td></tr>`);
   if(d.company) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:13px;font-weight:600;color:${d.txt};padding-bottom:9px;text-align:center;line-height:1.5;">${esc(d.company)}</td></tr>`);
   if((d.name||d.title||d.company)&&hasC) rows.push(`<tr><td style="border-top:1px solid ${d.line};padding-top:8px;font-size:0;line-height:0;">&nbsp;</td></tr>`);
-  d.phones.forEach(p=>rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:4px;text-align:center;line-height:1.7;"><a href="tel:${esc(p.replace(/\s/g,''))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
-  if(d.email) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:4px;text-align:center;line-height:1.7;"><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
+  d.phones.forEach(p=>rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:4px;text-align:center;line-height:1.7;white-space:nowrap;" nowrap><a href="tel:${esc(telHref(p))}" style="color:${d.txt};${ls}">${esc(p)}</a></td></tr>`));
+  if(d.email) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:4px;text-align:center;line-height:1.7;white-space:nowrap;" nowrap><a href="mailto:${esc(d.email)}" style="color:${d.txt};${ls}">${esc(d.email)}</a></td></tr>`);
   if(d.website){
-    const disp=d.website.replace(/^https?:\/\//,'').replace(/\/$/,'');
-    const href=d.website.startsWith('http')?d.website:'https://'+d.website;
-    rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:4px;text-align:center;line-height:1.7;"><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);
+    const disp=d.website.replace(/^https?:\/\//i,'').replace(/\/$/,'');
+    const href=urlHref(d.website);
+    rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;padding-bottom:4px;text-align:center;line-height:1.7;white-space:nowrap;" nowrap><a href="${esc(href)}" style="color:${d.txt};${ls}">${esc(disp)}</a></td></tr>`);
   }
+  if(d.address) rows.push(`<tr><td style="font-family:${d.font},Arial,sans-serif;font-size:12px;color:${d.txt};padding-bottom:4px;text-align:center;line-height:1.5;">${esc(d.address)}</td></tr>`);
   if(soc) rows.push(`<tr><td style="padding-top:8px;text-align:center;">${soc}</td></tr>`);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;max-width:375px;">\n  ${rows.join('\n  ')}\n</table>`;
 }
 
 // ── DISCLAIMER BLOCK ─────────────────────────────────────
-function disclaimerHtml(d){
+function disclaimerHtml(d,mobile){
   if(!d.disclaimer) return '';
   const text=esc(d.disclaimer).replace(/\n/g,'<br>');
-  return `\n<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="border-collapse:collapse;"><tr><td style="padding-top:10px;border-top:1px solid ${d.line};font-family:Arial,sans-serif;font-size:10px;color:${d.disc};line-height:1.6;max-width:600px;">${text}</td></tr></table>`;
+  const tw=mobile?'width="100%" style="border-collapse:collapse;max-width:375px;"':'width="600" style="border-collapse:collapse;"';
+  return `\n<table role="presentation" cellpadding="0" cellspacing="0" border="0" ${tw}><tr><td style="padding-top:10px;border-top:1px solid ${d.line};font-family:Arial,sans-serif;font-size:10px;color:${d.disc};line-height:1.6;max-width:600px;">${text}</td></tr></table>`;
 }
 
-function accreditationsHtml(d){
+function accreditationsHtml(d,mobile){
   const h=d.accH||40;
   const urls=d.accUrls||[];
   let cells='';
   (d.accLogos||[]).forEach((src,i)=>{
     if(!src) return;
     // Hosted badges get a fixed width and a named alt, so the row holds its shape when images are blocked.
-    const [nw,nh]=d.imgMode==='host'?hostWH(src):[null,null];
+    const [nw,nh]=d.imgMode==='host'?hostWH(src):dataDims(src);
     const w=nw?Math.round(h*nw/nh):0;
     const img=w
-      ?`<img src="${src}" width="${w}" height="${h}" border="0" alt="${esc(altFromUrl(src))}" style="display:inline-block;width:${w}px;height:${h}px;">`
+      ?`<img src="${src}" width="${w}" height="${h}" border="0" alt="${d.imgMode==='host'?esc(altFromUrl(src)):'Accreditation'}" style="display:inline-block;width:${w}px;height:${h}px;">`
       :`<img src="${src}" height="${h}" border="0" alt="Accreditation" style="display:inline-block;height:${h}px;width:auto;">`;
     const rawUrl=urls[i];
-    const url=rawUrl?(rawUrl.startsWith('http')?rawUrl:'https://'+rawUrl):null;
+    const url=rawUrl?(urlHref(rawUrl)):null;
     const content=url?`<a href="${esc(url)}" target="_blank" style="text-decoration:none;">${img}</a>`:img;
     cells+=`<td style="padding-right:12px;vertical-align:middle;">${content}</td>`;
   });
   if(!cells) return '';
-  return `\n<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:10px;"><tr>${cells}</tr></table>`;
+  return `\n<table role="presentation" cellpadding="0" cellspacing="0" border="0"${mobile?' align="center"':''} style="border-collapse:collapse;margin-top:10px;"><tr>${cells}</tr></table>`;
 }
 
 function applyImageLinks(html,d){
   if(d.logoUrl){
-    const href=esc(d.logoUrl.startsWith('http')?d.logoUrl:'https://'+d.logoUrl);
+    const href=esc(urlHref(d.logoUrl));
     html=html.replace(/(<img\s[^>]*alt="[^"]*\blogo"[^>]*>)/gi,`<a href="${href}" target="_blank" style="text-decoration:none;">$1</a>`);
   }
   if(d.bannerUrl){
-    const href=esc(d.bannerUrl.startsWith('http')?d.bannerUrl:'https://'+d.bannerUrl);
+    const href=esc(urlHref(d.bannerUrl));
     html=html.replace(/(<img\s[^>]*alt="Banner"[^>]*>)/g,`<a href="${href}" target="_blank" style="text-decoration:none;">$1</a>`);
   }
   return html;
+}
+
+// Desktop and mobile HTML before SVG rasterising. Preview, Copy/Download and batch all build through here.
+function buildSigs(d){
+  const disc=disclaimerHtml(d), acc=accreditationsHtml(d);
+  return{
+    dh:withFont(d,fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc)),
+    mh:withFont(d,fixMsoTables(applyImageLinks(genMob(d),d)+accreditationsHtml(d,true)+disclaimerHtml(d,true)))
+  };
 }
 
 // ── UNIVERSAL HTML ───────────────────────────────────────
@@ -2839,28 +2939,37 @@ function genUni(dh,mh){
 <div style="max-width:600px;">
   <style>@media screen and (max-width:480px){.sig-d{display:none !important;}.sig-m{display:block !important;}}</style>
   <div class="sig-d">${dh}</div>
-  <div class="sig-m" style="display:none;">${mh}</div>
+  <!--[if !mso]><!--><div class="sig-m" style="display:none;mso-hide:all;">${mh}</div><!--<![endif]-->
 </div>
 <!--[if mso]></td></tr></table><![endif]-->`;
 }
 
 // ── COPY ─────────────────────────────────────────────────
 async function cp(id,btn){
-  await exportReady;
-  navigator.clipboard.writeText(document.getElementById(id).value).then(()=>{
-    btn.textContent='Copied!';btn.classList.add('ok');
+  const text=exportSettled().then(()=>document.getElementById(id).value);
+  const done=(label,ok)=>{
+    btn.textContent=label;btn.classList.toggle('ok',ok);
     setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);
-  });
+  };
+  try{
+    // Safari drops clipboard permission across an await, so hand it a pending item instead
+    if(window.ClipboardItem&&navigator.clipboard.write) await navigator.clipboard.write([new ClipboardItem({'text/plain':text.then(t=>new Blob([t],{type:'text/plain'}))})]);
+    else await navigator.clipboard.writeText(await text);
+    done('Copied!',true);
+  }catch(e){ done('Copy failed',false); }
 }
 
 // ── DOWNLOAD ─────────────────────────────────────────────
 async function dl(id,filename){
-  await exportReady;
+  await exportSettled();
   const html=document.getElementById(id).value;
-  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  saveBlob(new Blob([html],{type:'text/html;charset=utf-8'}),filename);
+}
+// Revoking straight after click() can cancel the download in Firefox and Safari
+function saveBlob(blob,filename){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob); a.download=filename; a.click();
-  URL.revokeObjectURL(a.href);
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 
 // ── COLOUR EXTRACTION ────────────────────────────────────
@@ -2878,13 +2987,22 @@ function loadScanFile(file){
     const img=new Image();
     img.onload=()=>{
       document.getElementById('scanThumb').src=e.target.result;
-      extractedColors=getColors(img); renderSwatches();
+      // An SVG without width/height gives a 0×0 canvas, which getImageData rejects
+      try{extractedColors=img.naturalWidth&&img.naturalHeight?getColors(img):[];}catch(err){extractedColors=[];}
+      renderSwatches();
       document.getElementById('scanResult').style.display='block';
       scanZone.style.display='none';
     };
+    img.onerror=()=>{scanZone.querySelector('.drag-text').textContent='Couldn\'t read that image — try a PNG or JPG.';};
     img.src=e.target.result;
   };
   reader.readAsDataURL(file);
+}
+function rescanColours(){
+  document.getElementById('scanFile').value='';
+  document.getElementById('scanResult').style.display='none';
+  scanZone.querySelector('.drag-text').textContent=scanDragText;
+  scanZone.style.display='';
 }
 function rgbToHex(r,g,b){return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');}
 function colorDistance(a,b){return Math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2);}
@@ -2910,7 +3028,8 @@ function getColors(img){
     const r=data[i],g=data[i+1],b=data[i+2],a=data[i+3];
     if(a<128||r>235&&g>235&&b>235||r<25&&g<25&&b<25) continue;
     const {l}=getHSL(r,g,b); if(l>0.92||l<0.08) continue;
-    const key=`${Math.round(r/24)*24},${Math.round(g/24)*24},${Math.round(b/24)*24}`;
+    const q=v=>Math.min(255,Math.round(v/24)*24); // capped: 252-255 would round up to 264
+    const key=`${q(r)},${q(g)},${q(b)}`;
     buckets[key]=(buckets[key]||0)+1;
   }
   const sorted=Object.entries(buckets).sort((a,b)=>b[1]-a[1]);
@@ -3445,8 +3564,6 @@ function switchPrevTab(tab){
   ['desk','mob'].forEach(t=>{const hd=el('ptab-'+t+'-hd');if(hd)hd.classList.toggle('active',t===tab);});
 }
 
-// ── COLOUR MODE ──────────────────────────────────────────
-
 // ── BADGES & FONT PREVIEW ────────────────────────────────
 function updBadges(){
   const phones=document.querySelectorAll('#phoneList .phone-row').length;
@@ -3490,7 +3607,7 @@ const BATCH_ALIASES={
   company:    ['company','organisation','organization','employer','org','business'],
   email:      ['email','e-mail','email address','emailaddress'],
   website:    ['website','url','web','site','web address'],
-  phone:      ['phone','tel','telephone','landline','office','office phone','work phone','direct dial','ddi','phone number','contact number'],
+  phone:      ['phone','tel','telephone','landline','office phone','office number','work phone','direct dial','ddi','phone number','contact number'],
   mobile:     ['mobile','mobile phone','mobile number','mob','cell','cell phone','cellphone'],
   linkedin:   ['linkedin','linkedin url','linkedin profile'],
   twitter:    ['twitter','twitter/x','x','twitter url','x url','twitter profile'],
@@ -3502,8 +3619,11 @@ const BATCH_ALIASES={
 };
 const SOCIAL_KEY_TO_PLAT={linkedin:'LinkedIn',twitter:'Twitter/X',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
 
+function emptyColMap(){return Object.fromEntries(BATCH_FIELDS.map(f=>[f.key,'']));}
+batchColMap=emptyColMap();
+
 function batchAutoMap(headers){
-  const map={name:'',title:'',company:'',email:'',website:'',phone:'',mobile:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
+  const map=emptyColMap();
   BATCH_FIELDS.forEach(({key})=>{
     const aliases=BATCH_ALIASES[key];
     const found=headers.find(h=>aliases.includes(h.toLowerCase().trim()));
@@ -3513,26 +3633,36 @@ function batchAutoMap(headers){
 }
 
 function parseCsv(text){
-  const lines=text.split(/\r?\n/).filter(l=>l.trim());
-  if(!lines.length) return{headers:[],rows:[]};
-  function splitRow(line){
-    const out=[]; let cur='', inQ=false;
-    for(let i=0;i<line.length;i++){
-      const c=line[i];
-      if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
-      else if(c===','&&!inQ){out.push(cur);cur='';}
+  text=text.replace(/^﻿/,'');
+  // Excel in many European locales saves with ; and some exports use tabs
+  const first=text.slice(0,text.search(/\r?\n|$/));
+  const delim=[',',';','\t'].map(c=>[c,first.split(c).length]).sort((a,b)=>b[1]-a[1])[0][0];
+  const recs=[]; let rec=[], cur='', inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else inQ=false;}
       else cur+=c;
     }
-    out.push(cur);
-    return out.map(s=>s.trim());
+    else if(c==='"') inQ=true;
+    else if(c===delim){rec.push(cur);cur='';}
+    else if(c==='\n'||c==='\r'){
+      if(c==='\r'&&text[i+1]==='\n') i++;
+      rec.push(cur);recs.push(rec);rec=[];cur='';
+    }
+    else cur+=c;
   }
-  const headers=splitRow(lines[0]);
-  const rows=lines.slice(1).map(l=>{
-    const vals=splitRow(l);
+  rec.push(cur);recs.push(rec);
+  const lines=recs.map(r=>r.map(v=>v.trim())).filter(r=>r.some(v=>v));
+  if(!lines.length) return{headers:[],rows:[]};
+  // Duplicate headers would overwrite each other in the row object, so number them as SheetJS does
+  const seen={};
+  const headers=lines[0].map(h=>{seen[h]=(seen[h]||0)+1;return seen[h]>1?`${h}_${seen[h]}`:h;});
+  const rows=lines.slice(1).map(vals=>{
     const obj={};
     headers.forEach((h,i)=>obj[h]=vals[i]||'');
     return obj;
-  }).filter(r=>Object.values(r).some(v=>v));
+  });
   return{headers,rows};
 }
 
@@ -3546,19 +3676,34 @@ function handleBatchFile(input){
   const file=input.files[0]; if(!file) return;
   const ext=file.name.split('.').pop().toLowerCase();
   const reader=new FileReader();
-  if(ext==='csv'){
-    reader.onload=e=>loadBatchData(parseCsv(e.target.result));
-    reader.readAsText(file);
-  } else {
-    reader.onload=e=>{
-      const wb=XLSX.read(e.target.result,{type:'array'});
-      const ws=wb.Sheets[wb.SheetNames[0]];
-      const raw=XLSX.utils.sheet_to_json(ws,{defval:''});
-      const headers=raw.length?Object.keys(raw[0]):[];
-      loadBatchData({headers,rows:raw});
-    };
-    reader.readAsArrayBuffer(file);
-  }
+  const info=document.getElementById('batchStatus');
+  const fail=msg=>{info.textContent='⚠ '+msg;info.style.color='#c00';};
+  info.textContent='';
+  reader.onerror=()=>fail('Couldn\'t read that file.');
+  reader.onload=e=>{
+    try{
+      let data;
+      if(ext==='csv'){
+        // Excel's plain "CSV" is Windows-1252, not UTF-8; decoding it as UTF-8 garbles £, é and smart quotes
+        let text;
+        try{text=new TextDecoder('utf-8',{fatal:true}).decode(e.target.result);}
+        catch(err){text=new TextDecoder('windows-1252').decode(e.target.result);}
+        data=parseCsv(text);
+      } else {
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        // raw:false gives the text as displayed, so dates and formatted numbers come through as typed
+        const raw=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
+        const headers=raw.length?Object.keys(raw[0]):[];
+        data={headers,rows:raw};
+      }
+      if(!data.rows.length) return fail('No rows found. The first row should be column headings, with one person per row below it.');
+      loadBatchData(data);
+    }catch(err){
+      fail('Couldn\'t read that file. Save it as .xlsx or .csv and try again (password-protected files aren\'t supported).');
+    }
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 function loadBatchData({headers,rows}){
@@ -3590,7 +3735,7 @@ function renderBatchMap(){
   document.getElementById('batchMapGrid').innerHTML=groups.map(g=>`
     <div style="grid-column:1/-1;font-size:10px;font-weight:600;color:#1179A3;text-transform:uppercase;letter-spacing:.5px;padding-top:4px;border-top:1px solid #edf1f5;margin-top:2px;">${g.label}</div>
     ${g.keys.map(key=>{const f=BATCH_FIELDS.find(x=>x.key===key);return`<div class="fgrp"><label>${f.label}</label>${sel(key)}</div>`;}).join('')}
-  `).join('');
+  `).join('')+`<div style="grid-column:1/-1;font-size:11px;color:#6b8090;line-height:1.5;">Phone and Mobile: each person's own numbers come first, followed by any numbers entered in Step 1 (e.g. a shared switchboard). Leave Step 1 empty if you only want each person's own numbers. Blank cells use the Step 1 values.</div>`;
   document.getElementById('batchMapGrid').style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:8px 16px;margin-bottom:16px;';
 }
 
@@ -3610,11 +3755,12 @@ function batchMerge(d,row){
     const col=batchColMap[key];
     if(col&&row[col]!==undefined&&row[col]!=='') out[key]=String(row[col]).trim();
   });
-  // Phone columns are per-person: when either is mapped, the row's numbers replace the editor's
-  // entirely, so blanks stay blank and nobody inherits another slot's number.
-  if(batchColMap.phone||batchColMap.mobile){
-    const nums=['phone','mobile'].map(k=>batchColMap[k]?String(row[batchColMap[k]]??'').trim():'').filter(Boolean);
-    out.phones=nums.filter((n,i)=>nums.findIndex(m=>m.replace(/\s/g,'')===n.replace(/\s/g,''))===i);
+  // Each person's Phone and Mobile come first, then any numbers typed in the editor (e.g. a shared
+  // switchboard). The same number in any format (+44 20…, 020…, 020-…) is only listed once.
+  const own=['phone','mobile'].map(k=>batchColMap[k]?ukLeadingZero(String(row[batchColMap[k]]??'').trim()):'').filter(Boolean);
+  if(own.length){
+    const all=[...own,...(d.phones||[])], key=n=>telHref(n).replace(/^(\+44|0044)/,'0');
+    out.phones=all.filter((n,i)=>all.findIndex(m=>key(m)===key(n))===i);
   }
   const batchSocials=Object.entries(SOCIAL_KEY_TO_PLAT)
     .filter(([key])=>batchColMap[key]&&row[batchColMap[key]]&&String(row[batchColMap[key]]).trim())
@@ -3625,10 +3771,13 @@ function batchMerge(d,row){
   return out;
 }
 
+// Excel stores 07700 900123 typed without spaces as the number 7700900123, dropping the 0
+function ukLeadingZero(v){return /^[1-9]\d{9}$/.test(v)?'0'+v:v;}
+
 function batchSlug(row){
   const name=batchColMap.name?String(row[batchColMap.name]||''):'';
   if(!name) return 'signature';
-  return name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  return name.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'signature';
 }
 
 async function downloadBatchAll(fmt){
@@ -3637,15 +3786,17 @@ async function downloadBatchAll(fmt){
   const prog=document.getElementById('batchProg');
   const bar=document.getElementById('batchProgBar');
   const status=document.getElementById('batchStatus');
+  if(exportBlocked||batchExporting) return;
+  batchExporting=true;
   btns.forEach(b=>b.disabled=true); prog.style.display='block'; bar.style.width='0%';
+  const labels={desk:'desktop',mob:'mobile',uni:'universal'};
+  try{
   const zip=new JSZip();
   const base=gd();
-  const labels={desk:'desktop',mob:'mobile',uni:'universal'};
   for(let i=0;i<batchRows.length;i++){
     const d=batchMerge(base,batchRows[i]);
-    const disc=disclaimerHtml(d);
-    const acc=accreditationsHtml(d);
-    const dh=await rasterSvgs(withFont(d,fixMsoTables(applyImageLinks(genDesk(d),d)+acc+disc))), mh=await rasterSvgs(withFont(d,fixMsoTables(applyImageLinks(genMob(d),d)+acc+disc)));
+    const sigs=buildSigs(d);
+    const dh=await rasterSvgs(sigs.dh), mh=await rasterSvgs(sigs.mh);
     const html=fmt==='desk'?dh:fmt==='mob'?mh:genUni(dh,mh);
     const slug=batchSlug(batchRows[i]);
     zip.file(`${slug}-${i+1}.html`,html);
@@ -3656,10 +3807,16 @@ async function downloadBatchAll(fmt){
   }
   status.textContent='Creating ZIP…';
   const blob=await zip.generateAsync({type:'blob'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`signatures-${labels[fmt]}.zip`; a.click();
-  btns.forEach(b=>b.disabled=false); prog.style.display='none';
+  saveBlob(blob,`signatures-${labels[fmt]}.zip`);
   status.textContent=`✓ Downloaded ${batchRows.length} ${labels[fmt]} signature${batchRows.length!==1?'s':''}.`;
   status.style.color='#2E7D32';
+  }catch(err){
+    status.textContent='⚠ Export failed: '+(err&&err.message||err)+'. Try fewer rows or smaller images.';
+    status.style.color='#c00';
+  }finally{
+    batchExporting=false;
+    btns.forEach(b=>b.disabled=exportBlocked); prog.style.display='none';
+  }
 }
 
 function downloadBatchTemplate(){
@@ -3673,7 +3830,7 @@ function downloadBatchTemplate(){
 }
 
 function clearBatch(){
-  batchRows=[]; batchHeaders=[]; batchColMap={name:'',title:'',company:'',email:'',website:'',phone:'',mobile:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''};
+  batchRows=[]; batchHeaders=[]; batchColMap=emptyColMap();
   document.getElementById('batchFile').value='';
   document.getElementById('batchUploadGrid').style.display='grid';
   document.getElementById('batchResult').style.display='none';
@@ -3714,7 +3871,7 @@ function captureState(){
 function pushHistory(state){
   if(suppressHistory) return;
   // Avoid duplicate consecutive entries
-  if(historyIdx>=0&&JSON.stringify(sigHistory[historyIdx])===JSON.stringify(state)) return;
+  if(historyIdx>=0&&sameState(sigHistory[historyIdx],state)) return;
   sigHistory=sigHistory.slice(0,historyIdx+1);
   sigHistory.push(state);
   if(sigHistory.length>MAX_HISTORY) sigHistory.shift();
@@ -3722,7 +3879,21 @@ function pushHistory(state){
   updUndoRedo();
 }
 
+// Field-by-field comparison. Images (MBs of base64) are compared by reference instead of
+// being serialised on every render.
+function sameState(a,b){
+  const ka=Object.keys(a), kb=Object.keys(b);
+  if(ka.length!==kb.length) return false;
+  return kb.every(k=>{
+    const x=a[k], y=b[k];
+    if(x===y) return true;
+    if(k==='accLogos') return Array.isArray(x)&&Array.isArray(y)&&x.length===y.length&&x.every((v,i)=>v===y[i]);
+    return x&&y&&typeof x==='object'&&typeof y==='object'&&JSON.stringify(x)===JSON.stringify(y);
+  });
+}
+
 function applyState(state){
+  const wasSuppressed=suppressHistory;
   suppressHistory=true;
   ['name','title','company','email','website','address','disclaimer'].forEach(k=>{const e=el('f_'+k);if(e)e.value=state[k]||'';});
   el('phoneList').innerHTML='';
@@ -3740,15 +3911,21 @@ function applyState(state){
     document.getElementById('logoThumb').src=logoDataUrl;
     document.getElementById('logoZone').style.display='none';
     document.getElementById('logoResult').style.display='block';
-    const lw=el('logoW');if(lw){lw.value=state.logoW;lw.dispatchEvent(new Event('input'));}
+    [logoNatW,logoNatH]=dataDims(logoDataUrl);
+    el('logoMeta').textContent=logoNatW?logoNatW+'×'+logoNatH+'px':'';
   } else { resetLogo(); }
+  // Widths are restored even without an image; otherwise the slider keeps its old value, the
+  // re-render records it as a new edit, and the redo history is lost
+  const lw=el('logoW');if(lw&&state.logoW){lw.value=state.logoW;lw.dispatchEvent(new Event('input'));}
   if(state.bannerDataUrl){
     bannerDataUrl=state.bannerDataUrl;
     document.getElementById('bannerThumb').src=bannerDataUrl;
     document.getElementById('bannerZone').style.display='none';
     document.getElementById('bannerResult').style.display='block';
-    const bw=el('bannerW');if(bw){bw.value=state.bannerW;bw.dispatchEvent(new Event('input'));}
+    [bannerNatW,bannerNatH]=dataDims(bannerDataUrl);
+    el('bannerMeta').textContent=bannerNatW?bannerNatW+'×'+bannerNatH+'px':'';
   } else { resetBanner(); }
+  const bw=el('bannerW');if(bw&&state.bannerW){bw.value=state.bannerW;bw.dispatchEvent(new Event('input'));}
   const fs=el('f_font');if(fs)fs.value=state.font||'';
   selTmpl(state.template||'classic-left');
   ['pri','acc','sec','txt','line','disc'].forEach(k=>{
@@ -3772,8 +3949,8 @@ function applyState(state){
     if(state.accH!=null){const ah=el('accH');if(ah){ah.value=state.accH;const v=document.getElementById('accHVal');if(v)v.textContent=state.accH+'px';}}
   }
   applyHostState(state);
-  suppressHistory=false;
   render();
+  suppressHistory=wasSuppressed;
   updBadges();
 }
 
@@ -3803,6 +3980,7 @@ function updUndoRedo(){
 
 // ── PNG EXPORT ───────────────────────────────────────────
 async function downloadPng(fmt){
+  await exportSettled();
   const srcEl=document.getElementById(fmt==='desk'?'deskPrev':'mobPrev');
   const btn=document.getElementById(fmt==='desk'?'dlPngDesk':'dlPngMob');
   const status=document.getElementById('pngStatus');
@@ -3838,13 +4016,18 @@ async function downloadPng(fmt){
     setTimeout(()=>status.style.display='none',3000);
   }catch(e){
     console.error(e);
-    status.textContent='PNG export failed — try again.';
+    // Hosted images taint the canvas unless the image server sends Access-Control-Allow-Origin,
+    // and retrying won't change that, so say what's actually needed
+    status.textContent=imgMode==='host'
+      ?'PNG export can\'t read images from your image server. It needs to send the header "Access-Control-Allow-Origin: *" for the image folder. Until then, switch Images to Embed to make the PNG.'
+      :'PNG export failed — try again.';
     status.style.color='#c00';
     status.style.display='block';
-    setTimeout(()=>status.style.display='none',4000);
+    setTimeout(()=>status.style.display='none',imgMode==='host'?12000:4000);
+  }finally{
+    document.body.removeChild(wrap);
+    btn.disabled=false; btn.innerHTML=origTxt;
   }
-  document.body.removeChild(wrap);
-  btn.disabled=false; btn.innerHTML=origTxt;
 }
 
 // ── PRESETS ──────────────────────────────────────────────
@@ -3856,7 +4039,8 @@ function savePreset(){
   const nameIn=document.getElementById('presetNameIn');
   const name=nameIn.value.trim();
   if(!name){nameIn.focus();nameIn.style.borderColor='#F0B0B0';setTimeout(()=>nameIn.style.borderColor='',1500);return;}
-  const d=gd();
+  const d=gd(), st=captureState();
+  const withBatch=batchRows.length&&el('presetIncludeBatch')?.checked;
   const preset={
     id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
     name,
@@ -3865,7 +4049,8 @@ function savePreset(){
     // Single tab user details
     userDetails:{
       name:d.name,title:d.title,company:d.company,email:d.email,
-      website:d.website,address:d.address,disclaimer:d.disclaimer,phones:d.phones,socials:d.socials,
+      // From the editor itself, so empty rows and hidden social links survive save/load
+      website:d.website,address:d.address,disclaimer:d.disclaimer,phones:st.phones.filter(v=>v.trim()),socials:st.socials.filter(s=>s.url.trim()),
       showIcons:d.showIcons
     },
     // Logo & banner
@@ -3878,14 +4063,12 @@ function savePreset(){
     accLogos:accLogos.slice(),accUrls:d.accUrls,accH:d.accH,
     // Embed or host, and the hosted image locations
     ...hostState(),
-    // Multiple tab batch data
-    batchRows:[...batchRows],
-    batchHeaders:[...batchHeaders],
-    batchColMap:Object.assign({},batchColMap)
+    // Batch staff list only when asked for: presets are meant to be shared
+    ...(withBatch?{batchRows:[...batchRows],batchHeaders:[...batchHeaders],batchColMap:Object.assign({},batchColMap)}:{})
   };
   const arr=getPresets();
   arr.unshift(preset);
-  setPresets(arr);
+  if(!setPresets(arr)) return;
   nameIn.value='';
   renderPresetCards();
 }
@@ -3913,7 +4096,7 @@ function applyPreset(preset){
   if(preset.batchRows&&preset.batchRows.length){
     batchRows=preset.batchRows;
     batchHeaders=preset.batchHeaders||[];
-    batchColMap=Object.assign({name:'',title:'',company:'',email:'',website:'',phone:'',mobile:'',linkedin:'',twitter:'',facebook:'',instagram:'',youtube:'',tiktok:'',disclaimer:''},preset.batchColMap);
+    batchColMap=Object.assign(emptyColMap(),preset.batchColMap);
     document.getElementById('batchUploadGrid').style.display='none';
     document.getElementById('batchResult').style.display='block';
     document.getElementById('stepBatchDlEmpty').style.display='none';
@@ -3922,12 +4105,12 @@ function applyPreset(preset){
     document.getElementById('batchRowCount').textContent=`(showing first 5 of ${batchRows.length})`;
     renderBatchMap();
     renderBatchTable();
-  }
+  } else if(batchRows.length) clearBatch(); // otherwise the old batch's first row overrides this preset
   // Logo
   if(preset.logo){
     logoDataUrl=preset.logo;
     const img=new Image();
-    img.onload=()=>{logoNatW=img.naturalWidth;logoNatH=img.naturalHeight;};
+    img.onload=()=>{logoNatW=img.naturalWidth;logoNatH=img.naturalHeight;imgDims[img.src]=[logoNatW,logoNatH];};
     img.src=logoDataUrl;
     document.getElementById('logoThumb').src=logoDataUrl;
     document.getElementById('logoZone').style.display='none';
@@ -3941,7 +4124,7 @@ function applyPreset(preset){
   if(preset.banner){
     bannerDataUrl=preset.banner;
     const img2=new Image();
-    img2.onload=()=>{bannerNatW=img2.naturalWidth;bannerNatH=img2.naturalHeight;};
+    img2.onload=()=>{bannerNatW=img2.naturalWidth;bannerNatH=img2.naturalHeight;imgDims[img2.src]=[bannerNatW,bannerNatH];};
     img2.src=bannerDataUrl;
     document.getElementById('bannerThumb').src=bannerDataUrl;
     document.getElementById('bannerZone').style.display='none';
@@ -4069,11 +4252,12 @@ function exportAllPresets(){
 }
 
 // Only allow inline image data URLs through — never javascript:/other schemes.
+const DATA_IMG=/^data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,[A-Za-z0-9+\/=]+$/i;
 function sanitisePresetImages(p){
   ['logo','banner'].forEach(k=>{
-    if(p[k]&&!/^data:image\//i.test(p[k])) p[k]='';
+    if(p[k]&&!(typeof p[k]==='string'&&DATA_IMG.test(p[k]))) p[k]='';
   });
-  if(Array.isArray(p.accLogos)) p.accLogos=p.accLogos.map(v=>(v&&/^data:image\//i.test(v))?v:'');
+  p.accLogos=Array.isArray(p.accLogos)?[0,1,2,3].map(i=>{const v=p.accLogos[i];return typeof v==='string'&&DATA_IMG.test(v)?v:'';}):undefined;
   // Hosted locations are only ever turned into http(s) URLs by hostUrl(), but keep them plain strings.
   const str=v=>typeof v==='string'?v.slice(0,500):'';
   p.imgMode=p.imgMode==='host'?'host':'embed';
@@ -4091,6 +4275,27 @@ function normaliseImportedPreset(p,existingNames){
   out.name=out.name.trim().slice(0,60);
   if(existingNames.has(out.name.toLowerCase())) out.name=(out.name+' (imported)').slice(0,60);
   existingNames.add(out.name.toLowerCase());
+  const str=v=>typeof v==='string'?v:'';
+  const arr=v=>Array.isArray(v)?v:[];
+  ['pri','acc','acc2','sec','txt','line','disc','icon_col'].forEach(k=>{if(!/^#[0-9a-f]{6}$/i.test(str(out[k]))) delete out[k];});
+  if(!/^[a-z0-9-]{1,40}$/.test(str(out.template))) delete out.template;
+  ['font','logoUrl','bannerUrl'].forEach(k=>{out[k]=str(out[k]).slice(0,500);});
+  out.accUrls=[0,1,2,3].map(i=>str(arr(out.accUrls)[i]).slice(0,500));
+  ['logoW','bannerW','accH'].forEach(k=>{const n=parseInt(out[k]);if(n>0)out[k]=n;else delete out[k];});
+  if(out.userDetails&&typeof out.userDetails==='object'){
+    const u=out.userDetails, o={};
+    ['name','title','company','email','website','address','disclaimer'].forEach(k=>{o[k]=str(u[k]);});
+    o.showIcons=!!u.showIcons;
+    o.phones=arr(u.phones).map(str).filter(Boolean);
+    o.socials=arr(u.socials).filter(s=>s&&typeof s==='object').map(s=>({platform:PLATS.includes(s.platform)?s.platform:'LinkedIn',url:str(s.url),show:s.show!==false})).slice(0,4);
+    out.userDetails=o;
+  } else delete out.userDetails;
+  if(Array.isArray(out.batchRows)&&out.batchRows.length){
+    out.batchHeaders=arr(out.batchHeaders).map(str);
+    out.batchRows=out.batchRows.filter(r=>r&&typeof r==='object').map(r=>Object.fromEntries(out.batchHeaders.map(h=>[h,str(String(r[h]??''))])));
+    const m=out.batchColMap&&typeof out.batchColMap==='object'?out.batchColMap:{};
+    out.batchColMap=Object.fromEntries(BATCH_FIELDS.map(f=>[f.key,out.batchHeaders.includes(m[f.key])?m[f.key]:'']));
+  } else {delete out.batchRows;delete out.batchHeaders;delete out.batchColMap;}
   return sanitisePresetImages(out);
 }
 
@@ -4123,6 +4328,11 @@ function handlePresetImport(input){
   reader.readAsText(file);
 }
 
+// A template's display name, read from its card so it can't drift from the picker
+function tmplName(id){
+  const r=id&&document.querySelector(`.tmpl-card input[type=radio][value="${CSS.escape(String(id))}"]`);
+  return r?r.closest('.tmpl-card').querySelector('.tmpl-name')?.textContent.trim():'';
+}
 function renderPresetCards(){
   const cont=document.getElementById('presetCards');
   if(!cont) return;
@@ -4131,27 +4341,19 @@ function renderPresetCards(){
     cont.innerHTML='<div class="preset-empty">No presets saved yet. Configure your style above and click <strong>Save Preset</strong>.</div>';
     return;
   }
-  const tmplNames={
-    'classic-left':'Classic Left','classic-center':'Classic Centre',
-    'compact-left':'Compact Left','compact-right':'Compact Right',
-    'modern-left':'Modern Left','modern-right':'Modern Right',
-    'banner-top':'Banner Top','banner-bottom':'Banner Bottom','grant':'Grant',
-    'minimal-left':'Minimal Left','minimal-right':'Minimal Right',
-    'bold-left':'Bold Left','bold-center':'Bold Centre'
-  };
   cont.innerHTML='<div class="preset-grid">'+arr.map(p=>{
-    const swatchCols=[p.pri,p.acc,p.sec,p.txt].filter(Boolean);
+    const swatchCols=[p.pri,p.acc,p.sec,p.txt].filter(c=>/^#[0-9a-f]{6}$/i.test(c||''));
     const swatches=swatchCols.map(c=>`<div class="preset-swatch" style="background:${c}" title="${c}"></div>`).join('');
     const date=new Date(p.ts).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
-    const tmplLabel=tmplNames[p.template]||p.template||'—';
+    const tmplLabel=esc(tmplName(p.template)||p.template||'—');
     return `<div class="preset-card">
       <div class="preset-card-name" title="${esc(p.name)}">${esc(p.name)}</div>
       <div class="preset-swatches">${swatches}</div>
-      <div class="preset-card-meta">${tmplLabel} &middot; ${date}</div>
+      <div class="preset-card-meta">${tmplLabel} &middot; ${date}${p.batchRows&&p.batchRows.length?` &middot; ${p.batchRows.length} staff`:''}</div>
       <div class="preset-card-btns">
-        <button class="btn-dl" style="flex:1;" onclick="applyPresetById('${p.id}')">Load</button>
-        <button class="preset-exp-btn" onclick="exportPreset('${p.id}')">Download</button>
-        <button class="preset-del-btn" onclick="deletePreset('${p.id}')">Delete</button>
+        <button class="btn-dl" style="flex:1;" onclick="applyPresetById('${esc(p.id)}')">Load</button>
+        <button class="preset-exp-btn" onclick="exportPreset('${esc(p.id)}')">Download</button>
+        <button class="preset-del-btn" onclick="deletePreset('${esc(p.id)}')">Delete</button>
       </div>
     </div>`;
   }).join('')+'</div>';
@@ -4174,6 +4376,14 @@ function resetAll(){
   const bannerW=el('bannerW'); bannerW.value=600; bannerW.dispatchEvent(new Event('input'));
   const defs={c_pri:'#204456',h_pri:'#204456',c_acc:'#00AEEF',h_acc:'#00AEEF',c_sec:'#1179A3',h_sec:'#1179A3',c_txt:'#1A2A3A',h_txt:'#1A2A3A',c_line:'#DDE4EC',h_line:'#DDE4EC',c_disc:'#6B7F94',h_disc:'#6B7F94'};
   Object.entries(defs).forEach(([id,v])=>{const e=el(id);if(e)e.value=v;});
+  // The rest go back to the values in the page's HTML
+  ['c_acc2','h_acc2','c_icon','h_icon','accH'].forEach(id=>{const e=el(id);if(e)e.value=e.defaultValue;});
+  const ahv=el('accHVal');if(ahv)ahv.textContent=el('accH').value+'px';
+  const ff=el('f_font');if(ff){const o=[...ff.options].find(o=>o.defaultSelected)||ff.options[0];ff.value=o.value;}
+  const si=el('f_showIcons');if(si)si.checked=si.defaultChecked;
+  applyHostState({});
+  if(batchRows.length) clearBatch();
+  addPhone();
   selTmpl('classic-left');
   updBadges();
 }
